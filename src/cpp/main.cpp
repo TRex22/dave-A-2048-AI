@@ -38,10 +38,12 @@ int main(int argc, char *argv[])
 {
 	/*TODO: JMC add commandline arguments like board size*/
 	GameState *currentGame = new GameState(BOARD_SIZE);
-	// currentGame->currentBoard[0][0] = 4;
-	// currentGame->currentBoard[1][0] = 4;
-	// currentGame->currentBoard[2][0] = 2;
-	// currentGame->currentBoard[3][0] = 2;
+	currentGame->currentBoard[0][0] = 0;
+	currentGame->currentBoard[1][0] = 4;
+	currentGame->currentBoard[2][0] = 2;
+	currentGame->currentBoard[3][0] = 8;
+	currentGame->currentBoard[3][1] = 4;
+
 	while(1){
 		add_new_number(currentGame);
 		print_board(currentGame);
@@ -124,17 +126,27 @@ void process_left(GameState *currentGame){
 	{
 		for (int j = 1; j < currentGame->boardSize; ++j)
 		{
-			int t = j;
-			while(currentGame->currentBoard[i][t-1] == 0 && t > 0){
-				currentGame->currentBoard[i][t-1] = currentGame->currentBoard[i][t];
-				currentGame->currentBoard[i][t] = 0;
-				t--;
-			}
-			if (currentGame->currentBoard[i][t-1] == currentGame->currentBoard[i][t])
+			if (currentGame->currentBoard[i][j] != 0)
 			{
-				currentGame->currentBoard[i][t-1] += currentGame->currentBoard[i][t];
-				currentGame->currentBoard[i][t] = 0;
+				int t = j;
+				while(t > 0 && currentGame->currentBoard[i][t-1] == 0){
+					currentGame->currentBoard[i][t-1] = currentGame->currentBoard[i][t];
+					currentGame->currentBoard[i][t] = 0;
+					t--;
+				}
+
+				if (t == 0)
+				{
+					t++;
+				}
+
+				if (currentGame->currentBoard[i][t-1] == currentGame->currentBoard[i][t])
+				{
+					currentGame->currentBoard[i][t-1] += currentGame->currentBoard[i][t];
+					currentGame->currentBoard[i][t] = 0;
+				}
 			}
+			
 		}
 	}
 }
@@ -144,16 +156,25 @@ void process_right(GameState *currentGame){
 	{
 		for (int j = currentGame->boardSize - 2; j > -1; --j)
 		{
-			int t = j;
-			while(currentGame->currentBoard[i][t+1] == 0 && t < currentGame->boardSize - 1){
-				currentGame->currentBoard[i][t+1] = currentGame->currentBoard[i][t];
-				currentGame->currentBoard[i][t] = 0;
-				t++;
-			}
-			if (currentGame->currentBoard[i][t+1] == currentGame->currentBoard[i][t])
+			if (currentGame->currentBoard[i][j] != 0)
 			{
-				currentGame->currentBoard[i][t+1] += currentGame->currentBoard[i][t];
-				currentGame->currentBoard[i][t] = 0;
+				int t = j;
+				while(t < currentGame->boardSize - 1 && currentGame->currentBoard[i][t+1] == 0){
+					currentGame->currentBoard[i][t+1] = currentGame->currentBoard[i][t];
+					currentGame->currentBoard[i][t] = 0;
+					t++;
+				}
+
+				if (t == currentGame->boardSize - 1)
+				{
+					t--;
+				}
+
+				if (currentGame->currentBoard[i][t+1] == currentGame->currentBoard[i][t])
+				{
+					currentGame->currentBoard[i][t+1] += currentGame->currentBoard[i][t];
+					currentGame->currentBoard[i][t] = 0;
+				}
 			}
 		}
 	}
@@ -164,16 +185,25 @@ void process_up(GameState *currentGame){
 	{
 		for (int i = 1; i < currentGame->boardSize; ++i)
 		{
-			int t = i;
-			while(currentGame->currentBoard[t-1][j] == 0 && t > 0){
-				currentGame->currentBoard[t-1][j] = currentGame->currentBoard[t][j];
-				currentGame->currentBoard[t][j] = 0;
-				t--;
-			}
-			if (currentGame->currentBoard[t-1][j] == currentGame->currentBoard[t][j])
+			if (currentGame->currentBoard[i][j] != 0)
 			{
-				currentGame->currentBoard[t-1][j] += currentGame->currentBoard[t][j];
-				currentGame->currentBoard[t][j] = 0;
+				int t = i;
+				while(t > 0 && currentGame->currentBoard[t-1][j] == 0){
+					currentGame->currentBoard[t-1][j] = currentGame->currentBoard[t][j];
+					currentGame->currentBoard[t][j] = 0;
+					t--;
+				}
+
+				if (t == 0)
+				{
+					t++;
+				}
+
+				if (currentGame->currentBoard[t-1][j] == currentGame->currentBoard[t][j])
+				{
+					currentGame->currentBoard[t-1][j] += currentGame->currentBoard[t][j];
+					currentGame->currentBoard[t][j] = 0;
+				}
 			}
 		}
 	}
@@ -184,16 +214,25 @@ void process_down(GameState *currentGame){
 	{
 		for (int i = currentGame->boardSize - 2; i > -1; --i)
 		{
-			int t = i;
-			while(currentGame->currentBoard[t+1][j] == 0 && t < currentGame->boardSize - 1){
-				currentGame->currentBoard[t+1][j] = currentGame->currentBoard[t][j];
-				currentGame->currentBoard[t][j] = 0;
-				t++;
-			}
-			if (currentGame->currentBoard[t+1][j] == currentGame->currentBoard[t][j])
+			if (currentGame->currentBoard[i][j] != 0)
 			{
-				currentGame->currentBoard[t+1][j] += currentGame->currentBoard[t][j];
-				currentGame->currentBoard[t][j] = 0;
+				int t = i;
+				while(t < currentGame->boardSize - 1 && currentGame->currentBoard[t+1][j] == 0){
+					currentGame->currentBoard[t+1][j] = currentGame->currentBoard[t][j];
+					currentGame->currentBoard[t][j] = 0;
+					t++;
+				}
+
+				if (t == currentGame->boardSize - 1)
+				{
+					t--;
+				}
+
+				if (currentGame->currentBoard[t+1][j] == currentGame->currentBoard[t][j])
+				{
+					currentGame->currentBoard[t+1][j] += currentGame->currentBoard[t][j];
+					currentGame->currentBoard[t][j] = 0;
+				}
 			}
 
 			//cout << currentGame->currentBoard[i][j] << ",";
