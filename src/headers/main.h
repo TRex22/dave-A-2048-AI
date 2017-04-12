@@ -5,7 +5,8 @@
 
 	This is the main UI interface
 */
+// #include "2048.h"
 
-int main(int argc, char *argv[]);
-void print_board(2048GameState currentGame);
-void print_horizontal_boarder(int boardSize);
+// int main(int argc, char *argv[]);
+// void print_board(GameState currentGame);
+// void print_horizontal_boarder(int boardSize);

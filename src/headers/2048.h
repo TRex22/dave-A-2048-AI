@@ -11,18 +11,28 @@
 	stepCount = 
 */
 
-using namespace std;
-#include "../headers/2048.h"
 
-class 2048GameState {
+
+class GameState {
 private:
 	
 
 public:
 	int boardSize;
 	int score = 0;
-	int* currentBoard;
+	int** currentBoard = 0;
 	int stepCount = 0;
+	GameState(int);
 
 
+};
+
+GameState::GameState(int board_size){
+	boardSize = board_size;
+
+	currentBoard = new int*[this->boardSize];
+	for (int i = 0; i < this->boardSize; ++i)
+	{
+		currentBoard[i] = new int[this->boardSize];
+	}
 }
