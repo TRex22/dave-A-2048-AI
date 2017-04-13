@@ -33,6 +33,9 @@ void process_left(GameState *currentGame);
 void process_right(GameState *currentGame);
 void process_up(GameState *currentGame);
 void process_down(GameState *currentGame);
+string* get_legal_actions(GameState *currentGame);
+void print_legal_actions(string* legal_actions);
+bool is_action_legal(string action, string* legal_actions);
 
 int main(int argc, char *argv[])
 {
@@ -41,14 +44,24 @@ int main(int argc, char *argv[])
 	currentGame->currentBoard[0][0] = 0;
 	currentGame->currentBoard[1][0] = 4;
 	currentGame->currentBoard[2][0] = 2;
-	currentGame->currentBoard[3][0] = 8;
-	currentGame->currentBoard[3][1] = 4;
+	currentGame->currentBoard[3][0] = 2;
+	// currentGame->currentBoard[3][1] = 4;
 
 	while(1){
 		add_new_number(currentGame);
 		print_board(currentGame);
+
+		string* legal_actions = get_legal_actions(currentGame);
+		print_legal_actions(legal_actions);
+
 		string action = get_player_action();
+		while( !is_action_legal(action, legal_actions) ){
+			cout << "Invalid action" << endl;
+			print_legal_actions(legal_actions);
+			action = get_player_action();
+		}
 		process_action(currentGame, action);
+
 		print_board(currentGame);
 	}
 	
@@ -124,6 +137,12 @@ void process_action(GameState *currentGame, string action){
 void process_left(GameState *currentGame){
 	for (int i = 0; i < currentGame->boardSize; ++i)
 	{
+		bool modified[currentGame->boardSize];
+		for (int p = 0; p < currentGame->boardSize; ++p)
+		{
+			modified[p] = false;
+		}
+
 		for (int j = 1; j < currentGame->boardSize; ++j)
 		{
 			if (currentGame->currentBoard[i][j] != 0)
@@ -140,9 +159,11 @@ void process_left(GameState *currentGame){
 					t++;
 				}
 
-				if (currentGame->currentBoard[i][t-1] == currentGame->currentBoard[i][t])
+				if (currentGame->currentBoard[i][t-1] == currentGame->currentBoard[i][t] &&  modified[t-1] == false)
 				{
 					currentGame->currentBoard[i][t-1] += currentGame->currentBoard[i][t];
+					modified[t-1] = true;
+					currentGame->score += currentGame->currentBoard[i][t-1];
 					currentGame->currentBoard[i][t] = 0;
 				}
 			}
@@ -154,6 +175,12 @@ void process_left(GameState *currentGame){
 void process_right(GameState *currentGame){
 	for (int i = 0; i < currentGame->boardSize; ++i)
 	{
+		bool modified[currentGame->boardSize];
+		for (int p = 0; p < currentGame->boardSize; ++p)
+		{
+			modified[p] = false;
+		}
+
 		for (int j = currentGame->boardSize - 2; j > -1; --j)
 		{
 			if (currentGame->currentBoard[i][j] != 0)
@@ -170,9 +197,11 @@ void process_right(GameState *currentGame){
 					t--;
 				}
 
-				if (currentGame->currentBoard[i][t+1] == currentGame->currentBoard[i][t])
+				if (currentGame->currentBoard[i][t+1] == currentGame->currentBoard[i][t] && modified[t+1] == false)
 				{
 					currentGame->currentBoard[i][t+1] += currentGame->currentBoard[i][t];
+					modified[t+1] = true;
+					currentGame->score += currentGame->currentBoard[i][t+1];
 					currentGame->currentBoard[i][t] = 0;
 				}
 			}
@@ -183,6 +212,12 @@ void process_right(GameState *currentGame){
 void process_up(GameState *currentGame){
 	for (int j = 0; j < currentGame->boardSize; ++j)
 	{
+		bool modified[currentGame->boardSize];
+		for (int p = 0; p < currentGame->boardSize; ++p)
+		{
+			modified[p] = false;
+		}
+
 		for (int i = 1; i < currentGame->boardSize; ++i)
 		{
 			if (currentGame->currentBoard[i][j] != 0)
@@ -199,9 +234,11 @@ void process_up(GameState *currentGame){
 					t++;
 				}
 
-				if (currentGame->currentBoard[t-1][j] == currentGame->currentBoard[t][j])
+				if (currentGame->currentBoard[t-1][j] == currentGame->currentBoard[t][j] &&  modified[t-1] == false)
 				{
 					currentGame->currentBoard[t-1][j] += currentGame->currentBoard[t][j];
+					modified[t+1] == true;
+					currentGame->score += currentGame->currentBoard[i][t-1];
 					currentGame->currentBoard[t][j] = 0;
 				}
 			}
@@ -212,6 +249,12 @@ void process_up(GameState *currentGame){
 void process_down(GameState *currentGame){
 	for (int j = 0; j < currentGame->boardSize; ++j)
 	{
+		bool modified[currentGame->boardSize];
+		for (int p = 0; p < currentGame->boardSize; ++p)
+		{
+			modified[p] = false;
+		}
+
 		for (int i = currentGame->boardSize - 2; i > -1; --i)
 		{
 			if (currentGame->currentBoard[i][j] != 0)
@@ -228,14 +271,66 @@ void process_down(GameState *currentGame){
 					t--;
 				}
 
-				if (currentGame->currentBoard[t+1][j] == currentGame->currentBoard[t][j])
+				if (currentGame->currentBoard[t+1][j] == currentGame->currentBoard[t][j] && modified[t+1] == false)
 				{
 					currentGame->currentBoard[t+1][j] += currentGame->currentBoard[t][j];
+					modified[t+1] = true;
+					currentGame->score += currentGame->currentBoard[t+1][j];
 					currentGame->currentBoard[t][j] = 0;
 				}
 			}
-
-			//cout << currentGame->currentBoard[i][j] << ",";
 		}
 	}
+}
+
+string* get_legal_actions(GameState *currentGame){
+	string all_actions[] = {"left", "right", "up", "down"};
+	string* legal_actions = new string[4];
+
+	GameState *state_left;
+	GameState *state_right;
+	GameState *state_up;
+	GameState *state_down;
+
+	GameState* states[] = {state_left, state_right, state_up, state_down};
+
+	for (int i = 0; i < 4; ++i)
+	{
+		states[i] = new GameState(BOARD_SIZE);
+		states[i]->copy(currentGame);
+		process_action(states[i], all_actions[i]);
+		if ( !currentGame->equals(states[i]) )
+		{
+			legal_actions[i] = all_actions[i];
+		}
+	}
+
+	return legal_actions;
+}
+
+void print_legal_actions(string* legal_actions){
+	cout << "Legal actions are: ";
+	for (int i = 0; i < 4; ++i)
+	{
+		if (!legal_actions[i].empty())
+		{
+			cout << legal_actions[i] << " ";
+		}
+	}
+	cout << endl;
+}
+
+bool is_action_legal(string action, string* legal_actions){
+	bool result = false;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		if (legal_actions[i].compare(action) == 0)
+		{
+			result = true;
+			cout << action << " is " << legal_actions[i] << endl; 
+		}
+	}
+
+	return result;
 }
