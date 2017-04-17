@@ -11,26 +11,33 @@
 	stepCount = 
 */
 
+#include <random>
+#include <math.h>
+#include <string.h>
+#include <string>
 
+class GameState 
+{
+	private:
+		
 
-class GameState {
-private:
-	
+	public:
+		int boardSize;
+		int score = 0;
+		int** currentBoard = 0;
+		int stepCount = 0;
+		bool isWon = false;
+		bool invalidMove = false;
+		std::string* legal_actions = NULL;
 
-public:
-	int boardSize;
-	int score = 0;
-	int** currentBoard = 0;
-	int stepCount = 0;
-
-	GameState(int);
-	bool equals(GameState *state);
-	void copy(GameState *state);
-
-
+		GameState(int);
+		GameState(int, bool);
+		bool equals(GameState *state);
+		void copy(GameState *state);
 };
 
-GameState::GameState(int board_size){
+GameState::GameState(int board_size)
+{
 	this->boardSize = board_size;
 
 	currentBoard = new int*[this->boardSize];
@@ -40,7 +47,28 @@ GameState::GameState(int board_size){
 	}
 }
 
-bool GameState::equals(GameState *state){
+GameState::GameState(int board_size, bool rnd_state)
+{
+	this->boardSize = board_size;
+
+	currentBoard = new int*[this->boardSize];
+	for (int i = 0; i < this->boardSize; ++i)
+	{
+		currentBoard[i] = new int[this->boardSize];
+
+		if(rnd_state)
+		{
+			srand(time(NULL));
+		 	int rand_row = rand() % this->boardSize;
+	 		int rand_col = rand() % this->boardSize;
+
+	 		currentBoard[rand_row][rand_col] = 2;
+		}
+	}
+}
+
+bool GameState::equals(GameState *state)
+{
 	bool result = true;
 	for (int i = 0; i < this->boardSize; ++i)
 	{
@@ -56,7 +84,8 @@ bool GameState::equals(GameState *state){
 	return result;
 }
 
-void GameState::copy(GameState *state){
+void GameState::copy(GameState *state)
+{
 	this->boardSize = state->boardSize;
 	this->score = state->score;
 	this->stepCount = state->stepCount;

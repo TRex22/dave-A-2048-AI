@@ -9,7 +9,17 @@
 	boardSize = since the board is square this is just the width of the board
 	score = current player score, starts at 0
 	currentBoard = current squares starts at 0 and has all the numbers on the board
+	
 
+	AI General Algorithm:
+	1. Generate a random init board
+	2. loop (in ai using these functions) until 2048
+	3. in loop:
+		a. guess a move
+		b. check new gamestate
+		c. retry if fail
+		d. go back to a if pass
+	4.yay win!
 */
 
 #include <iostream>
@@ -25,13 +35,15 @@
 #include "../headers/2048.h"
 
 /*Global Variables and Definitions*/
-#define BOARD_SIZE 4
+// not using define in order to overwrite with cmdline args at a later point
+int BOARD_SIZE = 4;
 
 using namespace std;
 
 int main(int argc, char *argv[]);
+GameState* init_gamestate();
+GameState* run_gamestate(GameState currentGame, bool print_game, int move);
 bool determine_2048(GameState *currentGame);
-GameState* run_game_as_simulation(GameState *currentGame, bool print_game);
 void print_board(GameState *currentGame);
 void print_horizontal_boarder(int boardSize);
 void add_new_number(GameState *currentGame);
@@ -45,10 +57,22 @@ string* get_legal_actions(GameState *currentGame);
 void print_legal_actions(string* legal_actions);
 bool is_action_legal(string action, string* legal_actions);
 
+//all moves as index 0 -> 3 for the ai
+const string Moves[]
+{
+    "left", //0
+    "right", //1
+    "up", //2
+    "down" //3
+};
+
 int main(int argc, char *argv[])
 {
+	//setup
+	srand(time(NULL)); //maybe set to a default value for testing
+
 	/*TODO: JMC add commandline arguments like board size and inf play or 2048 play*/
-	GameState *currentGame = new GameState(BOARD_SIZE);
+	GameState *currentGame = new GameState(BOARD_SIZE); //setting true will make a random board with an initial number
 
 	//todo: get this to handle any size board !!!!
 	currentGame->currentBoard[0][0] = 0;
@@ -67,14 +91,52 @@ int main(int argc, char *argv[])
 		string action = get_player_action();
 		while( !is_action_legal(action, legal_actions) )
 		{
+			currentGame->invalidMove = true;
 			cout << "Invalid action" << endl;
 			print_legal_actions(legal_actions);
 			action = get_player_action();
 		}
 		process_action(currentGame, action);
 
-		print_board(currentGame);
-	}	
+		//print_board(currentGame);
+	}
+
+	currentGame->isWon = true;
+	print_board(currentGame);
+	cout << "Winner!" << endl;
+}
+
+GameState* init_gamestate()
+{
+	GameState *gameState = new GameState(BOARD_SIZE, true);
+	gameState->legal_actions = get_legal_actions(gameState);
+
+	return gameState;
+}
+
+//todo: gamestate must contain legal moves internally so we can return it.
+GameState* run_gamestate(GameState *currentGame, bool print_game, int move) //todo boardsize etc ...
+{
+	if(currentGame == NULL)
+		exit(EXIT_FAILURE); //just a reminder for myself
+
+	GameState *newGame;
+	newGame->copy(currentGame); //slow maybe? TODO!!
+
+	string* legal_actions = get_legal_actions(currentGame);
+	string action = Moves[move];
+
+	bool check_legal_move = is_action_legal(action, legal_actions);
+
+	if(check_legal_move)
+	{
+		process_action(currentGame, action);
+		string* legal_actions = get_legal_actions(currentGame);
+	}
+
+	currentGame->invalidMove = !check_legal_move;
+
+	return currentGame;
 }
 
 bool determine_2048(GameState *currentGame)
@@ -91,13 +153,6 @@ bool determine_2048(GameState *currentGame)
 	}
 
 	return false;
-}
-
-//todo: gamestate must contain legal moves internally so we can return it.
-//todo: get this working as a way for the ai to play the game i.e. a function which is the game and allows the ai to inject a move.
-GameState* run_game_as_simulation(GameState *currentGame, bool print_game)
-{
-	return currentGame;
 }
 
 void print_board(GameState *currentGame)
@@ -125,7 +180,8 @@ void print_horizontal_boarder(int boardSize)
 	}
 }
 
-void add_new_number(GameState *currentGame){
+void add_new_number(GameState *currentGame)
+{
 	 int rand_row = rand() % currentGame->boardSize;
 	 int rand_col = rand() % currentGame->boardSize;
 
@@ -138,14 +194,16 @@ void add_new_number(GameState *currentGame){
 	 currentGame->currentBoard[rand_row][rand_col] = 2;
 }
 
-string get_player_action(){
+string get_player_action()
+{
 	string str;
 	cout << "Input action: ";
 	cin >> str;
 	return str;
 }
 
-void process_action(GameState *currentGame, string action){
+void process_action(GameState *currentGame, string action)
+{
 	if (action == "left" || action == "l")
 	{
 		process_left(currentGame);
@@ -164,7 +222,10 @@ void process_action(GameState *currentGame, string action){
 	}
 }
 
-void process_left(GameState *currentGame){
+
+
+void process_left(GameState *currentGame)
+{
 	for (int i = 0; i < currentGame->boardSize; ++i)
 	{
 		bool modified[currentGame->boardSize];
@@ -203,7 +264,8 @@ void process_left(GameState *currentGame){
 	}
 }
 
-void process_right(GameState *currentGame){
+void process_right(GameState *currentGame)
+{
 	for (int i = 0; i < currentGame->boardSize; ++i)
 	{
 		bool modified[currentGame->boardSize];
@@ -241,7 +303,8 @@ void process_right(GameState *currentGame){
 	}
 }
 
-void process_up(GameState *currentGame){
+void process_up(GameState *currentGame)
+{
 	for (int j = 0; j < currentGame->boardSize; ++j)
 	{
 		bool modified[currentGame->boardSize];
@@ -279,7 +342,8 @@ void process_up(GameState *currentGame){
 	}
 }
 
-void process_down(GameState *currentGame){
+void process_down(GameState *currentGame)
+{
 	for (int j = 0; j < currentGame->boardSize; ++j)
 	{
 		bool modified[currentGame->boardSize];
@@ -317,7 +381,8 @@ void process_down(GameState *currentGame){
 	}
 }
 
-string* get_legal_actions(GameState *currentGame){
+string* get_legal_actions(GameState *currentGame)
+{
 	string all_actions[] = {"left", "right", "up", "down"};
 	string* legal_actions = new string[4];
 
@@ -342,7 +407,8 @@ string* get_legal_actions(GameState *currentGame){
 	return legal_actions;
 }
 
-void print_legal_actions(string* legal_actions){
+void print_legal_actions(string* legal_actions)
+{
 	cout << "Legal actions are: ";
 	for (int i = 0; i < 4; ++i)
 	{
@@ -354,7 +420,8 @@ void print_legal_actions(string* legal_actions){
 	cout << endl;
 }
 
-bool is_action_legal(string action, string* legal_actions){
+bool is_action_legal(string action, string* legal_actions)
+{
 	bool result = false;
 
 	for (int i = 0; i < 4; ++i)
