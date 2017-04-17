@@ -18,7 +18,7 @@ Gamemanager
 - add commandline arguments like board size
 - get this to handle any size board !!!!
 - ~~fix printout to only show one board per state ... its also a bit weird (might be ssh)~~
-- ~~setup random game state to make proper results ... ~~
+- ~~setup random game state to make proper results~~
 - use better prng maybe mt19937_64
 
 Serial Ai Tree Search
