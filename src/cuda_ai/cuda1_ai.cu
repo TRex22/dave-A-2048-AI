@@ -8,7 +8,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "../headers/2048.h"
+#include "headers/2048.h"
 
 // Includes CUDA
 #include <cuda_runtime.h>
