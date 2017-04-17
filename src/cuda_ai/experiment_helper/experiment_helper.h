@@ -1,5 +1,5 @@
 /*
-	Helper functions for all quetsions
+	Helper functions
 	Jason Chalom 711985
 	2017
 */

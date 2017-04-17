@@ -1,6 +1,9 @@
 /*
-	HPC Assignment 2 Naive Parallel Implementation
+	2048 Game for HPC Group Assignment
+	Liron Mizrahi 708810
 	Jason Chalom 711985
+	
+	Cuda Ai
 */
 
 #include <stdio.h>
