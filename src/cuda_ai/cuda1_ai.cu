@@ -8,7 +8,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "../headers/2048.h"
+#include "../gamemanager/headers/2048.h"
 #include "experiment_helper/experiment_helper.h"
 
 // Includes CUDA

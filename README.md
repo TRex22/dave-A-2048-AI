@@ -12,11 +12,11 @@ TODO
 ----
 
 Serial Ai Tree Search
-Hook into game and play it as demo
-Better Demo?
+- Hook into game and play it as demo
+- Better Demo?
 
 Cuda Ai Search
-Show increased size for less time?
+- Show increased size for less time?
 
 MPI Ai Search
-????? ;(
+- ????? ;(
