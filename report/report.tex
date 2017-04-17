@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{natbib}
+\usepackage{csvsimple}
+
+\graphicspath{ {images/} }
+ 
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{University of the Witwatersrand}
+\rfoot{School of Computer Science and Applied Mathematics}
+\pagenumbering{roman}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt} % to remove line on header
+\renewcommand{\footrulewidth}{0pt} % to remove line on footer
+
+\begin{document}
+\begin{page}
+\thispagestyle{empty}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.3mm}} % Defines a new command for the horizontal lines, change thickness here
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+                                  {-3.5ex \@plus -1ex \@minus -.2ex}%
+                                  {2.3ex \@plus.2ex}%
+                                  {\normalfont\large\bfseries}}
+\setlength{\parindent}{0pt}
+
+\center % Center everything on the page
+ 
+%----------------------------------------------------------------------------------------
+% HEADING SECTIONS
+%----------------------------------------------------------------------------------------
+
+\textsc{\LARGE University of the Witwatersrand}\\[1.5cm] % Name of your university/college
+\textsc{\Large School of Computer Science and Applied Mathematics}\\[0.5cm] % Major heading such as course name
+
+%----------------------------------------------------------------------------------------
+% TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\HRule \\[0.4cm]
+{ \huge \bfseries COMS4040: High Performance Computing and Scientific Data Management Group Assignment}\\[0.4cm] % Title of your document \\
+  \larger Parallel Tree Search In Playing The Game 2048
+  \large 21 April 2017
+\HRule \\[1.5cm]
+ 
+%----------------------------------------------------------------------------------------
+% AUTHOR SECTION
+%------------- ---------------------------------------------------------------------------
+\begin{minipage}{1\textwidth}
+  \Large \emph By Mizrahi, M. (708810)\\
+  \Large \emph By Chalom, J. (711985)\\
+\end{minipage}
+
+
+\vfill % Fill the rest of the page with whitespace
+
+\end{page}
+
+\begin{page}
+\lfoot{School of Computer Science and Applied Mathematics}
+\clearpage
+\setcounter{page}{1}
+\pagenumbering{arabic}
+
+\section{Problem Statement}
+
+\section{General Assumptions and Methodology}
+All drawn diagrams were drawn using \url{http://draw.io/} and charts were made with Microsoft Excel 2013.\\ All results were calculated as an average of running the same experiment three times and calculating the average result.\\
+
+\noindent The system used for empirical analysis, has an Intel i7 4770 Ivy-bridge CPU, with eight processing units, and 8GB of RAM. The GPU used was a GTX 750ti with 2048MB global memory and computer capability 5.0\\
+
+\noindent For every batch run of experiments (for all 5 implementations) a random square image and a random square kernel were produced. The dimensions of the image went up from 500 pixels to 3000 in increments of 500. The kernel dimensions were tested at 3x3, 5x5, and 7x7. Each specific setup was performed 3 times and the averages of the results were then taken.
+
+
+\section{Experimental setup}
+
+\section{Results and discussions}
+
+
+\section*{Acknowledgements}
+I made use of the CUDA 8.0 SDK and its associated images and sample programs. I also used many of the standard libraries which come with c++. I also used the lab examples from class as a way to figure out how to implement CUDA.
+
+\bibliographystyle{plain}
+\bibliography{biblio}{}
+\end{page}
+
+
+\end{document}
