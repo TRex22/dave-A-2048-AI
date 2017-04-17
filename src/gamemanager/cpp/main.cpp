@@ -4,7 +4,14 @@
 	Jason Chalom 711985
 
 	This is the main UI interface
+	This is the main game supervisor used in the ui and simulations for tree search 
+
+	boardSize = since the board is square this is just the width of the board
+	score = current player score, starts at 0
+	currentBoard = current squares starts at 0 and has all the numbers on the board
+
 */
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +22,6 @@
 #include <string>
 
 /*headers*/
-#include "../headers/main.h"
 #include "../headers/2048.h"
 
 /*Global Variables and Definitions*/
@@ -24,6 +30,8 @@
 using namespace std;
 
 int main(int argc, char *argv[]);
+bool determine_2048(GameState *currentGame);
+GameState* run_game_as_simulation(GameState *currentGame, bool print_game);
 void print_board(GameState *currentGame);
 void print_horizontal_boarder(int boardSize);
 void add_new_number(GameState *currentGame);
@@ -39,15 +47,17 @@ bool is_action_legal(string action, string* legal_actions);
 
 int main(int argc, char *argv[])
 {
-	/*TODO: JMC add commandline arguments like board size*/
+	/*TODO: JMC add commandline arguments like board size and inf play or 2048 play*/
 	GameState *currentGame = new GameState(BOARD_SIZE);
+
+	//todo: get this to handle any size board !!!!
 	currentGame->currentBoard[0][0] = 0;
 	currentGame->currentBoard[1][0] = 4;
 	currentGame->currentBoard[2][0] = 2;
 	currentGame->currentBoard[3][0] = 2;
-	// currentGame->currentBoard[3][1] = 4;
 
-	while(1){
+	while( !determine_2048(currentGame) )
+	{
 		add_new_number(currentGame);
 		print_board(currentGame);
 
@@ -55,7 +65,8 @@ int main(int argc, char *argv[])
 		print_legal_actions(legal_actions);
 
 		string action = get_player_action();
-		while( !is_action_legal(action, legal_actions) ){
+		while( !is_action_legal(action, legal_actions) )
+		{
 			cout << "Invalid action" << endl;
 			print_legal_actions(legal_actions);
 			action = get_player_action();
@@ -63,12 +74,30 @@ int main(int argc, char *argv[])
 		process_action(currentGame, action);
 
 		print_board(currentGame);
+	}	
+}
+
+bool determine_2048(GameState *currentGame)
+{
+	int boardSize = currentGame->boardSize;
+
+	for (int i=0; i < boardSize; i++)
+	{
+		for (int j=0; j < boardSize; j++)
+		{
+			if (currentGame->currentBoard[i][j] == 2048)
+				return true;
+		}
 	}
-	
 
+	return false;
+}
 
-
-	
+//todo: gamestate must contain legal moves internally so we can return it.
+//todo: get this working as a way for the ai to play the game i.e. a function which is the game and allows the ai to inject a move.
+GameState* run_game_as_simulation(GameState *currentGame, bool print_game)
+{
+	return currentGame;
 }
 
 void print_board(GameState *currentGame)
@@ -100,7 +129,8 @@ void add_new_number(GameState *currentGame){
 	 int rand_row = rand() % currentGame->boardSize;
 	 int rand_col = rand() % currentGame->boardSize;
 
-	 while(currentGame->currentBoard[rand_row][rand_col] != 0){
+	 while(currentGame->currentBoard[rand_row][rand_col] != 0)
+	 {
 	 	rand_row = rand() % currentGame->boardSize;
 	 	rand_col = rand() % currentGame->boardSize;
 	 }
@@ -148,7 +178,8 @@ void process_left(GameState *currentGame){
 			if (currentGame->currentBoard[i][j] != 0)
 			{
 				int t = j;
-				while(t > 0 && currentGame->currentBoard[i][t-1] == 0){
+				while(t > 0 && currentGame->currentBoard[i][t-1] == 0)
+				{
 					currentGame->currentBoard[i][t-1] = currentGame->currentBoard[i][t];
 					currentGame->currentBoard[i][t] = 0;
 					t--;
@@ -186,7 +217,8 @@ void process_right(GameState *currentGame){
 			if (currentGame->currentBoard[i][j] != 0)
 			{
 				int t = j;
-				while(t < currentGame->boardSize - 1 && currentGame->currentBoard[i][t+1] == 0){
+				while(t < currentGame->boardSize - 1 && currentGame->currentBoard[i][t+1] == 0)
+				{
 					currentGame->currentBoard[i][t+1] = currentGame->currentBoard[i][t];
 					currentGame->currentBoard[i][t] = 0;
 					t++;
@@ -223,7 +255,8 @@ void process_up(GameState *currentGame){
 			if (currentGame->currentBoard[i][j] != 0)
 			{
 				int t = i;
-				while(t > 0 && currentGame->currentBoard[t-1][j] == 0){
+				while(t > 0 && currentGame->currentBoard[t-1][j] == 0)
+				{
 					currentGame->currentBoard[t-1][j] = currentGame->currentBoard[t][j];
 					currentGame->currentBoard[t][j] = 0;
 					t--;
@@ -260,7 +293,8 @@ void process_down(GameState *currentGame){
 			if (currentGame->currentBoard[i][j] != 0)
 			{
 				int t = i;
-				while(t < currentGame->boardSize - 1 && currentGame->currentBoard[t+1][j] == 0){
+				while(t < currentGame->boardSize - 1 && currentGame->currentBoard[t+1][j] == 0)
+				{
 					currentGame->currentBoard[t+1][j] = currentGame->currentBoard[t][j];
 					currentGame->currentBoard[t][j] = 0;
 					t++;

@@ -1,4 +1,4 @@
-gamemanager:
+game:
 	g++ -fopenmp -std=c++11 gamemanager/cpp/main.cpp -o ../bin/2048.out
 
 cuda:
