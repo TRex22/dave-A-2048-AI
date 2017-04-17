@@ -8,7 +8,8 @@
 #include <string.h>
 #include <math.h>
 
-#include "headers/2048.h"
+#include "../headers/2048.h"
+#include "experiment_helper/experiment_helper.h"
 
 // Includes CUDA
 #include <cuda_runtime.h>
@@ -99,55 +100,52 @@ int main(int argc, char *argv[])
 		halt_execution("");
 	}
 
-	else
-	{
-		cout << "Starting to play 2048....." << endl;
+	cout << "Starting to play 2048....." << endl;
 
-		char ** hostTreeArray = initTreeArray(MAX_NODES, MAX_CHILDREN);
+	char ** hostTreeArray = initTreeArray(MAX_NODES, MAX_CHILDREN);
 
-		/*cuda vars*/
-		/*float* imageData = NULL;
-		float* kernelData = NULL;
-		float* resultArr = NULL;
+	/*cuda vars*/
+	/*float* imageData = NULL;
+	float* kernelData = NULL;
+	float* resultArr = NULL;
 
-		checkCudaErrors(cudaMalloc((void **) &imageData, image.size));
-		checkCudaErrors(cudaMalloc((void **) &kernelData, kernel.size));
-		checkCudaErrors(cudaMalloc((void **) &resultArr, result.size));
+	checkCudaErrors(cudaMalloc((void **) &imageData, image.size));
+	checkCudaErrors(cudaMalloc((void **) &kernelData, kernel.size));
+	checkCudaErrors(cudaMalloc((void **) &resultArr, result.size));
 
-		checkCudaErrors(cudaMemcpy(imageData, image.hData, image.size, cudaMemcpyHostToDevice));
-		checkCudaErrors(cudaMemcpy(kernelData, kernel.hData, kernel.size, cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(imageData, image.hData, image.size, cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(kernelData, kernel.hData, kernel.size, cudaMemcpyHostToDevice));
 
-		dim3 dimBlock( 32, 32, 1 );
-		dim3 dimGrid( image.height/32, image.width/32 );
+	dim3 dimBlock( 32, 32, 1 );
+	dim3 dimGrid( image.height/32, image.width/32 );
 
-		int borderPadding = get_boundary_size(kernel);
+	int borderPadding = get_boundary_size(kernel);
 
-	    StopWatchInterface *timer = NULL;
-	    sdkCreateTimer(&timer);
-	    sdkStartTimer(&timer);
+    StopWatchInterface *timer = NULL;
+    sdkCreateTimer(&timer);
+    sdkStartTimer(&timer);
 
-		naive_parallel_convolution_kernel<<<dimGrid, dimBlock>>>(imageData, image.width, image.height, 
-			kernelData, kernel.width, kernel.height, resultArr, borderPadding);
+	naive_parallel_convolution_kernel<<<dimGrid, dimBlock>>>(imageData, image.width, image.height, 
+		kernelData, kernel.width, kernel.height, resultArr, borderPadding);
 
-		sdkStopTimer(&timer);
-	    printf("\nProcessing time: %f (ms)\n", sdkGetTimerValue(&timer));
-	    printf("%.2f Mpixels/sec\n",
-	           (image.dim / (sdkGetTimerValue(&timer) / 1000.0f)) / 1e6);
-	    sdkDeleteTimer(&timer);
+	sdkStopTimer(&timer);
+    printf("\nProcessing time: %f (ms)\n", sdkGetTimerValue(&timer));
+    printf("%.2f Mpixels/sec\n",
+           (image.dim / (sdkGetTimerValue(&timer) / 1000.0f)) / 1e6);
+    sdkDeleteTimer(&timer);
 
-	    checkCudaErrors(cudaMemcpy(result.hData, resultArr, result.size, cudaMemcpyDeviceToHost));
-	    cudaFree(imageData);
-	    cudaFree(kernelData);
-	    cudaFree(resultArr);
+    checkCudaErrors(cudaMemcpy(result.hData, resultArr, result.size, cudaMemcpyDeviceToHost));
+    cudaFree(imageData);
+    cudaFree(kernelData);
+    cudaFree(resultArr);
 
-	    save_pgm_image(result, result_image_location);*/
+    save_pgm_image(result, result_image_location);*/
 
-		cudaDeviceReset();
-	    printf("%s completed, returned %s\n",
-	           heading,
-	           testResult ? "OK" : "ERROR!");
-	    exit(testResult ? EXIT_SUCCESS : EXIT_FAILURE);
-	}
+	cudaDeviceReset();
+    printf("%s completed, returned %s\n",
+           heading,
+           testResult ? "OK" : "ERROR!");
+    exit(testResult ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
 /*__global__ void naive_parallel_convolution_kernel(float* imageData, int imageWidth, int imageHeight, float* kernelData, int kernelWidth, int kernelHeight, float* resultArr, int borderPadding)
@@ -184,7 +182,7 @@ int main(int argc, char *argv[])
 //helper functions
 char** initTreeArray(int num_nodes, int num_children)
 {
-	char *treeArr = ( *) malloc(size)
+	char *treeArr = (char *) malloc(num_nodes);
 }
 
 void run_test(char *argv[])
