@@ -37,7 +37,7 @@
 using namespace std;
 
 int main(int argc, char *argv[]);
-int* get_legal_actions(GameState *currentGame);
+string* get_legal_actions(GameState *currentGame);
 int count_actions(int* actions);
 void print_legal_actions(string* legal_actions);
 bool is_action_legal(int action, int* legal_actions);
@@ -82,10 +82,10 @@ int main(int argc, char *argv[])
 	cout << "Winner!" << endl;
 }
 
-int* get_legal_actions(GameState *currentGame)
+string* get_legal_actions(GameState *currentGame)
 {
-	int all_actions[] = {0, 1, 2, 3};
-	int* legal_actions[4] = { NULL };
+	string all_actions[] = {"left", "right", "up", "down"};
+	string* legal_actions = new string[4];
 
 	GameState *state_left;
 	GameState *state_right;
