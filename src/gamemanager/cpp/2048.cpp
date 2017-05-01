@@ -46,6 +46,7 @@ int determine_highest_value(GameState *currentGame);
 void print_board(GameState *currentGame);
 void print_horizontal_boarder(int boardSize);
 void add_new_number(GameState *currentGame);
+bool checkBoardEmptySlot(GameState *currentGame);
 // string get_player_action();
 void process_action(GameState *currentGame, int action);
 void process_left(GameState *currentGame);
@@ -153,16 +154,36 @@ void print_horizontal_boarder(int boardSize)
 
 void add_new_number(GameState *currentGame)
 {
-	 int rand_row = rand() % currentGame->boardSize;
-	 int rand_col = rand() % currentGame->boardSize;
+	srand(time(NULL));
+	int rand_row = rand() % currentGame->boardSize;
+	int rand_col = rand() % currentGame->boardSize;
 
-	 while(currentGame->currentBoard[rand_row][rand_col] != 0)
-	 {
-	 	rand_row = rand() % currentGame->boardSize;
-	 	rand_col = rand() % currentGame->boardSize;
-	 }
+	if(checkBoardEmptySlot(currentGame))
+	{
+		while(currentGame->currentBoard[rand_row][rand_col] != 0)
+		{
+			rand_row = rand() % currentGame->boardSize;
+			rand_col = rand() % currentGame->boardSize;
+		}
 
-	 currentGame->currentBoard[rand_row][rand_col] = 2;
+		currentGame->currentBoard[rand_row][rand_col] = 2;
+	}
+}
+
+bool checkBoardEmptySlot(GameState *currentGame)
+{
+	int boardSize = currentGame->boardSize;
+
+	for (int i=0; i < boardSize; i++)
+	{
+		for (int j=0; j < boardSize; j++)
+		{
+			if (currentGame->currentBoard[i][j] == 0)
+				return true;
+		}
+	}
+
+	return false;
 }
 
 string get_player_action()
