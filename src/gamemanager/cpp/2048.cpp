@@ -52,15 +52,6 @@ void process_right(GameState *currentGame);
 void process_up(GameState *currentGame);
 void process_down(GameState *currentGame);
 
-//all moves as index 0 -> 3 for the ai
-const string Moves[]
-{
-    "left", //0
-    "right", //1
-    "up", //2
-    "down" //3
-};
-
 bool determine_2048(GameState *currentGame)
 {
 	int boardSize = currentGame->boardSize;

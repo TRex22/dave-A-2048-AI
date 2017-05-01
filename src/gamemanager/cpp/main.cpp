@@ -42,15 +42,6 @@ int count_actions(int* actions);
 void print_legal_actions(string* legal_actions);
 bool is_action_legal(string action, string* legal_actions);
 
-//all moves as index 0 -> 3 for the ai
-const string Moves[]
-{
-    "left", //0
-    "right", //1
-    "up", //2
-    "down" //3
-};
-
 int main(int argc, char *argv[])
 {
 	//setup

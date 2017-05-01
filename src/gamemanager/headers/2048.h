@@ -16,6 +16,15 @@
 #include <string.h>
 #include <string>
 
+//all moves as index 0 -> 3 for the ai
+const string Moves[]
+{
+    "left", //0
+    "right", //1
+    "up", //2
+    "down" //3
+};
+
 class GameState 
 {
 	private:
