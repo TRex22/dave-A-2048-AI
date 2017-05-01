@@ -36,6 +36,15 @@
 
 using namespace std;
 
+//all moves as index 0 -> 3 for the ai
+const string Moves[]
+{
+    "left", //0
+    "right", //1
+    "up", //2
+    "down" //3
+};
+
 int main(int argc, char *argv[]);
 string get_player_action();
 int convert_action(string action);
