@@ -15,7 +15,7 @@ class Tree
 		
 
 	public:
-		int BOARD_SIZE;
+		int BOARD_SIZE = 0;
 
 		Node* root = NULL;
 		int num_nodes = 0;

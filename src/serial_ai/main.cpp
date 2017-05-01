@@ -32,10 +32,11 @@ int board_size = 4;
 
 int main(int argc, char *argv[]);
 bool checkAtRoot(Node* node);
-// bool canContinue(Node* node);
+bool canContinue(Node* node);
 bool isLeaf(Node* node);
 void buildTree(Tree* tree);
-void findChildren(Node* node);
+void findChildren(Tree* tree, Node* node);
+Node* findCurrentNodeFromChildren(Node* current_node);
 
 int main(int argc, char *argv[])
 {
@@ -57,16 +58,16 @@ bool checkAtRoot(Node* node)
 	return false;
 }
 
-// bool canContinue(Node* node)
-// {
-// 	if(!checkAtRoot(node))
-// 		return true;
+bool canContinue(Node* node)
+{
+	if(!checkAtRoot(node))
+		return true;
 
-// 	if(node->children[0] != NULL && node->children[1] != NULL && node->children[2] != NULL && node->children[3] != NULL)
-// 		return false;
+	if(node->test == false)
+		return true;
 
-// 	return true;
-// }
+	return false;
+}
 
 bool isLeaf(Node* node)
 {
@@ -91,19 +92,56 @@ bool isLeaf(Node* node)
 	return true;
 }
 
+Node* findCurrentNodeFromChildren(Node* current_node)
+{
+	Node* new_current_node;
+
+	if(current_node->children[0]->test == false)
+	{
+		new_current_node = (current_node->children[0]);
+	}
+	else if(current_node->children[1]->test == false)
+	{
+		new_current_node = current_node->children[1];
+	}
+	else if(current_node->children[2]->test == false)
+	{
+		new_current_node = current_node->children[2];
+	}
+	else if(current_node->children[3]->test == false)
+	{
+		new_current_node = current_node->children[3];
+	}
+	else
+	{
+		new_current_node = NULL;
+	}
+	
+	return new_current_node;
+}
+
 void buildTree(Tree* tree)
 {
 	Node* root = tree->root;
 	Node* current_node = root;
 
-
-	if (!isLeaf(current_node))
+	while(canContinue(current_node))
 	{
-		/* code */
+		findChildren(tree, current_node);
+		
+		Node* new_current_node = findCurrentNodeFromChildren(current_node);
+
+		while(new_current_node == NULL&& !checkAtRoot(new_current_node) )
+		{
+			new_current_node = current_node;
+			new_current_node = findCurrentNodeFromChildren(new_current_node->parent);
+		}
+
+		current_node = new_current_node;
 	}
 }
 
-void findChildren(Node* node)
+void findChildren(Tree* tree, Node* node)
 {
 	GameState *state_left;
 	GameState *state_right;
@@ -122,9 +160,12 @@ void findChildren(Node* node)
 		if(tree->max_depth < currentDepth)
 			tree->max_depth = currentDepth;
 		
-		Node* node = new Node(node, states[i], currentDepth);
-		node->children[i] = *node;
+		// Node* node = new Node(node, states[i], currentDepth);
+		node->children[i] = new Node(node, states[i], currentDepth);
 
 		tree->num_nodes++;
 	}
+
+	node->test = true;
+	// printf("%d, %d\n", tree->num_nodes, tree->max_depth);
 }

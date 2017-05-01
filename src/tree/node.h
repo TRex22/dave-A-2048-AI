@@ -8,48 +8,45 @@
 class Node 
 {
 	private:
-		
+		Node *node_left;
+		Node *node_right;
+		Node *node_up;
+		Node *node_down;
 
 	public:
 		GameState* current_state = NULL;
 		Node* parent = NULL;
 
-		Node* children = new Node[4];
+		Node* children[4] = {node_left, node_right, node_up, node_down}; // new Node[4];
 
-		// Node* left = NULL;
-		// Node* right = NULL;
-		// Node* up = NULL;
-		// Node* down = NULL;
 		int depth = 0;
+
+		bool test = false;
 
 		Node();
 		Node(Node*, GameState*, int);
-		~Node();
-		void DeleteLeft();
-		void DeleteRight();
-		void DeleteUp();
-		void DeleteDown();
+		// ~Node();
 		// void Node::AddNode(Node* current_node, GameState* state, int direction);
 };
 
 Node::Node()
 {
-	
+
 }
 
-Node::Node(Node* parent, GameState* state, int _depth)
+Node::Node(Node* _parent, GameState* state, int _depth)
 {
-	this->parent = parent;
-	this->current_state = state;
+	parent = _parent;
+	current_state = state;
 	depth = _depth;
 }
 
-Node::~Node()
-{
-	delete[] this->children;
-	free(this->current_state);
-	this->parent = NULL;
-}
+// Node::~Node()
+// {
+// 	delete[] this->children;
+// 	free(this->current_state);
+// 	this->parent = NULL;
+// }
 
 /*void Node::AddNode(Node* current_node, GameState* state, int direction)
 {
