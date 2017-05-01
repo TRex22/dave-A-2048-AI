@@ -36,7 +36,7 @@ bool canContinue(Node* node);
 bool isLeaf(Node* node);
 void buildTree(Tree* tree);
 void findChildren(Tree* tree, Node& node);
-Node*& findCurrentNodeFromChildren(Node& current_node);
+bool findCurrentNodeFromChildren(Tree* tree, Node& node);
 
 int main(int argc, char *argv[])
 {
@@ -97,30 +97,38 @@ bool isLeaf(Node* node)
 }
 
 //todo fix this shit
-Node*& findCurrentNodeFromChildren(Node* current_node)
+bool findCurrentNodeFromChildren(Tree* tree, Node& node)
 {
-	// printf("%d, %d\n", current_node->children[0]->test, current_node->children[1]->test);
-	if(current_node->children[0]->test == false)
+	// printf("%d, %d\n", node->children[0]->test, node->children[1]->test);
+	if(node.children[0]->test == false)
 	{
-		current_node = (current_node->children[0]);
+		// findChildren(tree, *node.children[0]);
+		node = *(node.children[0]);
+		return true;
 	}
-	else if(current_node->children[1]->test == false)
+	else if(node.children[1]->test == false)
 	{
-		current_node = current_node->children[1];
+		// findChildren(tree, *node.children[1]);
+		node = *(node.children[1]);
+		return true;
 	}
-	else if(current_node->children[2]->test == false)
+	else if(node.children[2]->test == false)
 	{
-		current_node = current_node->children[2];
+		// findChildren(tree, *node.children[2]);
+		node = *(node.children[2]);
+		return true;
 	}
-	else if(current_node->children[3]->test == false)
+	else if(node.children[3]->test == false)
 	{
-		current_node = current_node->children[3];
+		// findChildren(tree, *node.children[3]);
+		node = *(node.children[3]);
+		return true;
 	}
 
-	current_node = NULL;
-
-	return current_node;
+	return false;
 }
+
+/*NOTE: Should only create a new children if not a leaf node ... meaning need to check if leaf, not root, etc*/
 
 void buildTree(Tree* tree)
 {
@@ -128,19 +136,23 @@ void buildTree(Tree* tree)
 	Node* current_node = root;
 	Node* parent_node = current_node->parent;
 	Node* previous_node = current_node;
+
 	while(canContinue(current_node))
 	{
 		findChildren(tree, *current_node);
 
 		previous_node = current_node;
 		parent_node = current_node->parent;
-		findCurrentNodeFromChildren(*current_node);
+		bool check = findCurrentNodeFromChildren(tree, *current_node);
 
-		while(&current_node == &previous_node && !checkAtRoot(current_node))
+		if(compare_game_states(current_node->current_state, previous_node->current_state))
 		{
-			current_node = parent_node;
-			findCurrentNodeFromChildren(*current_node);
-			parent_node = parent_node->parent;
+			while(!check && !checkAtRoot(current_node))
+			{
+				current_node = parent_node;
+				check = findCurrentNodeFromChildren(tree, *current_node);
+				parent_node = parent_node->parent;
+			}
 		}
 	}
 }

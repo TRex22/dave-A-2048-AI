@@ -51,6 +51,7 @@ void process_left(GameState *currentGame);
 void process_right(GameState *currentGame);
 void process_up(GameState *currentGame);
 void process_down(GameState *currentGame);
+bool compare_game_states(GameState *game1, GameState *game2);
 
 bool determine_2048(GameState *currentGame)
 {
@@ -321,4 +322,20 @@ void process_down(GameState *currentGame)
 			}
 		}
 	}
+}
+
+bool compare_game_states(GameState *game1, GameState *game2)
+{
+	int boardSize = game1->boardSize;
+
+	for (int i=0; i < boardSize; i++)
+	{
+		for (int j=0; j < boardSize; j++)
+		{
+			if (game1->currentBoard[i][j] != game2->currentBoard[i][j])
+				return false;
+		}
+	}
+
+	return true;
 }
