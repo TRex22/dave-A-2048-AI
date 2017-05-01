@@ -36,7 +36,7 @@ bool canContinue(Node* node);
 bool isLeaf(Node* node);
 void buildTree(Tree* tree);
 void findChildren(Tree* tree, Node& node);
-void findCurrentNodeFromChildren(Node& current_node);
+Node*& findCurrentNodeFromChildren(Node& current_node);
 
 int main(int argc, char *argv[])
 {
@@ -97,27 +97,29 @@ bool isLeaf(Node* node)
 }
 
 //todo fix this shit
-void findCurrentNodeFromChildren(Node& current_node)
+Node*& findCurrentNodeFromChildren(Node* current_node)
 {
 	// printf("%d, %d\n", current_node->children[0]->test, current_node->children[1]->test);
-	if(current_node.children[0]->test == false)
+	if(current_node->children[0]->test == false)
 	{
-		current_node = *(current_node.children[0]);
+		current_node = (current_node.children[0]);
 	}
-	else if(current_node.children[1]->test == false)
+	else if(current_node->children[1]->test == false)
 	{
-		current_node = *current_node.children[1];
+		current_node = current_node.children[1];
 	}
-	else if(current_node.children[2]->test == false)
+	else if(current_node->children[2]->test == false)
 	{
-		current_node = *current_node.children[2];
+		current_node = current_node.children[2];
 	}
-	else if(current_node.children[3]->test == false)
+	else if(current_node->children[3]->test == false)
 	{
-		current_node = *current_node.children[3];
+		current_node = current_node.children[3];
 	}
 
-	// current_node = NULL;
+	current_node = NULL;
+
+	return current_node;
 }
 
 void buildTree(Tree* tree)
