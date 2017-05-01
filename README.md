@@ -11,14 +11,21 @@ It uses tree search algorithms to play the single player game 2048.
 TODO
 ----
 
+save all moves that have been calculated to viz later
+save initial game state
+open initial game state to use
+Visulizer
+Compare two moves files so we can check two ais
+Maybe make sonething that can run through a set of moves and check it makes sense? - probably not just watch the vid
+
 Gamemanager
 - ~~add stopping condition~~
 - ~~gamestate must contain legal moves internally so we can return it.~~
 - ~~get this working as a way for the ai to play the game i.e. a function which is the game and allows the ai to inject a move.~~
-- add commandline arguments like board size
-- get this to handle any size board !!!!
 - ~~fix printout to only show one board per state ... its also a bit weird (might be ssh)~~
 - ~~setup random game state to make proper results~~
+- add commandline arguments like board size
+- get this to handle any size board !!!!
 - use better prng maybe mt19937_64
 
 Serial Ai Tree Search
