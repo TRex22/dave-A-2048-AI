@@ -40,7 +40,7 @@ int main(int argc, char *argv[]);
 string* get_legal_actions(GameState *currentGame);
 int count_actions(int* actions);
 void print_legal_actions(string* legal_actions);
-bool is_action_legal(int action, int* legal_actions);
+bool is_action_legal(string action, string* legal_actions);
 
 int main(int argc, char *argv[])
 {
@@ -140,13 +140,13 @@ void print_legal_actions(string* legal_actions)
 	cout << endl;
 }
 
-bool is_action_legal(int action, int* legal_actions)
+bool is_action_legal(string action, string* legal_actions)
 {
 	bool result = false;
 
 	for (int i = 0; i < 4; ++i)
 	{
-		if (legal_actions[i] == action)
+		if (legal_actions[i].compare(action) == 0)
 		{
 			result = true;
 			cout << action << " is " << legal_actions[i] << endl; 
