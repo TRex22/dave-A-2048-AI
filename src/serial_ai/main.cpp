@@ -34,7 +34,8 @@ int main(int argc, char *argv[]);
 bool checkAtRoot(Node* node);
 // bool canContinue(Node* node);
 bool isLeaf(Node* node);
-void buildTree(Tree* tree, Node* node);
+void buildTree(Tree* tree);
+void findChildren(Node* node);
 
 int main(int argc, char *argv[])
 {
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
 
 	Tree* tree = new Tree(initial_state);
 
-	buildTree(tree, tree->root);
+	buildTree(tree);
 
 	printf("%d, %d\n", tree->num_nodes, tree->max_depth);
 
@@ -90,37 +91,40 @@ bool isLeaf(Node* node)
 	return true;
 }
 
-void buildTree(Tree* tree, Node* node)
+void buildTree(Tree* tree)
 {
-	if(!isLeaf(node))
+	Node* root = tree->root;
+	Node* current_node = root;
+
+
+	if (!isLeaf(current_node))
 	{
-		GameState *state_left;
-		GameState *state_right;
-		GameState *state_up;
-		GameState *state_down;
-
-		GameState* states[] = {state_left, state_right, state_up, state_down};
-
-		for (int i = 0; i < 4; ++i)
-		{
-			states[i] = new GameState(board_size);
-			states[i]->copy(node->current_state);
-			process_action(states[i], i);
-
-			int currentDepth = node->depth + 1;
-			if(tree->max_depth < currentDepth)
-				tree->max_depth = currentDepth;
-			
-			Node* node = new Node(node, states[i], currentDepth);
-			node->children[i] = *node;
-
-			tree->num_nodes++;
-		}
+		/* code */
 	}
+}
 
-	buildTree(tree, &node->children[0]);
-	buildTree(tree, &node->children[1]);
-	buildTree(tree, &node->children[2]);
-	buildTree(tree, &node->children[3]);
+void findChildren(Node* node)
+{
+	GameState *state_left;
+	GameState *state_right;
+	GameState *state_up;
+	GameState *state_down;
 
+	GameState* states[] = {state_left, state_right, state_up, state_down};
+
+	for (int i = 0; i < 4; ++i)
+	{
+		states[i] = new GameState(board_size);
+		states[i]->copy(node->current_state);
+		process_action(states[i], i);
+
+		int currentDepth = node->depth + 1;
+		if(tree->max_depth < currentDepth)
+			tree->max_depth = currentDepth;
+		
+		Node* node = new Node(node, states[i], currentDepth);
+		node->children[i] = *node;
+
+		tree->num_nodes++;
+	}
 }
