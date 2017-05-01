@@ -11,7 +11,7 @@ It uses tree search algorithms to play the single player game 2048.
 TODO
 ----
 
-- cleanup comments
+- ~~cleanup comments~~
 - save all moves that have been calculated to viz later
 - save initial game state
 - open initial game state to use

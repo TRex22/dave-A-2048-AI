@@ -58,8 +58,8 @@ GameState::GameState(int board_size, bool rnd_state)
 		if(rnd_state)
 		{
 			srand(time(NULL));
-		 	int rand_row = rand() % this->boardSize;
-	 		int rand_col = rand() % this->boardSize;
+		 	int rand_row = rand() % this->boardSize-1;
+	 		int rand_col = rand() % this->boardSize-1;
 
 	 		currentBoard[rand_row][rand_col] = 2;
 		}
