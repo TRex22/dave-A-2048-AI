@@ -144,14 +144,6 @@ bool checkBoardEmptySlot(GameState *currentGame)
 	return false;
 }
 
-string get_player_action()
-{
-	string str;
-	cout << "Input action: ";
-	cin >> str;
-	return str;
-}
-
 void process_action(GameState *currentGame, int action)
 {
 	if (action == 0)

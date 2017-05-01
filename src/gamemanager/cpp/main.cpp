@@ -37,6 +37,8 @@
 using namespace std;
 
 int main(int argc, char *argv[]);
+string get_player_action();
+int convert_action(string action);
 string* get_legal_actions(GameState *currentGame);
 int count_actions(int* actions);
 void print_legal_actions(string* legal_actions);
@@ -73,7 +75,7 @@ int main(int argc, char *argv[])
 			action = get_player_action();
 		}
 
-		process_action(currentGame, action);
+		process_action(currentGame, convert_action(action));
 
 		//print_board(currentGame);
 	}
@@ -81,6 +83,34 @@ int main(int argc, char *argv[])
 	currentGame->isWon = true;
 	print_board(currentGame);
 	cout << "Winner!" << endl;
+}
+
+string get_player_action()
+{
+	string str;
+	cout << "Input action: ";
+	cin >> str;
+	return str;
+}
+
+int convert_action(string action)
+{
+	if (action == "left" || action == "l" || action == "0")
+	{
+		return 0;
+	}
+	else if (action == "right" || action == "r" || action == "1")
+	{
+		return 1;
+	}
+	else if (action == "up" || action == "u" || action == "2")
+	{
+		return 2;
+	}
+	else if (action == "down" || action == "d" || action == "3")
+	{
+		return 3;
+	}
 }
 
 string* get_legal_actions(GameState *currentGame)
