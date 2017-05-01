@@ -81,7 +81,8 @@ int main(int argc, char *argv[])
 			print_legal_actions(legal_actions);
 			action = get_player_action();
 		}
-		process_action(currentGame, action);
+
+		process_action(currentGame, Moves[action]);
 
 		//print_board(currentGame);
 	}
@@ -107,7 +108,7 @@ string* get_legal_actions(GameState *currentGame)
 	{
 		states[i] = new GameState(BOARD_SIZE);
 		states[i]->copy(currentGame);
-		process_action(states[i], all_actions[i]);
+		process_action(states[i], i);
 		if ( !currentGame->equals(states[i]) )
 		{
 			legal_actions[i] = all_actions[i];
