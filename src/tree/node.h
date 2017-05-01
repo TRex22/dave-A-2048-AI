@@ -14,19 +14,28 @@ class Node
 		GameState* current_state = NULL;
 		Node* parent = NULL;
 
-		Node* left = NULL;
-		Node* right = NULL;
-		Node* up = NULL;
-		Node* down = NULL;
+		Node* children = new Node[4];
+
+		// Node* left = NULL;
+		// Node* right = NULL;
+		// Node* up = NULL;
+		// Node* down = NULL;
 		int depth = 0;
 
+		Node();
 		Node(Node*, GameState*, int);
 		~Node();
 		void DeleteLeft();
 		void DeleteRight();
 		void DeleteUp();
 		void DeleteDown();
+		// void Node::AddNode(Node* current_node, GameState* state, int direction);
 };
+
+Node::Node()
+{
+	
+}
 
 Node::Node(Node* parent, GameState* state, int _depth)
 {
@@ -37,30 +46,19 @@ Node::Node(Node* parent, GameState* state, int _depth)
 
 Node::~Node()
 {
-	free(this->left);
-	free(this->right);
-	free(this->up);
-	free(this->down);
+	delete[] this->children;
 	free(this->current_state);
 	this->parent = NULL;
 }
 
-void Node::DeleteLeft()
+/*void Node::AddNode(Node* current_node, GameState* state, int direction)
 {
-	free(this->left);
-}
+	int currentDepth = current_node -> depth + 1;
+	if(this->max_depth < currentDepth)
+		this->max_depth = currentDepth;
 
-void Node::DeleteRight()
-{
-	free(this->right);	
-}
+	Node* node = new Node(current_node, state, currentDepth);
+	current_node->children[direction] = *node;
 
-void Node::DeleteUp()
-{
-	free(this->up);
-}
-
-void Node::DeleteDown()
-{
-	free(this->down);
-}
+	num_nodes++;
+}*/

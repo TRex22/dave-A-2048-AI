@@ -23,7 +23,7 @@ class Tree
 		/*int min_depth = 0;*/
 
 		Tree(GameState* state);
-		void AddNode(Node* current_node, GameState* state, int direction);
+		// void AddNode(Node* current_node, GameState* state, int direction);
 		
 };
 
@@ -34,34 +34,15 @@ Tree::Tree(GameState* state)
 	this->root = head;
 }
 
-void Tree::AddNode(Node* current_node, GameState* state, int direction)
-{
-	int currentDepth = current_node -> depth + 1;
-	if(this->max_depth < currentDepth)
-		this->max_depth = currentDepth;
+// void Tree::AddNode(Node* current_node, GameState* state, int direction)
+// {
+// 	int currentDepth = current_node -> depth + 1;
+// 	if(this->max_depth < currentDepth)
+// 		this->max_depth = currentDepth;
 
-	Node* node = new Node(current_node, state, currentDepth);
-	if (direction == 0)
-	{
-		current_node->left = node;
-	}
-	else if (direction == 1)
-	{
-		current_node->right = node;
-	}
-	else if (direction == 2)
-	{
-		current_node->up = node;
-	}
-	else if (direction == 3)
-	{
-		current_node->down = node;
-	}
-	else
-	{
-		exit(1);
-	}
+// 	Node* node = new Node(current_node, state, currentDepth);
+// 	current_node->children[direction] = *node;
 
-	num_nodes++;
-}
+// 	num_nodes++;
+// }
 

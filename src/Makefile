@@ -1,3 +1,6 @@
+serial:
+	g++ -fopenmp -std=c++11 serial_ai/main.cpp -o ../bin/serial_ai.out
+
 game:
 	g++ -fopenmp -std=c++11 gamemanager/cpp/main.cpp -o ../bin/2048.out
 
@@ -7,3 +10,4 @@ cuda:
 clean:
 	rm ../bin/2048.out
 	rm ../bin/cuda1_ai.out
+	rm ../bin/serial_ai.out

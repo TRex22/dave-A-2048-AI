@@ -28,7 +28,6 @@ class GameState
 		int stepCount = 0;
 		bool isWon = false;
 		bool invalidMove = false;
-		std::string* legal_actions = NULL;
 
 		GameState(int);
 		GameState(int, bool);
@@ -58,7 +57,7 @@ GameState::GameState(int board_size, bool rnd_state)
 
 		if(rnd_state)
 		{
-			srand(time(NULL));
+			// srand(time(NULL));
 		 	int rand_row = rand() % this->boardSize;
 	 		int rand_col = rand() % this->boardSize;
 

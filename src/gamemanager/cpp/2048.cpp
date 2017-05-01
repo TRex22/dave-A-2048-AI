@@ -40,21 +40,21 @@ using namespace std;
 // not using define in order to overwrite with cmdline args at a later point
 int BOARD_SIZE = 4;
 
-GameState* init_gamestate();
-GameState* run_gamestate(GameState currentGame, bool print_game, int move);
+// GameState* run_gamestate(GameState currentGame, bool print_game, int move);
 bool determine_2048(GameState *currentGame);
 void print_board(GameState *currentGame);
 void print_horizontal_boarder(int boardSize);
 void add_new_number(GameState *currentGame);
-string get_player_action();
-void process_action(GameState *currentGame, string action);
+// string get_player_action();
+void process_action(GameState *currentGame, int action);
 void process_left(GameState *currentGame);
 void process_right(GameState *currentGame);
 void process_up(GameState *currentGame);
 void process_down(GameState *currentGame);
-string* get_legal_actions(GameState *currentGame);
-void print_legal_actions(string* legal_actions);
-bool is_action_legal(string action, string* legal_actions);
+// int* get_legal_actions(GameState *currentGame);
+// int count_actions(int* actions);
+// void print_legal_actions(string* legal_actions);
+// bool is_action_legal(int action, int* legal_actions);
 
 //all moves as index 0 -> 3 for the ai
 const string Moves[]
@@ -65,38 +65,32 @@ const string Moves[]
     "down" //3
 };
 
-GameState* init_gamestate()
-{
-	GameState *gameState = new GameState(BOARD_SIZE, true);
-	gameState->legal_actions = get_legal_actions(gameState);
 
-	return gameState;
-}
 
 //todo: gamestate must contain legal moves internally so we can return it.
-GameState* run_gamestate(GameState *currentGame, bool print_game, int move) //todo boardsize etc ...
-{
-	if(currentGame == NULL)
-		exit(EXIT_FAILURE); //just a reminder for myself
+// GameState* run_gamestate(GameState *currentGame, bool print_game, int move) //todo boardsize etc ...
+// {
+// 	if(currentGame == NULL)
+// 		exit(EXIT_FAILURE); //just a reminder for myself
 
-	GameState *newGame;
-	newGame->copy(currentGame); //slow maybe? TODO!!
+// 	GameState *newGame;
+// 	newGame->copy(currentGame); //slow maybe? TODO!!
 
-	string* legal_actions = get_legal_actions(currentGame);
-	string action = Moves[move];
+// 	string* legal_actions = get_legal_actions(currentGame);
+// 	string action = Moves[move];
 
-	bool check_legal_move = is_action_legal(action, legal_actions);
+// 	bool check_legal_move = is_action_legal(action, legal_actions);
 
-	if(check_legal_move)
-	{
-		process_action(currentGame, action);
-		string* legal_actions = get_legal_actions(currentGame);
-	}
+// 	if(check_legal_move)
+// 	{
+// 		process_action(currentGame, action);
+// 		string* legal_actions = get_legal_actions(currentGame);
+// 	}
 
-	currentGame->invalidMove = !check_legal_move;
+// 	currentGame->invalidMove = !check_legal_move;
 
-	return currentGame;
-}
+// 	return currentGame;
+// }
 
 bool determine_2048(GameState *currentGame)
 {
@@ -161,21 +155,21 @@ string get_player_action()
 	return str;
 }
 
-void process_action(GameState *currentGame, string action)
+void process_action(GameState *currentGame, int action)
 {
-	if (action == "left" || action == "l")
+	if (action == 0)
 	{
 		process_left(currentGame);
 	}
-	else if (action == "right" || action == "r")
+	else if (action == 1)
 	{
 		process_right(currentGame);
 	}
-	else if (action == "up" || action == "u")
+	else if (action == 2)
 	{
 		process_up(currentGame);
 	}
-	else if (action == "down" || action == "d")
+	else if (action == 3)
 	{
 		process_down(currentGame);
 	}
@@ -340,57 +334,76 @@ void process_down(GameState *currentGame)
 	}
 }
 
-string* get_legal_actions(GameState *currentGame)
-{
-	string all_actions[] = {"left", "right", "up", "down"};
-	string* legal_actions = new string[4];
+// int* get_legal_actions(GameState *currentGame)
+// {
+// 	int all_actions[] = {0, 1, 2, 3};
+// 	int* legal_actions[4] = { NULL };
 
-	GameState *state_left;
-	GameState *state_right;
-	GameState *state_up;
-	GameState *state_down;
+// 	GameState *state_left;
+// 	GameState *state_right;
+// 	GameState *state_up;
+// 	GameState *state_down;
 
-	GameState* states[] = {state_left, state_right, state_up, state_down};
+// 	GameState* states[] = {state_left, state_right, state_up, state_down};
 
-	for (int i = 0; i < 4; ++i)
-	{
-		states[i] = new GameState(BOARD_SIZE);
-		states[i]->copy(currentGame);
-		process_action(states[i], all_actions[i]);
-		if ( !currentGame->equals(states[i]) )
-		{
-			legal_actions[i] = all_actions[i];
-		}
-	}
+// 	for (int i = 0; i < 4; ++i)
+// 	{
+// 		states[i] = new GameState(BOARD_SIZE);
+// 		states[i]->copy(currentGame);
+// 		process_action(states[i], all_actions[i]);
+// 		if ( !currentGame->equals(states[i]) )
+// 		{
+// 			legal_actions[i] = all_actions[i];
+// 		}
+// 	}
 
-	return legal_actions;
-}
+// 	return legal_actions;
+// }
 
-void print_legal_actions(string* legal_actions)
-{
-	cout << "Legal actions are: ";
-	for (int i = 0; i < 4; ++i)
-	{
-		if (!legal_actions[i].empty())
-		{
-			cout << legal_actions[i] << " ";
-		}
-	}
-	cout << endl;
-}
+// int count_actions(int* actions)
+// {
+// 	if (actions[0] == NULL && actions[1] == NULL && actions[2] == NULL && actions[3] == NULL)
+// 	{
+// 		return 0;
+// 	}
 
-bool is_action_legal(string action, string* legal_actions)
-{
-	bool result = false;
+// 	int count = 0;
+// 	for (int i = 0; i < 4; ++i)
+// 	{
+// 		if ( actions[i] != NULL )
+// 		{
+// 			count++;
+// 		}
+// 	}
 
-	for (int i = 0; i < 4; ++i)
-	{
-		if (legal_actions[i].compare(action) == 0)
-		{
-			result = true;
-			cout << action << " is " << legal_actions[i] << endl; 
-		}
-	}
+// 	return count;
+// }
 
-	return result;
-}
+// void print_legal_actions(string* legal_actions)
+// {
+// 	cout << "Legal actions are: ";
+// 	for (int i = 0; i < 4; ++i)
+// 	{
+// 		if (!legal_actions[i].empty())
+// 		{
+// 			cout << legal_actions[i] << " ";
+// 		}
+// 	}
+// 	cout << endl;
+// }
+
+// bool is_action_legal(int action, int* legal_actions)
+// {
+// 	bool result = false;
+
+// 	for (int i = 0; i < 4; ++i)
+// 	{
+// 		if (legal_actions[i] == action)
+// 		{
+// 			result = true;
+// 			cout << action << " is " << legal_actions[i] << endl; 
+// 		}
+// 	}
+
+// 	return result;
+// }
