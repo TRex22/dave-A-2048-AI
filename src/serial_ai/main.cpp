@@ -102,19 +102,19 @@ Node*& findCurrentNodeFromChildren(Node* current_node)
 	// printf("%d, %d\n", current_node->children[0]->test, current_node->children[1]->test);
 	if(current_node->children[0]->test == false)
 	{
-		current_node = (current_node.children[0]);
+		current_node = (current_node->children[0]);
 	}
 	else if(current_node->children[1]->test == false)
 	{
-		current_node = current_node.children[1];
+		current_node = current_node->children[1];
 	}
 	else if(current_node->children[2]->test == false)
 	{
-		current_node = current_node.children[2];
+		current_node = current_node->children[2];
 	}
 	else if(current_node->children[3]->test == false)
 	{
-		current_node = current_node.children[3];
+		current_node = current_node->children[3];
 	}
 
 	current_node = NULL;
