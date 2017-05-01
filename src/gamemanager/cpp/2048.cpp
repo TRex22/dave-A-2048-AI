@@ -42,6 +42,7 @@ int BOARD_SIZE = 4;
 
 // GameState* run_gamestate(GameState currentGame, bool print_game, int move);
 bool determine_2048(GameState *currentGame);
+int determine_highest_value(GameState *currentGame);
 void print_board(GameState *currentGame);
 void print_horizontal_boarder(int boardSize);
 void add_new_number(GameState *currentGame);
@@ -106,6 +107,23 @@ bool determine_2048(GameState *currentGame)
 	}
 
 	return false;
+}
+
+int determine_highest_value(GameState *currentGame)
+{
+	int boardSize = currentGame->boardSize;
+	int max = 0;
+
+	for (int i=0; i < boardSize; i++)
+	{
+		for (int j=0; j < boardSize; j++)
+		{
+			if (currentGame->currentBoard[i][j] > max)
+				max = currentGame->currentBoard[i][j];
+		}
+	}
+
+	return max;
 }
 
 void print_board(GameState *currentGame)

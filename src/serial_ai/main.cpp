@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 {
 	srand(time(NULL));
 	GameState* initial_state = new GameState(board_size);
+	add_new_number(initial_state);
 
 	Tree* tree = new Tree(initial_state);
 
@@ -60,7 +61,9 @@ bool checkAtRoot(Node* node)
 
 bool canContinue(Node* node)
 {
-	if(!checkAtRoot(node))
+	bool won = determine_2048(node->current_state);
+
+	if(!checkAtRoot(node) && !won)
 		return true;
 
 	if(node->test == false)
@@ -124,17 +127,19 @@ void buildTree(Tree* tree)
 {
 	Node* root = tree->root;
 	Node* current_node = root;
+	Node* parent_node = current_node;
 
 	while(canContinue(current_node))
 	{
 		findChildren(tree, current_node);
-		
+		// printf("%d, %d\n", current_node->parent->children, 0);
+
 		Node* new_current_node = findCurrentNodeFromChildren(current_node);
 
-		while(new_current_node == NULL&& !checkAtRoot(new_current_node) )
+		while(new_current_node == NULL && !checkAtRoot(new_current_node))
 		{
-			new_current_node = current_node;
-			new_current_node = findCurrentNodeFromChildren(new_current_node->parent);
+			new_current_node = findCurrentNodeFromChildren(parent_node->parent);
+			parent_node = parent_node->parent;
 		}
 
 		current_node = new_current_node;
@@ -155,17 +160,17 @@ void findChildren(Tree* tree, Node* node)
 		states[i] = new GameState(board_size);
 		states[i]->copy(node->current_state);
 		process_action(states[i], i);
+		add_new_number(states[i]);
 
 		int currentDepth = node->depth + 1;
 		if(tree->max_depth < currentDepth)
 			tree->max_depth = currentDepth;
 		
-		// Node* node = new Node(node, states[i], currentDepth);
 		node->children[i] = new Node(node, states[i], currentDepth);
 
 		tree->num_nodes++;
 	}
 
 	node->test = true;
-	// printf("%d, %d\n", tree->num_nodes, tree->max_depth);
+	printf("%d, %d, %d\n", tree->num_nodes, tree->max_depth, determine_highest_value(node->current_state));
 }
