@@ -20,3 +20,17 @@
 		d. go back to a if pass
 	4.yay win!
 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+#include "../tree/tree.h"
+
+int board_size = 4;
+
+int main(int argc, char *argv[])
+{
+	printf("no dead\n");
+}

@@ -21,6 +21,7 @@ TODO
 - change string to int
 
 Gamemanager
+- fix main file
 - ~~add stopping condition~~
 - ~~gamestate must contain legal moves internally so we can return it.~~
 - ~~get this working as a way for the ai to play the game i.e. a function which is the game and allows the ai to inject a move.~~
@@ -43,3 +44,10 @@ Cuda Ai Search
 
 MPI Ai Search
 - ????? ;(
+
+References
+----
+
+- http://robots.stanford.edu/cs221/2016/restricted/projects/prithvir/final.pdf
+- http://stackoverflow.com/questions/22342854/what-is-the-optimal-algorithm-for-the-game-2048
+- https://news.ycombinator.com/item?id=7379821
