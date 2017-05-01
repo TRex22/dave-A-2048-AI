@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 			action = get_player_action();
 		}
 
-		process_action(currentGame, Moves[action]);
+		process_action(currentGame, action);
 
 		//print_board(currentGame);
 	}
