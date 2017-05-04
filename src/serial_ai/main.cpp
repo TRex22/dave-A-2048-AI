@@ -28,7 +28,7 @@
 
 #include "../tree/tree.h"
 
-int board_size = 4;
+const int board_size = 4;
 
 int main(int argc, char *argv[]);
 bool checkAtRoot(Node* node);

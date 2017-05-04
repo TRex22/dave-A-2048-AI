@@ -1,4 +1,5 @@
 #include "../gamemanager/cpp/2048.cpp"
+const int csize = 4;
 
 class Node 
 {
@@ -13,7 +14,7 @@ class Node
 		GameState* current_state = NULL;
 		Node* parent = parent_tmp;
 
-		Node* children[4] = {node_left, node_right, node_up, node_down}; 
+		Node* children[csize] = {node_left, node_right, node_up, node_down}; 
 		int depth = 0;
 
 		bool test = false;
