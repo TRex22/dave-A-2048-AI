@@ -48,7 +48,13 @@ MPI Ai Search
 
 References
 ----
+- http://kawahara.ca/how-to-run-an-ipythonjupyter-notebook-on-a-remote-machine/
 
 - http://robots.stanford.edu/cs221/2016/restricted/projects/prithvir/final.pdf
 - http://stackoverflow.com/questions/22342854/what-is-the-optimal-algorithm-for-the-game-2048
 - https://news.ycombinator.com/item?id=7379821
+
+- http://stackoverflow.com/questions/5278580/non-recursive-depth-first-search-algorithm
+- https://dev.to/vaidehijoshi/demystifying-depth-first-search
+- http://www.programming-techniques.com/2012/07/depth-first-search-in-c-algorithm-and.html
+- https://en.wikipedia.org/wiki/Depth-first_search

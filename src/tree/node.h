@@ -17,14 +17,15 @@ class Node
 		Node* children[csize] = {node_left, node_right, node_up, node_down}; 
 		int depth = 0;
 
-		bool test = false;
+		bool isLeaf = false;
+        bool hasChildren = true;
 
-		Node(Node&, GameState*, int);
+		Node(Node*, GameState*, int);
 };
 
-Node::Node(Node &_parent, GameState* state, int _depth)
+Node::Node(Node* _parent, GameState* state, int _depth)
 {
-	parent = &_parent;
+	parent = _parent;
 	current_state = state;
 	depth = _depth;
 }
