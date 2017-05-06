@@ -5,7 +5,7 @@
 using namespace std;
 
 Tree* buildTree_with_ustack(Tree* tree, int depth_limit, int node_limit);
-Tree* buildTree_inplace(Tree* tree);
+Tree* buildTree_inplace(Tree* tree, int depth_limit, int node_limit);
 Node* get_sibling(Node* node);
 void generateChidlren(Node* currentNode, Tree* tree, stack<Node*> tracker, int board_size);
 bool checkAtRoot(Node* node);
@@ -38,7 +38,7 @@ Tree* buildTree_with_ustack(Tree* tree, int depth_limit = -1, int node_limit = -
 	}
 }
 
-Tree* buildTree_inplace(Tree* tree)
+Tree* buildTree_inplace(Tree* tree, int depth_limit = -1, int node_limit = -1)
 {
     Node* node = tree->root;
     bool condition = true;
@@ -66,6 +66,9 @@ Tree* buildTree_inplace(Tree* tree)
                 }                
             }
         }
+        
+        
+        condition = shouldLimit(tree, depth_limit, node_limit);
     }
     
     // visit(node)

@@ -41,9 +41,9 @@ int main(int argc, char *argv[])
 
 	Tree* tree = new Tree(initial_state);
 	// printf("%d\n", tree->root);
-    // buildTree_inplace(tree);
-	buildTree_with_ustack(tree, 231);
-
+    // buildTree_inplace(tree, -1, 10000);
+	// buildTree_with_ustack(tree, 231);
+    buildTree_with_ustack(tree, -1, 10000);
 	printf("%d, %d\n", tree->num_nodes, tree->max_depth);
 
 }
