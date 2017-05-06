@@ -134,6 +134,7 @@ Node* get_sibling(Node* node)
         if(&parent->children[i] == &node) // Are the memory addresses the same
         {
             idex = i;
+            printf("AAAA: %d",i);
         }
     }
     
