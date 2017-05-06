@@ -2,12 +2,14 @@
 
 #include "../tree/tree.h"
 
+#define DEBUG true
+
 using namespace std;
 
 Tree* buildTree_with_ustack(Tree* tree, int depth_limit, int node_limit);
 Tree* buildTree_inplace(Tree* tree, int depth_limit, int node_limit);
 Node* get_sibling(Node* node);
-void generateChidlren(Node* currentNode, Tree* tree, stack<Node*> tracker, int board_size);
+void generateChidlren(Node* currentNode, Tree* tree);
 bool checkAtRoot(Node* node);
 bool canContinue(Node* node);
 bool shouldLimit(Tree* tree, int depth_limit, int node_limit);
@@ -20,15 +22,12 @@ Tree* buildTree_with_ustack(Tree* tree, int depth_limit = -1, int node_limit = -
 
 	while(!tracker.empty() && !shouldLimit(tree, depth_limit, node_limit))
 	{
-        printf("%d, %d\n", tree->num_nodes, tree->max_depth);
-        print_board(tracker.top()->current_state);
-		int board_size = 4; //TODO: make as parameter to do this properly
 		Node* currentNode = tracker.top();
         tracker.pop();
 
 		if(!currentNode->isLeaf)
 		{
-			generateChidlren(currentNode, tree, tracker, board_size);
+			generateChidlren(currentNode, tree);
             
             for (int i = 0; i < 4; i++)
             {
@@ -41,12 +40,15 @@ Tree* buildTree_with_ustack(Tree* tree, int depth_limit = -1, int node_limit = -
 Tree* buildTree_inplace(Tree* tree, int depth_limit = -1, int node_limit = -1)
 {
     Node* node = tree->root;
+    generateChidlren(node, tree);
+    
     bool condition = true;
     while (condition)
     {
         if(!node->children[0]->isLeaf)
         {
             node = node->children[0];
+            generateChidlren(node->children[0], tree); //segfault? why
         }
         else
         {
@@ -59,14 +61,14 @@ Tree* buildTree_inplace(Tree* tree, int depth_limit = -1, int node_limit = -1)
                 if(nextChild != NULL)
                 {
                     node = nextChild;
+                    generateChidlren(node, tree);
                 }
                 else
                 {
                     node = node->parent;
                 }                
             }
-        }
-        
+        }        
         
         condition = shouldLimit(tree, depth_limit, node_limit);
     }
@@ -83,7 +85,7 @@ Tree* buildTree_inplace(Tree* tree, int depth_limit = -1, int node_limit = -1)
                     
 }
 
-void generateChidlren(Node* currentNode, Tree* tree, stack<Node*> tracker, int board_size)
+void generateChidlren(Node* currentNode, Tree* tree)
 {
 	GameState *state_left;
 	GameState *state_right;
@@ -94,7 +96,7 @@ void generateChidlren(Node* currentNode, Tree* tree, stack<Node*> tracker, int b
 
 	for (int i = 3; i >= 0; --i)
 	{
-		states[i] = new GameState(board_size);
+		states[i] = new GameState(tree->BOARD_SIZE);
 		states[i]->copy(currentNode->current_state);
 		process_action(states[i], i);
 		add_new_number(states[i]);
@@ -106,11 +108,18 @@ void generateChidlren(Node* currentNode, Tree* tree, stack<Node*> tracker, int b
 		currentNode->children[i] = new Node(currentNode, states[i], currentDepth);
 		tree->num_nodes++;
         
-        if(!canContinue(currentNode->children[i]))
+        if(!canContinue(currentNode->children[i]) 
+           || compare_game_states(currentNode->current_state, currentNode->children[i]->current_state))
         {
             currentNode->children[i]->isLeaf = true;
         }
-	}	
+	}
+    
+    if(DEBUG)
+    {
+        printf("%d, %d\n", tree->num_nodes, tree->max_depth);
+        print_board(currentNode->current_state);
+    }
 }
 
 Node* get_sibling(Node* node)
