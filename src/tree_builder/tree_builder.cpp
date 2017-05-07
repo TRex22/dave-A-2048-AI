@@ -2,7 +2,7 @@
 
 #include "../tree/tree.h"
 
-#define DEBUG true
+#define DEBUG false
 
 using namespace std;
 
@@ -25,7 +25,7 @@ Tree* buildTree_with_ustack(Tree* tree, int depth_limit = -1, int node_limit = -
 		Node* currentNode = tracker.top();
         tracker.pop();
 
-		if(!currentNode->isLeaf)
+		if(currentNode)
 		{
 			generateChidlren(currentNode, tree);
             
@@ -34,11 +34,13 @@ Tree* buildTree_with_ustack(Tree* tree, int depth_limit = -1, int node_limit = -
                 tracker.push(currentNode->children[i]);
             }
 		}
+        // printf("%i\n", tracker.size());
 	}
 }
 
 Tree* buildTree_inplace(Tree* tree, int depth_limit = -1, int node_limit = -1)
 {
+    //brokdend
     Node* node = tree->root;
     printf("begin\n");
     generateChidlren(node, tree);
@@ -95,38 +97,35 @@ Tree* buildTree_inplace(Tree* tree, int depth_limit = -1, int node_limit = -1)
 
 void generateChidlren(Node* currentNode, Tree* tree)
 {
-	GameState *state_left;
-	GameState *state_right;
-	GameState *state_up;
-	GameState *state_down;
-
-	GameState* states[] = {state_left, state_right, state_up, state_down};
-    printf("init shit\n");
 	for (int i = 0; i < 4; i++)
 	{
-		states[i] = new GameState(tree->BOARD_SIZE);
-        printf("board size: %d, statei: %d\n", tree->BOARD_SIZE, currentNode->current_state); // another segfault
-		states[i]->copy(currentNode->current_state);
-        printf("copied states\n");
-		process_action(states[i], i);
-		add_new_number(states[i]);
-        printf("made state\n");
-		int currentDepth = currentNode->depth + 1;
-		if(tree->max_depth < currentDepth)
-			tree->max_depth = currentDepth;
-		
-		currentNode->children[i] = new Node(currentNode, states[i], currentDepth);
-		tree->num_nodes++;
-        printf("set child\n");
-        if(!canContinue(currentNode->children[i]) 
-           || compare_game_states(currentNode->current_state, currentNode->children[i]->current_state))
+        GameState* newState = new GameState(tree->BOARD_SIZE);
+		newState->copy(currentNode->current_state);
+
+		process_action(newState, i);
+
+        if(!determine_2048(currentNode->current_state) || !compare_game_states(currentNode->current_state, newState))
         {
-            currentNode->children[i]->isLeaf = true;
-            printf("is leaf\n");
+            bool fullBoard = !add_new_number(newState);
+            if(!fullBoard)
+            {
+                int currentDepth = currentNode->depth + 1;
+                if(tree->max_depth < currentDepth)
+                    tree->max_depth = currentDepth;
+                
+                currentNode->children[i] = new Node(currentNode, newState, currentDepth);
+                tree->num_nodes++;
+            }
+            else
+            {
+                currentNode->children[i] = NULL;
+            }
+        }
+        else
+        {
+            currentNode->children[i] = NULL;
         }
 	}
-    
-    currentNode->hasChildren = true;
     
     if(DEBUG)
     {

@@ -44,7 +44,7 @@ bool determine_2048(GameState *currentGame);
 int determine_highest_value(GameState *currentGame);
 void print_board(GameState *currentGame);
 void print_horizontal_boarder(int boardSize);
-void add_new_number(GameState *currentGame);
+bool add_new_number(GameState *currentGame);
 bool checkBoardEmptySlot(GameState *currentGame);
 void process_action(GameState *currentGame, int action);
 void process_left(GameState *currentGame);
@@ -111,9 +111,9 @@ void print_horizontal_boarder(int boardSize)
 	}
 }
 
-void add_new_number(GameState *currentGame)
+bool add_new_number(GameState *currentGame)
 {
-	srand(time(NULL));
+	// srand(time(NULL));
 	int rand_row = rand() % currentGame->boardSize;
 	int rand_col = rand() % currentGame->boardSize;
 
@@ -126,7 +126,9 @@ void add_new_number(GameState *currentGame)
 		}
 
 		currentGame->currentBoard[rand_row][rand_col] = 2;
+		return true;
 	}
+	return false;
 }
 
 bool checkBoardEmptySlot(GameState *currentGame)
