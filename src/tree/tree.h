@@ -15,6 +15,7 @@ class Tree
 		int num_nodes = 0;
 		int max_depth = 0;
 		/*int min_depth = 0;*/
+		Node* a2048 = NULL;
 
 		Tree(GameState* state);
 		

@@ -61,7 +61,7 @@ bool determine_2048(GameState *currentGame)
 	{
 		for (int j=0; j < boardSize; j++)
 		{
-			if (currentGame->currentBoard[i][j] == 2048)
+			if (currentGame->currentBoard[i][j] >= 2048)
 				return true;
 		}
 	}

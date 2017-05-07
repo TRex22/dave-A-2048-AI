@@ -32,6 +32,7 @@ const int board_size = 4;
 
 int main(int argc, char *argv[]);
 void print_left_most_path(Tree* tree);
+bool print_solution(Tree* tree);
 
 int main(int argc, char *argv[])
 {
@@ -42,24 +43,22 @@ int main(int argc, char *argv[])
 	Tree* tree = new Tree(initial_state);
 	// printf("%d\n", tree->root);
     // buildTree_inplace(tree, -1, 10000);
-	buildTree_with_ustack(tree, -1, 1000000);
+	buildTree_with_ustack(tree, -1, 10000);
     // buildTree_with_ustack(tree, -1, 10000);
 	printf("%d, %d\n", tree->num_nodes, tree->max_depth);
-	// print_board(currentNode->current_state);
-	print_left_most_path(tree);
+
+	// print_left_most_path(tree);
+	print_solution(tree);
 }
 
 void print_left_most_path(Tree* tree)
 {
 	Node* node = tree->root;
-	bool condition = true;
-    while (condition)
+    while (node)
     { 
         print_board(node->current_state);
 
-        node = node->children[3];   
-        
-        condition = !node->isLeaf;
+        node = node->children[1];
     }
 
     // print_board(node->current_state);
@@ -74,6 +73,22 @@ void print_left_most_path(Tree* tree)
     // printf("%d\n", node->children[3]->children[3]->children[3]);
     // printf("%d\n", node->children[3]->children[3]->children[3]->children[3]);
 
+}
+
+bool print_solution(Tree* tree)
+{
+	if(tree->a2048)
+    {
+    	Node* node = tree->a2048;
+    	while(node && !checkAtRoot(node))
+    	{
+    		print_board(node->current_state);
+    		node = node->parent;
+    	}
+    }
+    else
+    	printf("NULL@@@@@@\n");
+    return true;
 }
 
 

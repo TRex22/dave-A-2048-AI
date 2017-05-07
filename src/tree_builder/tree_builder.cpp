@@ -42,27 +42,20 @@ Tree* buildTree_inplace(Tree* tree, int depth_limit = -1, int node_limit = -1)
 {
     //brokdend
     Node* node = tree->root;
-    printf("begin\n");
     generateChidlren(node, tree);
     
     bool condition = true;
-    printf("before\n");
     while (condition)
     { 
-        printf("in while1\n");
         if(node->children[0])
         {
-            printf("first child: %d\n", node->children[0]);
             node = node->children[0];
-            printf("node set first child\n");
             generateChidlren(node->children[0], tree); //segfault? why
         }
         else
         {
-            printf("no children\n");
             while(!node->hasChildren)
             {
-                printf("while no chidlren\n");
                 if(checkAtRoot(node))
                     return tree;
                 
@@ -80,7 +73,6 @@ Tree* buildTree_inplace(Tree* tree, int depth_limit = -1, int node_limit = -1)
         }        
         
         condition = shouldLimit(tree, depth_limit, node_limit);
-        printf("condition\n");
     }
     
     // visit(node)
@@ -104,7 +96,7 @@ void generateChidlren(Node* currentNode, Tree* tree)
 
 		process_action(newState, i);
 
-        if(!determine_2048(currentNode->current_state) || !compare_game_states(currentNode->current_state, newState))
+        if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState))
         {
             bool fullBoard = !add_new_number(newState);
             if(!fullBoard)
@@ -115,17 +107,26 @@ void generateChidlren(Node* currentNode, Tree* tree)
                 
                 currentNode->children[i] = new Node(currentNode, newState, currentDepth);
                 tree->num_nodes++;
+
+                currentNode->hasChildren = true;
             }
             else
             {
-                currentNode->children[i] = NULL;
+                currentNode->children[i] = nullptr;
             }
         }
         else
         {
-            currentNode->children[i] = NULL;
+            currentNode->children[i] = nullptr;
+        }
+
+        if(determine_2048(currentNode->current_state))
+        {
+            tree->a2048 = currentNode;
         }
 	}
+
+
     
     if(DEBUG)
     {
