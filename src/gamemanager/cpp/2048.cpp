@@ -95,7 +95,7 @@ void print_board(GameState *currentGame)
 
 		for (int j = 0; j < currentGame->boardSize; j++)
 		{
-			printf("| %d |", currentGame->currentBoard[i][j]);
+			printf("| \t%d\t |", currentGame->currentBoard[i][j]);
 		}
 
 		print_horizontal_boarder(currentGame->boardSize);

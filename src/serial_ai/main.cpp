@@ -37,18 +37,20 @@ bool print_solution(Tree* tree);
 int main(int argc, char *argv[])
 {
 	srand(time(NULL));
-	GameState* initial_state = new GameState(board_size);
+	int i = board_size; //todo fix this
+	GameState* initial_state = new GameState(i);
 	add_new_number(initial_state);
 
-	Tree* tree = new Tree(initial_state);
-	// printf("%d\n", tree->root);
-    // buildTree_inplace(tree, -1, 10000);
-	buildTree_with_ustack(tree, -1, 10000);
-    // buildTree_with_ustack(tree, -1, 10000);
-	printf("%d, %d\n", tree->num_nodes, tree->max_depth);
+	initial_state->currentBoard[0][0] = 1024;
+	initial_state->currentBoard[0][1] = 1024;
 
-	// print_left_most_path(tree);
-	print_solution(tree);
+	Tree* tree = new Tree(initial_state);
+	buildTree_with_ustack(tree, -1, 20000);
+
+	printf("%i: num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", 
+			i, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
+
+	// printf("%d, %d, sols: %d, leaves: %d, stats: %f\n", tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
 }
 
 void print_left_most_path(Tree* tree)
@@ -60,19 +62,6 @@ void print_left_most_path(Tree* tree)
 
         node = node->children[1];
     }
-
-    // print_board(node->current_state);
-    // print_board(node->children[3]->current_state);
-    // print_board(node->children[3]->children[3]->current_state);
-    // print_board(node->children[3]->children[3]->children[3]->current_state);
-    // print_board(node->children[3]->children[3]->children[3]->children[3]->current_state);
-
-    // printf("%d\n", node);
-    // printf("%d\n", node->children[3]);
-    // printf("%d\n", node->children[3]->children[3]);
-    // printf("%d\n", node->children[3]->children[3]->children[3]);
-    // printf("%d\n", node->children[3]->children[3]->children[3]->children[3]);
-
 }
 
 bool print_solution(Tree* tree)
@@ -85,6 +74,7 @@ bool print_solution(Tree* tree)
     		print_board(node->current_state);
     		node = node->parent;
     	}
+    	print_board(node->current_state);
     }
     else
     	printf("NULL@@@@@@\n");

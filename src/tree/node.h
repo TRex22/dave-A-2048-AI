@@ -21,6 +21,7 @@ class Node
         bool hasChildren = false;
 
 		Node(Node*, GameState*, int);
+		~Node();
 };
 
 Node::Node(Node* _parent, GameState* state, int _depth)
@@ -28,4 +29,17 @@ Node::Node(Node* _parent, GameState* state, int _depth)
 	parent = _parent;
 	current_state = state;
 	depth = _depth;
+}
+
+Node::~Node()
+{
+	delete children[0];
+	delete children[1];
+	delete children[2];
+	delete children[3];
+
+	delete current_state;
+	delete &depth;
+	delete &isLeaf;
+	delete &hasChildren;
 }

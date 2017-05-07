@@ -16,8 +16,12 @@ class Tree
 		int max_depth = 0;
 		/*int min_depth = 0;*/
 		Node* a2048 = NULL;
+		int num_solutions = 0;
+		int num_leaves = 0;
+		int num_cutoff_states = 0;
 
 		Tree(GameState* state);
+		~Tree();
 		
 };
 
@@ -28,5 +32,16 @@ Tree::Tree(GameState* state)
 	Node* head = new Node(parent, state, 0);
     head -> isLeaf = false; // root is assumed never to be a leaf, not needed tho
 	this->root = head;
+}
+
+Tree::~Tree()
+{
+	delete root;
+	delete &BOARD_SIZE;
+	delete &num_nodes;
+	delete &max_depth;
+	delete &num_solutions;
+	delete &num_leaves;
+	delete &num_cutoff_states;
 }
 

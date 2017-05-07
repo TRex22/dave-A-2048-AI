@@ -29,7 +29,7 @@ Tree* buildTree_with_ustack(Tree* tree, int depth_limit = -1, int node_limit = -
 		{
 			generateChidlren(currentNode, tree);
             
-            for (int i = 0; i < 4; i++)
+            for (int i = 3; i > -1; --i)
             {
                 tracker.push(currentNode->children[i]);
             }
@@ -120,9 +120,15 @@ void generateChidlren(Node* currentNode, Tree* tree)
             currentNode->children[i] = nullptr;
         }
 
-        if(determine_2048(currentNode->current_state))
+        if(determine_2048(currentNode->current_state)) //win
         {
             tree->a2048 = currentNode;
+            tree->num_solutions++;
+        }
+
+        if(determine_2048(currentNode->current_state) || compare_game_states(currentNode->current_state, newState)) //leaf
+        {
+            tree->num_leaves++;
         }
 	}
 
