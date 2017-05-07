@@ -18,7 +18,7 @@ class Node
 		int depth = 0;
 
 		bool isLeaf = false;
-        bool hasChildren = true;
+        bool hasChildren = false;
 
 		Node(Node*, GameState*, int);
 };

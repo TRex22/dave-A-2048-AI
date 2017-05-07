@@ -40,20 +40,27 @@ Tree* buildTree_with_ustack(Tree* tree, int depth_limit = -1, int node_limit = -
 Tree* buildTree_inplace(Tree* tree, int depth_limit = -1, int node_limit = -1)
 {
     Node* node = tree->root;
+    printf("begin\n");
     generateChidlren(node, tree);
     
     bool condition = true;
+    printf("before\n");
     while (condition)
-    {
-        if(!node->children[0]->isLeaf)
+    { 
+        printf("in while1\n");
+        if(node->children[0])
         {
+            printf("first child: %d\n", node->children[0]);
             node = node->children[0];
+            printf("node set first child\n");
             generateChidlren(node->children[0], tree); //segfault? why
         }
         else
         {
+            printf("no children\n");
             while(!node->hasChildren)
             {
+                printf("while no chidlren\n");
                 if(checkAtRoot(node))
                     return tree;
                 
@@ -71,6 +78,7 @@ Tree* buildTree_inplace(Tree* tree, int depth_limit = -1, int node_limit = -1)
         }        
         
         condition = shouldLimit(tree, depth_limit, node_limit);
+        printf("condition\n");
     }
     
     // visit(node)
@@ -93,27 +101,32 @@ void generateChidlren(Node* currentNode, Tree* tree)
 	GameState *state_down;
 
 	GameState* states[] = {state_left, state_right, state_up, state_down};
-
-	for (int i = 3; i >= 0; --i)
+    printf("init shit\n");
+	for (int i = 0; i < 4; i++)
 	{
 		states[i] = new GameState(tree->BOARD_SIZE);
+        printf("board size: %d, statei: %d\n", tree->BOARD_SIZE, currentNode->current_state); // another segfault
 		states[i]->copy(currentNode->current_state);
+        printf("copied states\n");
 		process_action(states[i], i);
 		add_new_number(states[i]);
-
+        printf("made state\n");
 		int currentDepth = currentNode->depth + 1;
 		if(tree->max_depth < currentDepth)
 			tree->max_depth = currentDepth;
 		
 		currentNode->children[i] = new Node(currentNode, states[i], currentDepth);
 		tree->num_nodes++;
-        
+        printf("set child\n");
         if(!canContinue(currentNode->children[i]) 
            || compare_game_states(currentNode->current_state, currentNode->children[i]->current_state))
         {
             currentNode->children[i]->isLeaf = true;
+            printf("is leaf\n");
         }
 	}
+    
+    currentNode->hasChildren = true;
     
     if(DEBUG)
     {
@@ -134,7 +147,7 @@ Node* get_sibling(Node* node)
         if(&parent->children[i] == &node) // Are the memory addresses the same
         {
             idex = i;
-            printf("AAAA: %d",i);
+            printf("AAAA: %d\n",i);
         }
     }
     
