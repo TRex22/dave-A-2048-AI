@@ -38,8 +38,9 @@
 #include <string.h>
 #include <math.h>
 #include <stack>
-    
-#include "../tree/tree.h"
+#include "omp.h"
+
+#include "../helper/helper.h"
 
 const int board_size = 4;
 bool DEBUG = true;
@@ -47,12 +48,6 @@ bool DEBUG = true;
 int main(int argc, char *argv[]);
 Tree* buildTree(Tree* tree, int depth_limit, int node_limit);
 void generateChidlren(Node* currentNode, Tree* tree);
-bool checkAtRoot(Node* node);
-bool canContinue(Node* node);
-bool shouldLimit(Tree* tree, int depth_limit, int node_limit);
-
-void print_left_most_path(Tree* tree);
-bool print_solution(Tree* tree);
 
 int main(int argc, char *argv[])
 {
@@ -146,71 +141,9 @@ void generateChidlren(Node* currentNode, Tree* tree)
     
     if(DEBUG)
     {
-        printf("%d, %d\n", tree->num_nodes, tree->max_depth);
-        print_board(currentNode->current_state);
+        // printf("%d, %d\n", tree->num_nodes, tree->max_depth);
+        // print_board(currentNode->current_state);
     }
-}
-
-bool checkAtRoot(Node* node)
-{
-	if (node->depth == 0)
-		return true;
-
-	return false;
-}
-
-bool canContinue(Node* node)
-{
-	bool won = determine_2048(node->current_state);
-
-	if(!checkAtRoot(node) && !won)
-		return true;
-
-	return false;
-}
-
-bool shouldLimit(Tree* tree, int depth_limit, int node_limit)
-{
-    // stop is true or false
-    if(tree->max_depth > depth_limit-1 && depth_limit != -1)
-    {
-        return true;
-    }
-    
-    if(tree->num_nodes > node_limit-1 && node_limit != -1)
-    {
-        return true;
-    }
-    
-    return false;
-}
-
-void print_left_most_path(Tree* tree)
-{
-	Node* node = tree->root;
-    while (node)
-    { 
-        print_board(node->current_state);
-
-        node = node->children[1];
-    }
-}
-
-bool print_solution(Tree* tree)
-{
-	if(tree->a2048)
-    {
-    	Node* node = tree->a2048;
-    	while(node && !checkAtRoot(node))
-    	{
-    		print_board(node->current_state);
-    		node = node->parent;
-    	}
-    	print_board(node->current_state);
-    }
-    else
-    	printf("No solution has been found.\n");
-    return true;
 }
 
 
