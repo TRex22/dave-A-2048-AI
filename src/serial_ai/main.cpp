@@ -151,7 +151,7 @@ Tree* buildTree(Tree* tree, int depth_limit = -1, int node_limit = -1)
         
         if(DEBUG)
         {
-            // printf("%li\n", tracker.size());
+            printf("%li\n", tracker.size());
         }
 	}
 }
@@ -210,8 +210,8 @@ void generateChidlren(Node* currentNode, Tree* tree)
     
     if(DEBUG)
     {
-        // printf("%d, %d\n", tree->num_nodes, tree->max_depth);
-        // print_board(currentNode->current_state);
+        printf("%d, %d\n", tree->num_nodes, tree->max_depth);
+        print_board(currentNode->current_state);
     }
 }
 
