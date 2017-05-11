@@ -1,36 +1,44 @@
-void save_solution_to_file(Tree* tree, Node* a2048, float time_taken, std::string filename)
+void save_solution_to_file(Tree* tree, float time_taken, std::string filename, bool csv)
 {
     string out = "";
+    string delimit = " ";
+    
+    if(csv)
+        delimit = ",";
     
     double percent_solutions = (double)tree->num_solutions/((double)tree->num_leaves);
-    
+//     csv:
+//     board_size, num_nodes, max_depth, time_taken, num_solutions, num_leaves, num_cutoff_states, percent_solutions
     ostringstream ss;
-     ss << "" << to_string(tree->num_nodes) << " " << to_string(tree->max_depth) << " " << to_string(time_taken) << " " << to_string(tree->num_solutions) << " " << to_string(tree->num_leaves) << " " << to_string(tree->num_cutoff_states) << " " << to_string(percent_solutions) << "\n";
+     ss << to_string(tree->BOARD_SIZE) << delimit << to_string(tree->num_nodes) << delimit << to_string(tree->max_depth) << delimit << to_string(time_taken) << delimit << to_string(tree->num_solutions) << delimit << to_string(tree->num_leaves) << delimit << to_string(tree->num_cutoff_states) << delimit << to_string(percent_solutions);
+    
+    if(tree->optimal2048)
+        ss << to_string(tree->optimal2048->depth);
+    ss << "\n";
     
     out = ss.str();
     
-    out.append(flatten_path(tree, tree->a2048));
+    out.append(flatten_path(tree, tree->optimal2048, delimit));
     
     write_results_to_file (filename, out);
 }
 
-string flatten_path(Tree* tree, Node* final_node)
+string flatten_path(Tree* tree, Node* final_node, string delimit)
 {
     string out = "";
-    out.append(to_string(tree->BOARD_SIZE)).append("\n");
     
     Node* node = final_node;
     while(node && !checkAtRoot(node))
     {
-        out += str_node(node->current_state);
+        out.append(str_node(node->current_state, delimit));
         node = node->parent;
     }
-    out += str_node(node->current_state);
+    out += str_node(node->current_state, delimit);
     
     return out;
 }
 
-string str_node(GameState* currentGame)
+string str_node(GameState* currentGame, string delimit)
 {
     string out = "";
     int boardSize = currentGame->boardSize;
@@ -39,7 +47,7 @@ string str_node(GameState* currentGame)
 	{
 		for (int j=0; j < boardSize; j++)
 		{
-			out.append(to_string(currentGame->currentBoard[i][j])).append(" ");
+			out.append(to_string(currentGame->currentBoard[i][j])).append(delimit);
 		}
         out.append("\n");
 	}
@@ -71,9 +79,9 @@ void print_right_most_path(Tree* tree)
 
 bool print_solution(Tree* tree)
 {
-	if(tree->a2048)
+	if(tree->optimal2048)
     {
-    	Node* node = tree->a2048;
+    	Node* node = tree->optimal2048;
     	while(node && !checkAtRoot(node))
     	{
     		print_board(node->current_state);
@@ -120,7 +128,7 @@ bool shouldLimit(Tree* tree, int depth_limit, int node_limit)
     return false;
 }
 
-void halt_execution(string message)
+void halt_execution(string message="")
 {
 	cout << message << endl;
     exit(EXIT_FAILURE);
@@ -147,3 +155,18 @@ void print_cmd_heading(string app_name)
 	printf("%s\nLiron Mizrahi 708810 \nJason Chalom 711985\n2017\n\n", app_name.c_str());
 }
 
+void print_usage(int argc, char *argv[])
+{   
+    printf("At least one parameter must be selected.\n\n");
+    printf("usage: %s --board_size=n --use_rnd --max_depth=n --max_num_nodes=n\n", argv[0]);
+    printf("\t--save_to_file --print_output --print_path --save_csv --initial_state_path=p\n");
+    printf("\t--filepath=p --DEBUG --usage\n");
+}
+
+bool contains_string(string input, string str)
+{
+    if (input.find(str) != string::npos) {
+        return true;
+    } 
+    return false;
+}

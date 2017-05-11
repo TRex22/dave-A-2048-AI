@@ -26,8 +26,10 @@
         max depth (d)
         max nodes (n)
         save to file (f)
+        filepath (fp)
         print_cmd (p) t/f
-        initial state (is)
+        print_path (path)
+        initial state file (is)
         debug (d)
         
     timing
@@ -42,28 +44,83 @@
 
 #include "../helper/helper.h"
 
-const int board_size = 4;
-bool DEBUG = true;
+/* Global variables */
+#define app_name "Serial 2048 AI - DaveAi"
+    
+int board_size = 4;
+bool use_rnd = false;
+int max_depth = -1;
+int max_num_nodes = -1;
+bool save_to_file = false;
+bool print_output = false;
+bool print_path = false;
+bool save_csv = false;
+string initial_state_path = "";
+string filepath = "./results/serial_ai";
+bool DEBUG = false;
 
+/* Headers */
 int main(int argc, char *argv[]);
+void run_AI();
+
+void process_args(int argc, char *argv[]);
+
 Tree* buildTree(Tree* tree, int depth_limit, int node_limit);
 void generateChidlren(Node* currentNode, Tree* tree);
 
+/* Definitions */
 int main(int argc, char *argv[])
 {
-	srand(time(NULL));
-	int i = board_size; //todo fix this
-	GameState* initial_state = new GameState(i);
-	add_new_number(initial_state);
+    print_cmd_heading(app_name);
+    if (argc == 1)
+    {
+        print_usage(argc, argv);
+        halt_execution();
+    }
+    
+    if(use_rnd)
+        srand(time(NULL));
+    else
+        srand(10000);
 
-	initial_state->currentBoard[0][0] = 1024;
-	initial_state->currentBoard[0][1] = 1024;
+    process_args(argc, argv);
+    run_AI();
+    
+    return EXIT_SUCCESS;
+}
+
+void run_AI()
+{
+    float time_taken = 0.0;
+    GameState* initial_state = new GameState(board_size);
+	add_new_number(initial_state);
 
 	Tree* tree = new Tree(initial_state);
 	buildTree(tree, -1, 20000);
 
-	printf("%i: num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", 
-			i, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
+    if(print_path)
+    {
+        print_solution(tree);
+    }
+    
+    if(print_output)
+    {
+        printf("%i: num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
+        
+        if(tree->optimal2048)
+            printf("min_depth: %d\n", tree->optimal2048->depth);
+    }
+
+    
+    if(save_to_file)
+    {
+        if (save_csv)
+            filepath.append(".csv");
+        else
+            filepath.append(".txt");
+                            
+        save_solution_to_file(tree, time_taken, filepath, save_csv);
+    }
 }
 
 Tree* buildTree(Tree* tree, int depth_limit = -1, int node_limit = -1)
@@ -127,9 +184,16 @@ void generateChidlren(Node* currentNode, Tree* tree)
             currentNode->children[i] = nullptr;
         }
 
-        if(determine_2048(currentNode->current_state)) //win
+        if(determine_2048(currentNode->current_state)) //win and shortest path
         {
-            tree->a2048 = currentNode;
+            if(tree->optimal2048)
+            {
+                if(currentNode->depth < tree->optimal2048->depth) 
+                    tree->optimal2048 = currentNode;
+            }
+            else
+                tree->optimal2048 = currentNode;
+            
             tree->num_solutions++;
         }
 
@@ -143,6 +207,90 @@ void generateChidlren(Node* currentNode, Tree* tree)
     {
         // printf("%d, %d\n", tree->num_nodes, tree->max_depth);
         // print_board(currentNode->current_state);
+    }
+}
+
+void process_args(int argc, char *argv[])
+{
+    for (int i = 1; i < argc; i++)
+    {
+        string str = string(argv[i]);
+        if(contains_string(str, "board_size"))
+        {
+            board_size = atoi(str.substr(str.find('=') + 1).c_str());
+            if(board_size < 2)
+            {
+                print_usage(argc, argv);
+                halt_execution("\nError: board_size must be grater than 1.");
+            }
+        }
+           
+        if(contains_string(str, "use_rnd"))
+        {
+            use_rnd = true;
+        }
+           
+        if(contains_string(str, "max_depth"))
+        {
+            max_depth = atoi(str.substr(str.find('=') + 1).c_str());
+            if(max_depth < 2)
+            {
+                print_usage(argc, argv);
+                halt_execution("\nError: max_depth must be grater than 1.");
+            }
+        }
+           
+        if(contains_string(str, "max_num_nodes"))
+        {
+            max_num_nodes = atoi(str.substr(str.find('=') + 1).c_str());
+            if(max_depth < 2)
+            {
+                print_usage(argc, argv);
+                halt_execution("\nError: max_depth must be grater than 1.");
+            }
+        }
+           
+        if(contains_string(str, "save_to_file"))
+        {
+            save_to_file = true;
+        }
+           
+        if(contains_string(str, "print_output"))
+        {
+            print_output = true;
+        }
+           
+        if(contains_string(str, "save_csv"))
+        {
+            save_csv = true;
+        }
+           
+        // if(contains_string(str, "initial_state_path")
+        // {
+            // initial_state_path = str.substr(str.find("=") + 1)
+            //todo: jmc make this and set an initial state
+        // }
+           
+        if(contains_string(str, "filepath"))
+        {
+            filepath = str.substr(str.find('=') + 1);
+        }
+                                                                                                           
+        if(contains_string(str, "print_path"))
+        {
+            print_path = true;
+        }
+           
+        if(contains_string(str, "DEBUG"))
+        {
+            DEBUG = true;
+        }
+        
+        if(contains_string(str, "usage"))
+        {
+            print_usage(argc, argv);
+            halt_execution();
+        }
     }
 }
 

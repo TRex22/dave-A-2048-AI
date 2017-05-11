@@ -12,3 +12,6 @@ clean:
 	rm ../bin/cuda1_ai.out
 	rm ../bin/serial_ai.out
     
+    rm ../results/serial_ai.txt
+    rm ../results/serial_ai.csv
+    

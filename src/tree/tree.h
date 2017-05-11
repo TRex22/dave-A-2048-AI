@@ -15,7 +15,7 @@ class Tree
 		int num_nodes = 0;
 		int max_depth = 0;
 		/*int min_depth = 0;*/
-		Node* a2048 = NULL;
+		Node* optimal2048 = NULL;
 		int num_solutions = 0;
 		int num_leaves = 0;
 		int num_cutoff_states = 0;
