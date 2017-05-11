@@ -92,12 +92,17 @@ int main(int argc, char *argv[])
 void run_AI()
 {
     float time_taken = 0.0;
+    float start_epoch = omp_get_wtime();
+    
     GameState* initial_state = new GameState(board_size);
 	add_new_number(initial_state);
 
 	Tree* tree = new Tree(initial_state);
-	buildTree(tree, -1, 20000);
-
+	buildTree(tree, max_depth, max_num_nodes);
+    
+    float end_epoch = omp_get_wtime();
+    time_taken = end_epoch-start_epoch;
+    
     if(print_path)
     {
         print_solution(tree);
@@ -105,10 +110,10 @@ void run_AI()
     
     if(print_output)
     {
-        printf("%i: num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
+        printf("board_size: %i, num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
         
         if(tree->optimal2048)
-            printf("min_depth: %d\n", tree->optimal2048->depth);
+            printf("min_depth: %d time_taken: %f\n", tree->optimal2048->depth, time_taken);
     }
 
     
@@ -243,10 +248,10 @@ void process_args(int argc, char *argv[])
         if(contains_string(str, "max_num_nodes"))
         {
             max_num_nodes = atoi(str.substr(str.find('=') + 1).c_str());
-            if(max_depth < 2)
+            if(max_num_nodes < 2)
             {
                 print_usage(argc, argv);
-                halt_execution("\nError: max_depth must be grater than 1.");
+                halt_execution("\nError: max_num_nodes must be grater than 1.");
             }
         }
            
