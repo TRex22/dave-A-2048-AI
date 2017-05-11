@@ -19,18 +19,38 @@
 		c. retry if fail
 		d. go back to a if pass
 	4.yay win!
+    
+    input:
+        board size (b)
+        lock rnd flag
+        max depth (d)
+        max nodes (n)
+        save to file (f)
+        print_cmd (p) t/f
+        initial state (is)
+        debug (d)
+        
+    timing
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
-#include "../tree_builder/tree_builder.cpp"
+#include <stack>
+    
+#include "../tree/tree.h"
 
 const int board_size = 4;
+bool DEBUG = true;
 
 int main(int argc, char *argv[]);
+Tree* buildTree(Tree* tree, int depth_limit, int node_limit);
+void generateChidlren(Node* currentNode, Tree* tree);
+bool checkAtRoot(Node* node);
+bool canContinue(Node* node);
+bool shouldLimit(Tree* tree, int depth_limit, int node_limit);
+
 void print_left_most_path(Tree* tree);
 bool print_solution(Tree* tree);
 
@@ -45,12 +65,124 @@ int main(int argc, char *argv[])
 	initial_state->currentBoard[0][1] = 1024;
 
 	Tree* tree = new Tree(initial_state);
-	buildTree_with_ustack(tree, -1, 20000);
+	buildTree(tree, -1, 20000);
 
 	printf("%i: num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", 
 			i, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
+}
 
-	// printf("%d, %d, sols: %d, leaves: %d, stats: %f\n", tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
+Tree* buildTree(Tree* tree, int depth_limit = -1, int node_limit = -1)
+{
+    //todo: fix this not working correctly
+	stack<Node*> tracker;
+	tracker.push(tree->root);
+
+	while(!tracker.empty() && !shouldLimit(tree, depth_limit, node_limit))
+	{
+		Node* currentNode = tracker.top();
+        tracker.pop();
+
+		if(currentNode)
+		{
+			generateChidlren(currentNode, tree);
+            
+            for (int i = 3; i > -1; --i)
+            {
+                tracker.push(currentNode->children[i]);
+            }
+		}
+        
+        if(DEBUG)
+        {
+            // printf("%li\n", tracker.size());
+        }
+	}
+}
+
+void generateChidlren(Node* currentNode, Tree* tree)
+{
+	for (int i = 0; i < 4; i++)
+	{
+        GameState* newState = new GameState(tree->BOARD_SIZE);
+		newState->copy(currentNode->current_state);
+
+		process_action(newState, i);
+
+        if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState))
+        {
+            bool fullBoard = !add_new_number(newState);
+            if(!fullBoard)
+            {
+                int currentDepth = currentNode->depth + 1;
+                if(tree->max_depth < currentDepth)
+                    tree->max_depth = currentDepth;
+                
+                currentNode->children[i] = new Node(currentNode, newState, currentDepth);
+                tree->num_nodes++;
+
+                currentNode->hasChildren = true;
+            }
+            else
+            {
+                currentNode->children[i] = nullptr;
+            }
+        }
+        else
+        {
+            currentNode->children[i] = nullptr;
+        }
+
+        if(determine_2048(currentNode->current_state)) //win
+        {
+            tree->a2048 = currentNode;
+            tree->num_solutions++;
+        }
+
+        if(determine_2048(currentNode->current_state) || compare_game_states(currentNode->current_state, newState)) //leaf
+        {
+            tree->num_leaves++;
+        }
+	}
+    
+    if(DEBUG)
+    {
+        printf("%d, %d\n", tree->num_nodes, tree->max_depth);
+        print_board(currentNode->current_state);
+    }
+}
+
+bool checkAtRoot(Node* node)
+{
+	if (node->depth == 0)
+		return true;
+
+	return false;
+}
+
+bool canContinue(Node* node)
+{
+	bool won = determine_2048(node->current_state);
+
+	if(!checkAtRoot(node) && !won)
+		return true;
+
+	return false;
+}
+
+bool shouldLimit(Tree* tree, int depth_limit, int node_limit)
+{
+    // stop is true or false
+    if(tree->max_depth > depth_limit-1 && depth_limit != -1)
+    {
+        return true;
+    }
+    
+    if(tree->num_nodes > node_limit-1 && node_limit != -1)
+    {
+        return true;
+    }
+    
+    return false;
 }
 
 void print_left_most_path(Tree* tree)
@@ -77,7 +209,7 @@ bool print_solution(Tree* tree)
     	print_board(node->current_state);
     }
     else
-    	printf("NULL@@@@@@\n");
+    	printf("No solution has been found.\n");
     return true;
 }
 
