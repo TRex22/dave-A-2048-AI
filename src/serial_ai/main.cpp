@@ -154,7 +154,7 @@ Tree* buildTree(Tree* tree, int depth_limit = -1, int node_limit = -1, float sta
         
         if(DEBUG)
         {
-            printf("%uli\n", tracker.size());
+            printf("%lui\n", tracker.size());
         }
 
 	    currentTime += omp_get_wtime()-start_time;

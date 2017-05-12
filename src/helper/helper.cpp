@@ -113,7 +113,8 @@ bool canContinue(Node* node)
 }
 
 bool shouldLimit(Tree* tree, int depth_limit, int node_limit, float current_time, float time_limit)
-{   printf("%f, %f\n", current_time, time_limit);
+{   
+    // printf("%f, %f\n", current_time, time_limit);
     if(time_limit > 0.0)
     {
         if(current_time < time_limit)
