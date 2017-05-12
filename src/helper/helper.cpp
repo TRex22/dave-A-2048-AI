@@ -112,8 +112,15 @@ bool canContinue(Node* node)
 	return false;
 }
 
-bool shouldLimit(Tree* tree, int depth_limit, int node_limit)
-{
+bool shouldLimit(Tree* tree, int depth_limit, int node_limit, float current_time, float time_limit)
+{   printf("%f, %f\n", current_time, time_limit);
+    if(time_limit > 0.0)
+    {
+        if(current_time < time_limit)
+            return false;
+        else
+            return true;
+    }
     // stop is true or false
     if(tree->max_depth > depth_limit-1 && depth_limit != -1)
     {
@@ -157,10 +164,10 @@ void print_cmd_heading(string app_name)
 
 void print_usage(int argc, char *argv[])
 {   
-    printf("At least one parameter must be selected.\n\n");
+    printf("At least one parameter must be selected.\n-1 will denote inf value\n\n");
     printf("usage: %s --board_size=n --use_rnd --max_depth=n --max_num_nodes=n\n", argv[0]);
     printf("\t--save_to_file --print_output --print_path --save_csv --initial_state_path=p\n");
-    printf("\t--filepath=p --DEBUG --usage\n");
+    printf("\t--filepath=p --DEBUG --usage --time_limit=n\n");
 }
 
 bool contains_string(string input, string str)

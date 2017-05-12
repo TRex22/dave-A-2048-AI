@@ -45,7 +45,7 @@
 #include "../helper/helper.h"
 
 /* Global variables */
-#define app_name "Serial 2048 AI - DaveAi"
+#define app_name "MPI 2048 Parallel AI - DaveAi"
     
 int board_size = 4;
 bool use_rnd = false;

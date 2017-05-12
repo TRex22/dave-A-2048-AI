@@ -10,16 +10,17 @@ It uses tree search algorithms to play the single player game 2048.
 
 TODO
 ----
-
+- timelimit
+- track sizes
 - ~~cleanup comments~~
-- save all moves that have been calculated to viz later
-- save initial game state
+- ~~save all moves that have been calculated to viz later~~
+- ~~save initial game state~~
 - open initial game state to use
 - Visulizer
-- Compare two moves files so we can check two ais
+- ~~Compare two moves files so we can check two ais~~
 - Maybe make sonething that can run through a set of moves and check it makes sense? - probably not just - watch the vid
 - test runner
-- change string to int
+- ~~change string to int~~
 
 Gamemanager
 - fix main file
