@@ -41,6 +41,7 @@
 #include <math.h>
 #include <stack>
 #include "omp.h"
+#include "mpi.h"
 
 #include "../helper/helper.h"
 
@@ -69,9 +70,13 @@ void process_args(int argc, char *argv[]);
 Tree* buildTree(Tree* tree, int depth_limit, int node_limit, float start_time, float time_limit);
 void generateChidlren(Node* currentNode, Tree* tree);
 
+int get_depth(int comm_sz);
+
 /* Definitions */
 int main(int argc, char *argv[])
 {
+    int myrank, comm_sz;
+
     print_cmd_heading(app_name);
     if (argc == 1)
     {
@@ -85,8 +90,33 @@ int main(int argc, char *argv[])
         srand(10000);
 
     process_args(argc, argv);
-    run_AI();
-    
+
+
+    //start MPI
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
+    if (myrank == 0)
+    {
+        int depth = get_depth(comm_sz);
+        printf("depth = %d\n", depth);
+
+        GameState* initial_state = new GameState(board_size);
+
+        printf("initial_state:\n");
+        print_board(initial_state);
+
+        printf("initial_state after adding number:\n");
+        add_new_number(initial_state);
+        print_board(initial_state);
+    }
+
+
+    //run_AI();
+
+
+    MPI_Finalize();
     return EXIT_SUCCESS;
 }
 
@@ -96,7 +126,13 @@ void run_AI()
     float start_epoch = omp_get_wtime();
     
     GameState* initial_state = new GameState(board_size);
-	add_new_number(initial_state);
+
+    printf("initial_state:\n");
+        print_board(initial_state);
+
+    printf("initial_state after adding number:\n");
+        add_new_number(initial_state);
+        print_board(initial_state);
 
 	Tree* tree = new Tree(initial_state);
 	buildTree(tree, max_depth, max_num_nodes, start_epoch, time_limit);
@@ -309,4 +345,11 @@ void process_args(int argc, char *argv[])
     }
 }
 
-
+int get_depth(int comm_sz)
+{
+    /* calculates log_4(comm_sz) from log_10(comm_sz)/log_10(4) */
+    int a = log(comm_sz);
+    int b = log(4);
+    int c = a/b;
+    return c;
+}

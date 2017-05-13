@@ -33,6 +33,7 @@ class GameState
 		GameState(int, bool);
 		bool equals(GameState *state);
 		void copy(GameState *state);
+		void init_to_zero(GameState* state);
 };
 
 GameState::GameState(int board_size)
@@ -44,6 +45,7 @@ GameState::GameState(int board_size)
 	{
 		currentBoard[i] = new int[this->boardSize];
 	}
+	init_to_zero(this);
 }
 
 GameState::GameState(int board_size, bool rnd_state)
@@ -97,3 +99,14 @@ void GameState::copy(GameState *state)
 		}
 	}
 }
+
+void GameState::init_to_zero(GameState* state)
+{
+    for (int i = 0; i < state->boardSize; ++i)
+    {
+        for (int j = 0; j < state->boardSize; ++j)
+        {
+            state->currentBoard[i][j] = 0;
+        }
+    }
+}   
