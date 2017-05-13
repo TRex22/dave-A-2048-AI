@@ -70,12 +70,16 @@ void process_args(int argc, char *argv[]);
 Tree* buildTree(Tree* tree, int depth_limit, int node_limit, float start_time, float time_limit);
 void generateChidlren(Node* currentNode, Tree* tree);
 
-int get_depth(int comm_sz);
+int log_4(int comm_sz);
+void get_init_states(int nodes);
+void linearize_and_send(Node* currentNode, int node_num);
+
 
 /* Definitions */
 int main(int argc, char *argv[])
 {
     int myrank, comm_sz;
+    int local_init_board[ board_size*board_size ];
 
     print_cmd_heading(app_name);
     if (argc == 1)
@@ -97,19 +101,16 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
+    MPI_Status status;
+
     if (myrank == 0)
     {
-        int depth = get_depth(comm_sz);
-        printf("depth = %d\n", depth);
-
-        GameState* initial_state = new GameState(board_size);
-
-        printf("initial_state:\n");
-        print_board(initial_state);
-
-        printf("initial_state after adding number:\n");
-        add_new_number(initial_state);
-        print_board(initial_state);
+        get_init_states(comm_sz);
+    }
+    else
+    {
+        MPI_Recv(&local_init_board, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        printf("Proc %d received data.\n", myrank);
     }
 
 
@@ -120,19 +121,76 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
+void get_init_states(int nodes)
+{
+    int depth = log_4(nodes);
+    int i = 1;
+
+
+    GameState* initial_state = new GameState(board_size);
+    add_new_number(initial_state);
+
+    Tree* tree = new Tree(initial_state);
+    stack<Node*> tracker;
+    tracker.push(tree->root);
+
+    do {
+        printf("tracker size: %d\n", tracker.size());
+
+        Node* currentNode = tracker.top();
+        if (currentNode)
+            printf("node depth: %d\n", currentNode->depth);
+        
+        if(currentNode && currentNode->depth < depth)
+        {
+            tracker.pop();
+            generateChidlren(currentNode, tree);
+            
+            for (int i = 3; i > -1; --i)
+            {
+                tracker.push(currentNode->children[i]);
+            }
+        }
+        else if (currentNode && currentNode->depth == depth)
+        {
+            tracker.pop();
+            linearize_and_send(currentNode, i);
+            i++;
+        }
+        else if (currentNode && currentNode->depth > depth)
+        {
+            tracker.pop();
+        }
+
+    }while(tracker.size() > 1);
+
+    printf("DONE SENDING\nTRACKER SIZE: %d", tracker.size());
+}
+
+void linearize_and_send(Node* currentNode, int node_num)
+{
+    int size = board_size;
+    int board[size*size]; 
+
+    for (int i = 0; i < size*size; ++i)
+    {
+        for (int j = 0; j < size*size; ++j)
+        {
+            board[i*size + j] = currentNode->current_state->currentBoard[i][j];
+        }
+    }
+
+    MPI_Send(&board, 1, MPI_INT, node_num, 0, MPI_COMM_WORLD);
+    printf("sent init state to proc: %d\n", node_num);
+}
+
 void run_AI()
 {
     float time_taken = 0.0;
     float start_epoch = omp_get_wtime();
     
     GameState* initial_state = new GameState(board_size);
-
-    printf("initial_state:\n");
-        print_board(initial_state);
-
-    printf("initial_state after adding number:\n");
-        add_new_number(initial_state);
-        print_board(initial_state);
+    add_new_number(initial_state);
 
 	Tree* tree = new Tree(initial_state);
 	buildTree(tree, max_depth, max_num_nodes, start_epoch, time_limit);
@@ -345,7 +403,7 @@ void process_args(int argc, char *argv[])
     }
 }
 
-int get_depth(int comm_sz)
+int log_4(int comm_sz)
 {
     /* calculates log_4(comm_sz) from log_10(comm_sz)/log_10(4) */
     int a = log(comm_sz);
