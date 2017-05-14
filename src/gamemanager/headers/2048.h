@@ -28,17 +28,14 @@ class GameState
 		int stepCount = 0;
 		bool isWon = false;
 		bool invalidMove = false;
-    
-#ifdef CUDA 
+
+//     #define rnd( x ) (rand() % x) //(x * rand() / RAND_MAX)
+
+#ifdef CUDA    
     __host__ __device__
 #endif
 		GameState(int);
     
-#ifdef CUDA 
-    __host__ __device__
-#endif
-		GameState(int, bool);
-
 #ifdef CUDA 
     __host__ __device__
 #endif
@@ -65,26 +62,6 @@ GameState::GameState(int board_size)
 		currentBoard[i] = new int[this->boardSize];
 	}
 	init_to_zero(this);
-}
-
-GameState::GameState(int board_size, bool rnd_state)
-{
-	this->boardSize = board_size;
-
-	currentBoard = new int*[this->boardSize];
-	for (int i = 0; i < this->boardSize; ++i)
-	{
-		currentBoard[i] = new int[this->boardSize];
-
-		if(rnd_state)
-		{
-			srand(time(NULL));
-		 	int rand_row = rand() % this->boardSize-1;
-	 		int rand_col = rand() % this->boardSize-1;
-
-	 		currentBoard[rand_row][rand_col] = 2;
-		}
-	}
 }
 
 bool GameState::equals(GameState *state)

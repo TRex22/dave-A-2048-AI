@@ -59,9 +59,6 @@ void print_board(GameState *currentGame);
 #endif
 void print_horizontal_boarder(int boardSize);
 
-#ifdef CUDA 
-    __host__ __device__
-#endif
 bool add_new_number(GameState *currentGame);
 
 #ifdef CUDA 
@@ -140,7 +137,7 @@ void print_horizontal_boarder(int boardSize)
 
 bool add_new_number(GameState *currentGame)
 {
-	// srand(time(NULL));
+	// srand(time(NULL)); todo fix this for use_rnd
 	int rand_row = rand() % currentGame->boardSize;
 	int rand_col = rand() % currentGame->boardSize;
 
