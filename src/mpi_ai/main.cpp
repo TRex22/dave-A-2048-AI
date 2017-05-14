@@ -71,9 +71,11 @@ Tree* buildTree(Tree* tree, int depth_limit, int node_limit, float start_time, f
 void generateChidlren(Node* currentNode, Tree* tree);
 
 int log_4(int comm_sz);
-void get_init_states(int nodes);
+std::stack<Node*> get_init_states(int nodes);
 void linearize_and_send(Node* currentNode, int node_num);
 void test();
+int count_computable_nodes(stack<Node*> stack);
+bool is_leaf(GameState* state);
 
 
 /* Definitions */
@@ -106,15 +108,14 @@ int main(int argc, char *argv[])
 
     if (myrank == 0)
     {
-        // test();
-        // get_init_states(comm_sz);
-        run_AI();
+        std::stack<Node*> init_states;
+        init_states = get_init_states(comm_sz);
     }
-    else
-    {
-        MPI_Recv(&local_init_board, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        printf("Proc %d received data.\n", myrank);
-    }
+    // else
+    // {
+    //     MPI_Recv(&local_init_board, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    //     printf("Proc %d received data.\n", myrank);
+    // }
 
 
     //run_AI();
@@ -125,10 +126,11 @@ int main(int argc, char *argv[])
 }
 
 
-void get_init_states(int nodes)
+std::stack<Node*> get_init_states(int nodes)
 {
     int depth = log_4(nodes);
     int i = 1;
+    int computable_nodes = 0;
 
 
     GameState* initial_state = new GameState(board_size);
@@ -136,53 +138,78 @@ void get_init_states(int nodes)
 
     Tree* tree = new Tree(initial_state);
     stack<Node*> tracker;
+
     tracker.push(tree->root);
 
-    do {
-        printf("tracker size: %d\n", tracker.size());
-
+    do
+    {
         Node* currentNode = tracker.top();
-        if (currentNode)
-            printf("node depth: %d\n", currentNode->depth);
+        tracker.pop();
 
-        if (currentNode)
+        if(currentNode)
         {
-            if(currentNode->depth < depth)
+            generateChidlren(currentNode, tree);
+            
+            for (int i = 3; i > -1; --i)
             {
-                printf("%d < %d\n", currentNode->depth, depth);
-                tracker.pop();
-                generateChidlren(currentNode, tree);
-                
-                for (int i = 3; i > -1; --i)
+                if (currentNode->children[i])
                 {
-                    if (currentNode->children[i])
-                        tracker.push(currentNode->children[i]);
+                    tracker.push(currentNode->children[i]);
                 }
-            }
-            else if (currentNode->depth == depth)
-            {
-                printf("%d == %d\n", currentNode->depth, depth);
-                tracker.pop();
-                printf("pop'd\n");
-                linearize_and_send(currentNode, i);
-                printf("sent'd\n");
-                i++;
-            }
-            else if (currentNode->depth > depth)
-            {
-                printf("%d > %d\n", currentNode->depth, depth);
-                tracker.pop();
+                
             }
         }
-        else
+        computable_nodes = count_computable_nodes(tracker);
+
+    }while(computable_nodes < nodes);
+
+    printf("DONE GETTING %d INIT STATES\n", count_computable_nodes(tracker));
+
+    return tracker;
+}
+
+int count_computable_nodes(stack<Node*> stack)
+{
+    int count = 0;
+    std::stack<Node*> tracker;
+
+    while(!stack.empty())
+    {
+        Node* node = stack.top();
+        if( !determine_2048(node->current_state) && !is_leaf(node->current_state) )
         {
-            printf("current node is NULL\n");
+            count++;
         }
+        stack.pop();
+        tracker.push(node);
+    }
 
-    }while(tracker.size() > 1);
+    while(!tracker.empty())
+    {
+        Node* node = tracker.top();
+        tracker.pop();
+        stack.push(node);
+    }
 
-    printf("DONE SENDING\n");
-    printf("TRACKER SIZE: %d", tracker.size());
+    return count;
+}
+
+bool is_leaf(GameState* state)
+{
+    bool result = true;
+    for (int i = 0; i < 4; i++)
+    {
+        GameState* newState = new GameState(board_size);
+        newState->copy(state);
+        process_action(newState, i);
+
+        if(compare_game_states(state, newState) == false)
+        {
+            result = false;
+            return result;
+        }
+    }
+    return result;
 }
 
 void linearize_and_send(Node* currentNode, int node_num)
