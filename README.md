@@ -48,6 +48,7 @@ Cuda Ai Search
 - Show increased size for less time?
 - build a tree on device
 - use array method
+- cudaCheckError on 2048 ifdef code
 
 MPI Ai Search
 - ????? ;(

@@ -55,7 +55,7 @@ using namespace std;
 int main(int argc, char *argv[]);
 
 /* device functions */
-__global__ void buildTree(Tree* tree, int depth_limit, int node_limit, float start_time, float time_limit);
+__global__ void buildTree(Tree* tree, stack<Node*> tracker, int depth_limit, int node_limit, float start_time, float time_limit);
 __device__ void generateChidlren(Node* currentNode, Tree* tree);
 
 /* host functions */
@@ -103,7 +103,10 @@ void run_AI()
 	add_new_number(initial_state);
 
 	Tree* tree = new Tree(initial_state);
-	buildTree<<<dimGrid, dimBlock>>>(tree, max_depth, max_num_nodes, start_epoch, time_limit);
+    stack<Node*> tracker;
+    checkCudaErrors(cudaMalloc((void **) &tracker, sizeof(Node)));
+    
+	buildTree<<<dimGrid, dimBlock>>>(tree, tracker, max_depth, max_num_nodes, start_epoch, time_limit);
     
     float end_epoch = sdkGetTimerValue(&timer);
     time_taken = end_epoch-start_epoch;
@@ -173,18 +176,18 @@ void run_AI()
     save_pgm_image(result, result_image_location);*/
 }
 
-__global__ void buildTree(Tree* tree, int depth_limit = -1, int node_limit = -1, float start_time = -1.0, float time_limit=-1.0)
+__global__ void buildTree(Tree* tree, stack<Node*> tracker, int depth_limit = -1, int node_limit = -1, float start_time = -1.0, float time_limit=-1.0)
 {
     //todo: fix this not working correctly
-	stack<Node*> tracker;
+    
 	tracker.push(tree->root);
 
-    StopWatchInterface *timer = NULL;
-    sdkCreateTimer(&timer);
-    sdkStartTimer(&timer);    
-    float currentTime = sdkGetTimerValue(&timer)-start_time;
+    // StopWatchInterface *timer = NULL;
+    // sdkCreateTimer(&timer);
+    // sdkStartTimer(&timer);    
+    // float currentTime = sdkGetTimerValue(&timer)-start_time;
     
-	while(!tracker.empty() && !shouldLimit(tree, depth_limit, node_limit, currentTime, time_limit))
+	while(!tracker.empty() && !shouldLimit(tree, depth_limit, node_limit, -1.0, -1.0))
 	{
 		Node* currentNode = tracker.top();
         tracker.pop();
@@ -204,10 +207,10 @@ __global__ void buildTree(Tree* tree, int depth_limit = -1, int node_limit = -1,
         //     printf("%lui\n", tracker.size());
         // }
 
-	    currentTime += sdkGetTimerValue(&timer)-start_time;
+	    // currentTime += sdkGetTimerValue(&timer)-start_time;
     }
     
-    sdkDeleteTimer(&timer);
+    // sdkDeleteTimer(&timer);
 }
 
 // char* initTreeArray(int num_nodes, int num_children)
