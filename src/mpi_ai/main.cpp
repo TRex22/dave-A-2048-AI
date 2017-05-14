@@ -73,6 +73,7 @@ void generateChidlren(Node* currentNode, Tree* tree);
 int log_4(int comm_sz);
 void get_init_states(int nodes);
 void linearize_and_send(Node* currentNode, int node_num);
+void test();
 
 
 /* Definitions */
@@ -105,7 +106,9 @@ int main(int argc, char *argv[])
 
     if (myrank == 0)
     {
-        get_init_states(comm_sz);
+        // test();
+        // get_init_states(comm_sz);
+        run_AI();
     }
     else
     {
@@ -120,6 +123,7 @@ int main(int argc, char *argv[])
     MPI_Finalize();
     return EXIT_SUCCESS;
 }
+
 
 void get_init_states(int nodes)
 {
@@ -140,31 +144,45 @@ void get_init_states(int nodes)
         Node* currentNode = tracker.top();
         if (currentNode)
             printf("node depth: %d\n", currentNode->depth);
-        
-        if(currentNode && currentNode->depth < depth)
+
+        if (currentNode)
         {
-            tracker.pop();
-            generateChidlren(currentNode, tree);
-            
-            for (int i = 3; i > -1; --i)
+            if(currentNode->depth < depth)
             {
-                tracker.push(currentNode->children[i]);
+                printf("%d < %d\n", currentNode->depth, depth);
+                tracker.pop();
+                generateChidlren(currentNode, tree);
+                
+                for (int i = 3; i > -1; --i)
+                {
+                    if (currentNode->children[i])
+                        tracker.push(currentNode->children[i]);
+                }
+            }
+            else if (currentNode->depth == depth)
+            {
+                printf("%d == %d\n", currentNode->depth, depth);
+                tracker.pop();
+                printf("pop'd\n");
+                linearize_and_send(currentNode, i);
+                printf("sent'd\n");
+                i++;
+            }
+            else if (currentNode->depth > depth)
+            {
+                printf("%d > %d\n", currentNode->depth, depth);
+                tracker.pop();
             }
         }
-        else if (currentNode && currentNode->depth == depth)
+        else
         {
-            tracker.pop();
-            linearize_and_send(currentNode, i);
-            i++;
-        }
-        else if (currentNode && currentNode->depth > depth)
-        {
-            tracker.pop();
+            printf("current node is NULL\n");
         }
 
     }while(tracker.size() > 1);
 
-    printf("DONE SENDING\nTRACKER SIZE: %d", tracker.size());
+    printf("DONE SENDING\n");
+    printf("TRACKER SIZE: %d", tracker.size());
 }
 
 void linearize_and_send(Node* currentNode, int node_num)
@@ -172,9 +190,9 @@ void linearize_and_send(Node* currentNode, int node_num)
     int size = board_size;
     int board[size*size]; 
 
-    for (int i = 0; i < size*size; ++i)
+    for (int i = 0; i < size; ++i)
     {
-        for (int j = 0; j < size*size; ++j)
+        for (int j = 0; j < size; ++j)
         {
             board[i*size + j] = currentNode->current_state->currentBoard[i][j];
         }
@@ -255,14 +273,72 @@ Tree* buildTree(Tree* tree, int depth_limit = -1, int node_limit = -1, float sta
     }
 }
 
+void test()
+{
+    GameState* initial_state = new GameState(board_size);
+    add_new_number(initial_state);
+
+    Tree* tree = new Tree(initial_state);
+    stack<Node*> tracker;
+    tracker.push(tree->root);
+
+    printf("INIT STATE\n");
+    print_board(initial_state);
+
+    printf("start\n");
+
+    Node* currentNode = tracker.top();
+    tracker.pop();
+    generateChidlren(currentNode, tree);
+    for (int i = 3; i > -1; --i)
+    {
+        tracker.push(currentNode->children[i]);
+    }
+    printf("first\n");
+
+    currentNode = tracker.top();
+    printf("CN\n");
+    tracker.pop();
+    printf("pop\n");
+    generateChidlren(currentNode, tree);
+    printf("gen children\n");
+    for (int i = 3; i > -1; --i)
+    {
+        tracker.push(currentNode->children[i]);
+        printf("gen'd child %d\n", i);
+    }
+    printf("second\n");
+
+    currentNode = tracker.top();
+    tracker.pop();
+    generateChidlren(currentNode, tree);
+    for (int i = 3; i > -1; --i)
+    {
+        tracker.push(currentNode->children[i]);
+    }
+    printf("third\n");
+
+    printf("tracker size: %d\n", tracker.size());
+
+}
+
+
 void generateChidlren(Node* currentNode, Tree* tree)
 {
 	for (int i = 0; i < 4; i++)
 	{
         GameState* newState = new GameState(tree->BOARD_SIZE);
+        printf("...new state\n");
+        if (!currentNode->current_state)
+        {
+            printf("NOT CN current state\n");
+        }
 		newState->copy(currentNode->current_state);
+        printf("...new state copy\n");
 
 		process_action(newState, i);
+        printf("...proc action %d\n", i);
+        print_board(newState);
 
         if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState))
         {
@@ -286,6 +362,7 @@ void generateChidlren(Node* currentNode, Tree* tree)
         else
         {
             currentNode->children[i] = nullptr;
+            printf(".....child %d !determine_2048 AND !compare_game_states\n", i);
         }
 
         if(determine_2048(currentNode->current_state)) //win and shortest path
