@@ -63,7 +63,7 @@ float time_limit = -1.0;
 
 /* Headers */
 int main(int argc, char *argv[]);
-void run_AI();
+void run_AI(GameState* state);
 
 void process_args(int argc, char *argv[]);
 
@@ -72,8 +72,7 @@ void generateChidlren(Node* currentNode, Tree* tree);
 
 int log_4(int comm_sz);
 std::stack<Node*> get_init_states(int nodes);
-void linearize_and_send(Node* currentNode, int node_num);
-void test();
+void linearize_and_send(std::stack<Node*> stack, int comm_sz);
 int count_computable_nodes(stack<Node*> stack);
 bool is_leaf(GameState* state);
 
@@ -82,43 +81,55 @@ bool is_leaf(GameState* state);
 int main(int argc, char *argv[])
 {
     int myrank, comm_sz;
-    int local_init_board[ board_size*board_size ];
-
-    print_cmd_heading(app_name);
-    if (argc == 1)
-    {
-        print_usage(argc, argv);
-        halt_execution();
-    }
+    int local_size = 0;
     
-    if(use_rnd)
-        srand(time(NULL));
-    else
-        srand(10000);
-
-    process_args(argc, argv);
-
-
     //start MPI
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-
     MPI_Status status;
 
     if (myrank == 0)
     {
+        print_cmd_heading(app_name);
+        if (argc == 1)
+        {
+            print_usage(argc, argv);
+            halt_execution();
+        }
+        
+        if(use_rnd)
+            srand(time(NULL));
+        else
+            srand(10000);
+
+        process_args(argc, argv);
+
         std::stack<Node*> init_states;
         init_states = get_init_states(comm_sz);
+        linearize_and_send(init_states, comm_sz);
+
     }
-    // else
-    // {
-    //     MPI_Recv(&local_init_board, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-    //     printf("Proc %d received data.\n", myrank);
-    // }
+    else
+    {
+        MPI_Recv(&local_size, 1, MPI_INT, 0, myrank, MPI_COMM_WORLD, &status);
+        int square_size = local_size*local_size;
+        int local_init_board[ square_size ];
+        MPI_Recv(local_init_board, square_size, MPI_INT, 0, myrank, MPI_COMM_WORLD, &status);
+        MPI_Recv(&max_num_nodes, 1, MPI_INT, 0, myrank, MPI_COMM_WORLD, &status);
+        printf("Proc %d received data.\n", myrank);
 
+        GameState* init_state = new GameState(local_size);
+        for (int i = 0; i < local_size; ++i)
+        {
+            for (int j = 0; j < local_size; ++j)
+            {
+                init_state->currentBoard[i][j] = local_init_board[i*local_size + j];
+            }
+        }
+        run_AI(init_state);
+    }
 
-    //run_AI();
 
 
     MPI_Finalize();
@@ -212,30 +223,38 @@ bool is_leaf(GameState* state)
     return result;
 }
 
-void linearize_and_send(Node* currentNode, int node_num)
+void linearize_and_send(std::stack<Node*> stack, int comm_sz)
 {
-    int size = board_size;
-    int board[size*size]; 
-
-    for (int i = 0; i < size; ++i)
+    for (int k = 1; k < comm_sz; ++k)
     {
-        for (int j = 0; j < size; ++j)
-        {
-            board[i*size + j] = currentNode->current_state->currentBoard[i][j];
-        }
-    }
+        MPI_Request request;
+        int size = board_size;
+        int board[size*size]; 
+        Node* node = stack.top();
+        stack.pop();
 
-    MPI_Send(&board, 1, MPI_INT, node_num, 0, MPI_COMM_WORLD);
-    printf("sent init state to proc: %d\n", node_num);
+        for (int i = 0; i < size; ++i)
+        {
+            for (int j = 0; j < size; ++j)
+            {
+                board[i*size + j] = node->current_state->currentBoard[i][j];
+            }
+        }
+
+        MPI_Send(&size, 1, MPI_INT, k, k, MPI_COMM_WORLD);
+        MPI_Send(board, size*size, MPI_INT, k, k, MPI_COMM_WORLD);
+        MPI_Send(&max_num_nodes, 1, MPI_INT, k, k, MPI_COMM_WORLD);
+        printf("sent init state to proc: %d\n", k);
+    }
 }
 
-void run_AI()
+void run_AI(GameState* state)
 {
+    printf("running AI\n");
     float time_taken = 0.0;
     float start_epoch = omp_get_wtime();
     
-    GameState* initial_state = new GameState(board_size);
-    add_new_number(initial_state);
+    GameState* initial_state = state;
 
 	Tree* tree = new Tree(initial_state);
 	buildTree(tree, max_depth, max_num_nodes, start_epoch, time_limit);
@@ -248,13 +267,13 @@ void run_AI()
         print_solution(tree);
     }
     
-    if(print_output)
-    {
+    // if(print_output)
+    // {
         printf("board_size: %i, num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
         
         if(tree->optimal2048)
             printf("min_depth: %d time_taken: %f\n", tree->optimal2048->depth, time_taken);
-    }
+    // }
 
     
     if(save_to_file)
@@ -300,72 +319,15 @@ Tree* buildTree(Tree* tree, int depth_limit = -1, int node_limit = -1, float sta
     }
 }
 
-void test()
-{
-    GameState* initial_state = new GameState(board_size);
-    add_new_number(initial_state);
-
-    Tree* tree = new Tree(initial_state);
-    stack<Node*> tracker;
-    tracker.push(tree->root);
-
-    printf("INIT STATE\n");
-    print_board(initial_state);
-
-    printf("start\n");
-
-    Node* currentNode = tracker.top();
-    tracker.pop();
-    generateChidlren(currentNode, tree);
-    for (int i = 3; i > -1; --i)
-    {
-        tracker.push(currentNode->children[i]);
-    }
-    printf("first\n");
-
-    currentNode = tracker.top();
-    printf("CN\n");
-    tracker.pop();
-    printf("pop\n");
-    generateChidlren(currentNode, tree);
-    printf("gen children\n");
-    for (int i = 3; i > -1; --i)
-    {
-        tracker.push(currentNode->children[i]);
-        printf("gen'd child %d\n", i);
-    }
-    printf("second\n");
-
-    currentNode = tracker.top();
-    tracker.pop();
-    generateChidlren(currentNode, tree);
-    for (int i = 3; i > -1; --i)
-    {
-        tracker.push(currentNode->children[i]);
-    }
-    printf("third\n");
-
-    printf("tracker size: %d\n", tracker.size());
-
-}
-
 
 void generateChidlren(Node* currentNode, Tree* tree)
 {
 	for (int i = 0; i < 4; i++)
 	{
         GameState* newState = new GameState(tree->BOARD_SIZE);
-        printf("...new state\n");
-        if (!currentNode->current_state)
-        {
-            printf("NOT CN current state\n");
-        }
 		newState->copy(currentNode->current_state);
-        printf("...new state copy\n");
 
 		process_action(newState, i);
-        printf("...proc action %d\n", i);
-        print_board(newState);
 
         if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState))
         {
@@ -389,7 +351,6 @@ void generateChidlren(Node* currentNode, Tree* tree)
         else
         {
             currentNode->children[i] = nullptr;
-            printf(".....child %d !determine_2048 AND !compare_game_states\n", i);
         }
 
         if(determine_2048(currentNode->current_state)) //win and shortest path

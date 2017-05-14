@@ -49,9 +49,12 @@ Cuda Ai Search
 - build a tree on device
 - use array method
 - cudaCheckError on 2048 ifdef code
+- fix commandline params
 
 MPI Ai Search
 - ????? ;(
+- fix commandline params
+- fix timing correctly
 
 References
 ====
