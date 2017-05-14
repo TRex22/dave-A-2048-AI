@@ -55,14 +55,20 @@ using namespace std;
 int main(int argc, char *argv[]);
 
 /* device functions */
-__global__ void buildTree(Node* device_arr, int* device_num_sub_tree_nodes, int* board_size);
+__global__ void buildTree(Node** device_arr, int* device_num_sub_tree_nodes, int* board_size, curandState_t* rnd_states);
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes);
 __device__ bool cuda_add_new_number(GameState *currentGame, curandState_t* states, int* device_num_sub_tree_nodes);
 
+__device__ void cuda_process_action(GameState *currentGame, int action, int* boardSize);
+__device__ void cuda_process_left(GameState *currentGame, int* boardSize);
+__device__ void cuda_process_right(GameState *currentGame, int* boardSize);
+__device__ void cuda_process_up(GameState *currentGame, int* boardSize);
+__device__ void cuda_process_down(GameState *currentGame, int* boardSize);
+
 /* host functions */
 void run_AI();
-void serialBuildTree(Tree* tree, int leaf_node_limit, Node* host_arr);
-void serialGenerateChidlren(Node* currentNode, Tree* tree, Node* host_arr);
+void serialBuildTree(Tree* tree, int leaf_node_limit, Node** host_arr);
+void serialGenerateChidlren(Node* currentNode, Tree* tree, Node** host_arr);
 Node* createHostTreeArray(Tree* tree, int num_host_leaves, int num_sub_tree_nodes);
     
 void process_args(int argc, char *argv[]);
@@ -97,7 +103,7 @@ int main(int argc, char *argv[])
 void run_AI()
 {
     if(print_output)
-        printf("Building initial tree...\n");
+        printf("Init...\n");
     
     float time_taken = 0.0;
     
@@ -115,15 +121,22 @@ void run_AI()
     int num_host_leaves = 1024; //todo: dynamic calcs
     int num_sub_tree_nodes = 1024;
     int nodeArrSize = (num_host_leaves+4)*num_sub_tree_nodes*sizeof(Node);
-    Node* host_arr = (Node*)malloc(nodeArrSize);
     
+    if(print_output)
+        printf("Allocate host arr...\n");
+    Node* host_arr[num_host_leaves+4];//= (Node**)malloc(sizeof(Node*)*num_host_leaves+4);
+    for(int i = 0; i < num_host_leaves+4; i++)
+        host_arr[i] = (Node *)malloc(num_sub_tree_nodes*sizeof(Node));
+    
+    if(print_output)
+        printf("Building initial tree...\n");
     serialBuildTree(tree, num_host_leaves, host_arr);
     
     if(print_output)
         printf("Move host array to device...\n");
     
     // device variables
-    Node* device_arr;
+    Node** device_arr;
     int* device_num_sub_tree_nodes;
     int* device_board_size;
     
@@ -151,7 +164,7 @@ void run_AI()
     cudaMalloc((void**) &states, warp*warp* sizeof(curandState_t)); //N*sizeof
     
     init_rnd<<<dimGrid, dimBlock>>>(seed, states, device_num_sub_tree_nodes);
-	buildTree<<<dimGrid, dimBlock>>>(device_arr, device_num_sub_tree_nodes, device_board_size);
+	buildTree<<<dimGrid, dimBlock>>>(device_arr, device_num_sub_tree_nodes, device_board_size, states);
     
     if(print_output)
         printf("Copy results back to host...\n\n");
@@ -192,7 +205,7 @@ void run_AI()
     checkCudaErrors(cudaFree(device_board_size));
 }
 
-__global__ void buildTree(Node* device_arr, int* device_num_sub_tree_nodes, int* board_size)
+__global__ void buildTree(Node** device_arr, int* device_num_sub_tree_nodes, int* board_size, curandState_t* rnd_states)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -208,11 +221,11 @@ __global__ void buildTree(Node* device_arr, int* device_num_sub_tree_nodes, int*
             GameState* newState = new GameState(*board_size);
             newState->copy(currentNode->current_state);
 
-            process_action(newState, i);
+            cuda_process_action(newState, i, board_size);
 
             if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState))
             {
-                bool fullBoard = !add_new_number(newState);
+                bool fullBoard = !cuda_add_new_number(newState, rnd_states, device_num_sub_tree_nodes);
                 if(!fullBoard)
                 {
                     int currentDepth = currentNode->depth + 1;
@@ -269,7 +282,188 @@ __device__ bool cuda_add_new_number(GameState *currentGame, curandState_t* state
 	return false;
 }
 
-void serialBuildTree(Tree* tree, int leaf_node_limit, Node* host_arr)
+__device__ void cuda_process_action(GameState *currentGame, int action, int* boardSize)
+{
+	if (action == 0)
+	{
+		cuda_process_left(currentGame, boardSize);
+	}
+	else if (action == 1)
+	{
+		cuda_process_right(currentGame, boardSize);
+	}
+	else if (action == 2)
+	{
+		cuda_process_up(currentGame, boardSize);
+	}
+	else if (action == 3)
+	{
+		cuda_process_down(currentGame, boardSize);
+	}
+}
+
+__device__ void cuda_process_left(GameState *currentGame, int* boardSize)
+{
+    bool* modified = (bool*)malloc(sizeof(bool)*(*boardSize));
+	for (int i = 0; i < *boardSize; ++i)
+	{
+		for (int p = 0; p < *boardSize; ++p)
+		{
+			modified[p] = false;
+		}
+
+		for (int j = 1; j < *boardSize; ++j)
+		{
+			if (currentGame->currentBoard[i][j] != 0)
+			{
+				int t = j;
+				while(t > 0 && currentGame->currentBoard[i][t-1] == 0)
+				{
+					currentGame->currentBoard[i][t-1] = currentGame->currentBoard[i][t];
+					currentGame->currentBoard[i][t] = 0;
+					t--;
+				}
+
+				if (t == 0)
+				{
+					t++;
+				}
+
+				if (currentGame->currentBoard[i][t-1] == currentGame->currentBoard[i][t] &&  modified[t-1] == false)
+				{
+					currentGame->currentBoard[i][t-1] += currentGame->currentBoard[i][t];
+					modified[t-1] = true;
+					currentGame->score += currentGame->currentBoard[i][t-1];
+					currentGame->currentBoard[i][t] = 0;
+				}
+			}
+			
+		}
+	}
+    free(modified);
+}
+
+__device__ void cuda_process_right(GameState *currentGame, int* boardSize)
+{
+    bool* modified = (bool*)malloc(sizeof(bool)*(*boardSize));
+	for (int i = 0; i < *boardSize; ++i)
+	{          
+		for (int p = 0; p < *boardSize; ++p)
+		{
+			modified[p] = false;
+		}
+
+		for (int j = *boardSize - 2; j > -1; --j)
+		{
+			if (currentGame->currentBoard[i][j] != 0)
+			{
+				int t = j;
+				while(t < *boardSize - 1 && currentGame->currentBoard[i][t+1] == 0)
+				{
+					currentGame->currentBoard[i][t+1] = currentGame->currentBoard[i][t];
+					currentGame->currentBoard[i][t] = 0;
+					t++;
+				}
+
+				if (t == *boardSize - 1)
+				{
+					t--;
+				}
+
+				if (currentGame->currentBoard[i][t+1] == currentGame->currentBoard[i][t] && modified[t+1] == false)
+				{
+					currentGame->currentBoard[i][t+1] += currentGame->currentBoard[i][t];
+					modified[t+1] = true;
+					currentGame->score += currentGame->currentBoard[i][t+1];
+					currentGame->currentBoard[i][t] = 0;
+				}
+			}
+		}
+	}
+    free(modified);
+}
+
+__device__ void cuda_process_up(GameState *currentGame, int* boardSize)
+{
+    bool* modified = (bool*)malloc(sizeof(bool)*(*boardSize));   
+	for (int j = 0; j < *boardSize; ++j)
+	{          
+		for (int p = 0; p < *boardSize; ++p)
+		{
+			modified[p] = false;
+		}
+
+		for (int i = 1; i < *boardSize; ++i)
+		{
+			if (currentGame->currentBoard[i][j] != 0)
+			{
+				int t = i;
+				while(t > 0 && currentGame->currentBoard[t-1][j] == 0)
+				{
+					currentGame->currentBoard[t-1][j] = currentGame->currentBoard[t][j];
+					currentGame->currentBoard[t][j] = 0;
+					t--;
+				}
+
+				if (t == 0)
+				{
+					t++;
+				}
+
+				if (currentGame->currentBoard[t-1][j] == currentGame->currentBoard[t][j] &&  modified[t-1] == false)
+				{
+					currentGame->currentBoard[t-1][j] += currentGame->currentBoard[t][j];
+					modified[t+1] = true;
+					currentGame->score += currentGame->currentBoard[i][t-1];
+					currentGame->currentBoard[t][j] = 0;
+				}
+			}
+		}
+	}
+    free(modified);
+}
+
+__device__ void cuda_process_down(GameState *currentGame, int* boardSize)
+{
+    bool* modified = (bool*)malloc(sizeof(bool)*(*boardSize));   
+	for (int j = 0; j < *boardSize; ++j)
+	{      
+		for (int p = 0; p < *boardSize; ++p)
+		{
+			modified[p] = false;
+		}
+
+		for (int i = *boardSize - 2; i > -1; --i)
+		{
+			if (currentGame->currentBoard[i][j] != 0)
+			{
+				int t = i;
+				while(t < *boardSize - 1 && currentGame->currentBoard[t+1][j] == 0)
+				{
+					currentGame->currentBoard[t+1][j] = currentGame->currentBoard[t][j];
+					currentGame->currentBoard[t][j] = 0;
+					t++;
+				}
+
+				if (t == *boardSize - 1)
+				{
+					t--;
+				}
+
+				if (currentGame->currentBoard[t+1][j] == currentGame->currentBoard[t][j] && modified[t+1] == false)
+				{
+					currentGame->currentBoard[t+1][j] += currentGame->currentBoard[t][j];
+					modified[t+1] = true;
+					currentGame->score += currentGame->currentBoard[t+1][j];
+					currentGame->currentBoard[t][j] = 0;
+				}
+			}
+		}
+	}
+    free(modified);
+}
+
+void serialBuildTree(Tree* tree, int leaf_node_limit, Node** host_arr)
 {
     //todo: fix this not working correctly
 	stack<Node*> tracker;
@@ -297,7 +491,7 @@ void serialBuildTree(Tree* tree, int leaf_node_limit, Node* host_arr)
     }
 }
 
-void serialGenerateChidlren(Node* currentNode, Tree* tree, Node* host_arr)
+void serialGenerateChidlren(Node* currentNode, Tree* tree, Node** host_arr)
 {
 	for (int i = 0; i < 4; i++)
 	{
@@ -350,7 +544,7 @@ void serialGenerateChidlren(Node* currentNode, Tree* tree, Node* host_arr)
         
         if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState)) 
         {
-            host_arr[tree->num_cutoff_states] = *currentNode;
+            host_arr[tree->num_cutoff_states][0] = *currentNode;
             tree->num_cutoff_states++;
         }
 	}

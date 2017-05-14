@@ -19,8 +19,15 @@ class Node
 
 		bool isLeaf = false;
         bool hasChildren = false;
-
+        
+        #ifdef CUDA    
+            __host__ __device__
+        #endif
 		Node(Node*, GameState*, int);
+    
+        #ifdef CUDA    
+            __host__ __device__
+        #endif
 		~Node();
 };
 
