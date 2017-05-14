@@ -111,7 +111,7 @@ void run_AI()
     
     if(print_output)
     {
-        printf("board_size: %i, num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
+        printf("board_size: %i, num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, cutoff_states: %d, stats: %f\n", board_size, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, tree->num_cutoff_states, ((double)tree->num_solutions/(double)tree->num_leaves));
         
         if(tree->optimal2048)
             printf("min_depth: %d time_taken: %f\n", tree->optimal2048->depth, time_taken);

@@ -60,8 +60,9 @@ __device__ void generateChidlren(Node* currentNode, Tree* tree);
 
 /* host functions */
 void run_AI();
-void serialBuildTree(Tree* tree, int leaf_node_limit);
-void serialGenerateChidlren(Node* currentNode, Tree* tree);
+void serialBuildTree(Tree* tree, int leaf_node_limit, Node* host_arr);
+void serialGenerateChidlren(Node* currentNode, Tree* tree, Node* host_arr);
+Node* createHostTreeArray(Tree* tree, int num_host_leaves, int num_sub_tree_nodes);
     
 void process_args(int argc, char *argv[]);
 void halt_execution_cuda(string);
@@ -70,6 +71,7 @@ int main(int argc, char *argv[])
 {
 	//some basic setup
     print_cmd_heading(app_name);
+    
     if (argc == 1)
     {
         print_usage(argc, argv);
@@ -80,7 +82,7 @@ int main(int argc, char *argv[])
         srand(time(NULL));
     else
         srand(10000);
-
+    
     process_args(argc, argv);
     run_AI();
 
@@ -93,8 +95,9 @@ int main(int argc, char *argv[])
 
 void run_AI()
 {
+    printf("Building initial tree...\n");
     float time_taken = 0.0;
-      
+    
     StopWatchInterface *timer = NULL;
     sdkCreateTimer(&timer);
     sdkStartTimer(&timer);    
@@ -106,8 +109,15 @@ void run_AI()
 	Tree* tree = new Tree(initial_state);
     stack<Node*> tracker;
     
-    int num_leaves = 10000; //todo: dynamic calcs
-    serialBuildTree(tree, num_leaves);
+    int num_host_leaves = 1024; //todo: dynamic calcs
+    int num_sub_tree_nodes = 1024;
+    Node* host_arr = (Node*)malloc((num_host_leaves+4)*num_sub_tree_nodes*sizeof(Node));
+    
+    serialBuildTree(tree, num_host_leaves, host_arr);
+    
+    printf("Convert host array to cuda...\n");
+    //create node array
+    // Node* host_arr = createHostTreeArray(tree, num_host_leaves, num_sub_tree_nodes);
     
 	// buildTree<<<dimGrid, dimBlock>>>(tree, tracker, max_depth, max_num_nodes, start_epoch, time_limit);
     
@@ -148,7 +158,7 @@ __global__ void buildTree(Tree* tree, stack<Node*> tracker, int depth_limit = -1
     
 }
 
-void serialBuildTree(Tree* tree, int leaf_node_limit)
+void serialBuildTree(Tree* tree, int leaf_node_limit, Node* host_arr)
 {
     //todo: fix this not working correctly
 	stack<Node*> tracker;
@@ -158,10 +168,10 @@ void serialBuildTree(Tree* tree, int leaf_node_limit)
 	{
 		Node* currentNode = tracker.top();
         tracker.pop();
-
+    
 		if(currentNode)
 		{
-			serialGenerateChidlren(currentNode, tree);
+			serialGenerateChidlren(currentNode, tree, host_arr);
             
             for (int i = 3; i > -1; --i)
             {
@@ -176,13 +186,13 @@ void serialBuildTree(Tree* tree, int leaf_node_limit)
     }
 }
 
-void serialGenerateChidlren(Node* currentNode, Tree* tree)
+void serialGenerateChidlren(Node* currentNode, Tree* tree, Node* host_arr)
 {
 	for (int i = 0; i < 4; i++)
 	{
         GameState* newState = new GameState(tree->BOARD_SIZE);
 		newState->copy(currentNode->current_state);
-
+        
 		process_action(newState, i);
 
         if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState))
@@ -229,6 +239,7 @@ void serialGenerateChidlren(Node* currentNode, Tree* tree)
         
         if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState)) 
         {
+            host_arr[tree->num_cutoff_states][0] = currentNode;
             tree->num_cutoff_states++;
         }
 	}
@@ -325,6 +336,6 @@ void process_args(int argc, char *argv[])
 
 void halt_execution_cuda(string message="")
 {
+    cudaDeviceReset();
 	halt_execution(message);
-	cudaDeviceReset();
 }

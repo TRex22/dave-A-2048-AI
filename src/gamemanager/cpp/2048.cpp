@@ -69,29 +69,10 @@ bool add_new_number(GameState *currentGame);
 #endif
 bool checkBoardEmptySlot(GameState *currentGame);
 
-#ifdef CUDA 
-    __host__ __device__
-#endif
 void process_action(GameState *currentGame, int action);
-
-#ifdef CUDA 
-    __host__ __device__
-#endif
 void process_left(GameState *currentGame);
-
-#ifdef CUDA 
-    __host__ __device__
-#endif
 void process_right(GameState *currentGame);
-
-#ifdef CUDA 
-    __host__ __device__
-#endif
 void process_up(GameState *currentGame);
-
-#ifdef CUDA 
-    __host__ __device__
-#endif
 void process_down(GameState *currentGame);
 
 #ifdef CUDA 
@@ -217,13 +198,7 @@ void process_left(GameState *currentGame)
 {
 	for (int i = 0; i < currentGame->boardSize; ++i)
 	{
-        #ifdef CUDA 
-            bool *modified = 0;
-            cudaMalloc((void**)&modified, currentGame->boardSize);
-        #else
-            bool modified[currentGame->boardSize];
-        #endif
-		
+        bool modified[currentGame->boardSize];
 		for (int p = 0; p < currentGame->boardSize; ++p)
 		{
 			modified[p] = false;
@@ -263,13 +238,7 @@ void process_right(GameState *currentGame)
 {
 	for (int i = 0; i < currentGame->boardSize; ++i)
 	{
-        #ifdef CUDA 
-            bool *modified = 0;
-            cudaMalloc((void**)&modified, currentGame->boardSize);
-        #else
-            bool modified[currentGame->boardSize];
-        #endif
-            
+        bool modified[currentGame->boardSize];            
 		for (int p = 0; p < currentGame->boardSize; ++p)
 		{
 			modified[p] = false;
@@ -308,13 +277,7 @@ void process_up(GameState *currentGame)
 {
 	for (int j = 0; j < currentGame->boardSize; ++j)
 	{
-        #ifdef CUDA 
-            bool *modified = 0;
-            cudaMalloc((void**)&modified, currentGame->boardSize);
-        #else
-            bool modified[currentGame->boardSize];
-        #endif
-            
+        bool modified[currentGame->boardSize];            
 		for (int p = 0; p < currentGame->boardSize; ++p)
 		{
 			modified[p] = false;
@@ -353,13 +316,7 @@ void process_down(GameState *currentGame)
 {
 	for (int j = 0; j < currentGame->boardSize; ++j)
 	{
-        #ifdef CUDA 
-            bool *modified = 0;
-            cudaMalloc((void**)&modified, currentGame->boardSize);
-        #else
-            bool modified[currentGame->boardSize];
-        #endif
-            
+        bool modified[currentGame->boardSize];            
 		for (int p = 0; p < currentGame->boardSize; ++p)
 		{
 			modified[p] = false;
