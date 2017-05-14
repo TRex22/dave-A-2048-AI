@@ -57,7 +57,7 @@ bool print_output = false;
 bool print_path = false;
 bool save_csv = false;
 string initial_state_path = "";
-string filepath = "./results/serial_ai";
+string filepath = "./results/mpi_ai";
 bool DEBUG = false;
 float time_limit = -1.0;
 
