@@ -109,7 +109,67 @@ int main(int argc, char *argv[])
         init_states = get_init_states(comm_sz);
         linearize_and_send(init_states, comm_sz);
 
+        int local_optima[comm_sz-1];
+        int optimum;
+
+        //Recv local optima from each process and store it in process_rank-1 index
+        for (int i = 1; i < comm_sz; ++i)
+        {
+            MPI_Recv(&optimum, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+            int src = status.MPI_SOURCE;
+            local_optima[src - 1] = optimum;
+        }
+
+        //find min solution path and its process
+        int min = local_optima[0];
+        int optimal_proc = 0;
+        for (int i = 1; i < comm_sz-1; ++i)
+        {
+            if (local_optima[i] != -1)
+            {
+                if (local_optima[i] < min)
+                {
+                    min = local_optima[i];
+                    optimal_proc = i;
+                }
+            }
+        }
+
+        //Just in case
+        if (min == -1)
+        {
+            printf("NO SOLUTION!!!!!!\n");
+        }
+
+        for (int i = 0; i < comm_sz-1; ++i)
+        {
+            printf("%d ", local_optima[i]);
+        }
+        printf("\noptimal_proc: %d\n", optimal_proc+1);
+        printf("min: %d\n", min);
+        
+
+        //Send a '1' to proc with best solution
+        int one = 1;
+        int zero = 0;
+        for (int i = 0; i < comm_sz-1; ++i)
+        {
+            if (i != optimal_proc)
+            {
+                MPI_Send(&zero, 1, MPI_INT, i+1, i+1, MPI_COMM_WORLD);
+            }
+            else if (i == optimal_proc)
+            {
+                MPI_Send(&one, 1, MPI_INT, i+1, i+1, MPI_COMM_WORLD);
+            }
+        }
+
+        
+        
+
     }
+
+    //Else if not Proc 0
     else
     {
         MPI_Recv(&local_size, 1, MPI_INT, 0, myrank, MPI_COMM_WORLD, &status);
@@ -252,6 +312,10 @@ void run_AI(GameState* state)
 {
     printf("running AI\n");
     float time_taken = 0.0;
+    int myrank;
+    MPI_Status status;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
     float start_epoch = omp_get_wtime();
     
     GameState* initial_state = state;
@@ -269,13 +333,33 @@ void run_AI(GameState* state)
     
     // if(print_output)
     // {
-        printf("board_size: %i, num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
+        // printf("board_size: %i, num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
         
-        if(tree->optimal2048)
-            printf("min_depth: %d time_taken: %f\n", tree->optimal2048->depth, time_taken);
+        // if(tree->optimal2048)
+        //     printf("min_depth: %d time_taken: %f\n", tree->optimal2048->depth, time_taken);
     // }
 
-    
+    int optimum;
+    if(tree->optimal2048)
+        optimum = tree->optimal2048->depth;
+    else
+        optimum = -1;
+
+    MPI_Send(&optimum, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+
+    int is_best_proc;
+    MPI_Recv(&is_best_proc, 1, MPI_INT, 0, myrank, MPI_COMM_WORLD, &status);
+
+    if (is_best_proc == 1)
+    {
+        printf("Proc %d: I am the best proc :D\n", myrank);
+    }
+    else if (is_best_proc == 0)
+    {
+        printf("Proc %d: I am not the best proc ;_;\n", myrank);
+    }
+
+
     if(save_to_file)
     {
         if (save_csv)

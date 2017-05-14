@@ -10,6 +10,7 @@ It uses tree search algorithms to play the single player game 2048.
 
 TODO
 ----
+- filename cmd param
 - ~~timelimit~~
 - ~~track sizes~~
 - ~~cleanup comments~~
