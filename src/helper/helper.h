@@ -22,6 +22,7 @@ bool print_solution(Tree* tree);
 bool checkAtRoot(Node* node);
 bool canContinue(Node* node);
 bool shouldLimit(Tree* tree, int depth_limit, int node_limit, float current_time, float time_limit);
+bool shouldLimit(Tree* tree, int cutoff_node_limit);
 
 void halt_execution(string message);
 void write_results_to_file (std::string filename, std::string results);

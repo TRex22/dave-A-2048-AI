@@ -30,27 +30,27 @@ class GameState
 		bool invalidMove = false;
     
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 		GameState(int);
     
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 		GameState(int, bool);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 		bool equals(GameState *state);
     
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 		void copy(GameState *state);
     
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 		void init_to_zero(GameState* state);
 };

@@ -136,6 +136,16 @@ bool shouldLimit(Tree* tree, int depth_limit, int node_limit, float current_time
     return false;
 }
 
+bool shouldLimit(Tree* tree, int cutoff_node_limit)
+{
+    if (tree->num_cutoff_states > cutoff_node_limit)
+    {
+        return true;
+    }
+    
+    return false;
+}
+
 void halt_execution(string message="")
 {
 	cout << message << endl;

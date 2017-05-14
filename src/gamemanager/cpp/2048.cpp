@@ -40,62 +40,62 @@ using namespace std;
 int BOARD_SIZE = 4;
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 bool determine_2048(GameState *currentGame);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 int determine_highest_value(GameState *currentGame);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 void print_board(GameState *currentGame);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 void print_horizontal_boarder(int boardSize);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 bool add_new_number(GameState *currentGame);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 bool checkBoardEmptySlot(GameState *currentGame);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 void process_action(GameState *currentGame, int action);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 void process_left(GameState *currentGame);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 void process_right(GameState *currentGame);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 void process_up(GameState *currentGame);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 void process_down(GameState *currentGame);
 
 #ifdef CUDA 
-    __device__
+    __host__ __device__
 #endif
 bool compare_game_states(GameState *game1, GameState *game2);
 
