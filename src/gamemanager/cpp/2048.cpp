@@ -9,7 +9,6 @@
 	boardSize = since the board is square this is just the width of the board
 	score = current player score, starts at 0
 	currentBoard = current squares starts at 0 and has all the numbers on the board
-	
 
 	AI General Algorithm:
 	1. Generate a random init board
@@ -40,17 +39,64 @@ using namespace std;
 // not using define in order to overwrite with cmdline args at a later point
 int BOARD_SIZE = 4;
 
+#ifdef CUDA 
+    __host__ __device__
+#endif
 bool determine_2048(GameState *currentGame);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 int determine_highest_value(GameState *currentGame);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 void print_board(GameState *currentGame);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 void print_horizontal_boarder(int boardSize);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 bool add_new_number(GameState *currentGame);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 bool checkBoardEmptySlot(GameState *currentGame);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 void process_action(GameState *currentGame, int action);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 void process_left(GameState *currentGame);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 void process_right(GameState *currentGame);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 void process_up(GameState *currentGame);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 void process_down(GameState *currentGame);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 bool compare_game_states(GameState *game1, GameState *game2);
 
 bool determine_2048(GameState *currentGame)
@@ -167,13 +213,17 @@ void process_action(GameState *currentGame, int action)
 	}
 }
 
-
-
 void process_left(GameState *currentGame)
 {
 	for (int i = 0; i < currentGame->boardSize; ++i)
 	{
-		bool modified[currentGame->boardSize];
+        #ifdef CUDA 
+            bool *modified = 0;
+            cudaMalloc((void**)&modified, currentGame->boardSize);
+        #else
+            bool modified[currentGame->boardSize];
+        #endif
+		
 		for (int p = 0; p < currentGame->boardSize; ++p)
 		{
 			modified[p] = false;
@@ -213,7 +263,13 @@ void process_right(GameState *currentGame)
 {
 	for (int i = 0; i < currentGame->boardSize; ++i)
 	{
-		bool modified[currentGame->boardSize];
+        #ifdef CUDA 
+            bool *modified = 0;
+            cudaMalloc((void**)&modified, currentGame->boardSize);
+        #else
+            bool modified[currentGame->boardSize];
+        #endif
+            
 		for (int p = 0; p < currentGame->boardSize; ++p)
 		{
 			modified[p] = false;
@@ -252,7 +308,13 @@ void process_up(GameState *currentGame)
 {
 	for (int j = 0; j < currentGame->boardSize; ++j)
 	{
-		bool modified[currentGame->boardSize];
+        #ifdef CUDA 
+            bool *modified = 0;
+            cudaMalloc((void**)&modified, currentGame->boardSize);
+        #else
+            bool modified[currentGame->boardSize];
+        #endif
+            
 		for (int p = 0; p < currentGame->boardSize; ++p)
 		{
 			modified[p] = false;
@@ -278,7 +340,7 @@ void process_up(GameState *currentGame)
 				if (currentGame->currentBoard[t-1][j] == currentGame->currentBoard[t][j] &&  modified[t-1] == false)
 				{
 					currentGame->currentBoard[t-1][j] += currentGame->currentBoard[t][j];
-					modified[t+1] == true;
+					modified[t+1] = true;
 					currentGame->score += currentGame->currentBoard[i][t-1];
 					currentGame->currentBoard[t][j] = 0;
 				}
@@ -291,7 +353,13 @@ void process_down(GameState *currentGame)
 {
 	for (int j = 0; j < currentGame->boardSize; ++j)
 	{
-		bool modified[currentGame->boardSize];
+        #ifdef CUDA 
+            bool *modified = 0;
+            cudaMalloc((void**)&modified, currentGame->boardSize);
+        #else
+            bool modified[currentGame->boardSize];
+        #endif
+            
 		for (int p = 0; p < currentGame->boardSize; ++p)
 		{
 			modified[p] = false;
