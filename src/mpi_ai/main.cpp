@@ -142,9 +142,24 @@ int main(int argc, char *argv[])
         }
 
         Node* optimal_leaf = get_optimal_leaf(init_states, optimal_proc + 1);
-        std::stack<Node*> optimal_subtree = push_parents_to_stack(optimal_leaf);
-        printf("Proc 0: opt_sub size = %d\n", optimal_subtree.size());
+
+
+
+        //push path from optimal leaf to root into stack optimal_subtree
+        std::stack<Node*> optimal_subtree;
+        Node* node = optimal_leaf;
+        optimal_subtree.push(node);
+
+        while(node->parent != NULL)
+        {
+            node = node->parent;
+            optimal_subtree.push(node);
+        }
+
+        //prints optimal subtree
         save_subtree_to_file(optimal_subtree, board_size);
+
+
 
 
         //Just in case
@@ -658,6 +673,8 @@ void save_subtree_to_file(std::stack<Node*> states)
 
 void save_subtree_to_file(std::stack<Node*> states, int boardSize)
 {
+    states.pop();
+    states.pop();
     Node* node = states.top();
     int size = boardSize;
     printf("got board size %d\n", size);
