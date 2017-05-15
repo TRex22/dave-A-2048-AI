@@ -181,9 +181,9 @@ void run_AI()
     checkCudaErrors(cudaMalloc((void**)&device_num_sub_tree_nodes, sizeof(int)));
     checkCudaErrors(cudaMalloc((void**)&device_board_size, sizeof(int)));
     
-    checkCudaErrors(cudaMemcpy2D(device_arr, devPitch, &host_arr, width, width, height, cudaMemcpyHostToDevice));
-    // checkCudaErrors(cudaMemcpy(device_tstats, &tstats, sizeof(Tree_Stats), cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpyToSymbol(device_tstats, tstats, sizeof(Tree_Stats), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy2D(device_arr, devPitch, host_arr, width, width, height, cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(device_tstats, &tstats, sizeof(Tree_Stats), cudaMemcpyHostToDevice));
+    // checkCudaErrors(cudaMemcpyToSymbol(device_tstats, tstats, sizeof(Tree_Stats), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(device_num_sub_tree_nodes, &max_num_nodes, sizeof(int), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(device_board_size, &board_size, sizeof(int), cudaMemcpyHostToDevice));
     
@@ -210,9 +210,9 @@ void run_AI()
         printf("Copy results back to host...\n\n");
     
     // cudaMemcpy(host_arr, device_arr, nodeArrSize, cudaMemcpyDeviceToHost);
-    // checkCudaErrors(cudaMemcpy(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
-    checkCudaErrors(cudaMemcpyToSymbol(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
-    checkCudaErrors(cudaMemcpy2D(host_arr, width, &device_arr, devPitch, width, height, cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
+    // checkCudaErrors(cudaMemcpyToSymbol(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy2D(host_arr, width, device_arr, devPitch, width, height, cudaMemcpyDeviceToHost));
     
     float end_epoch = sdkGetTimerValue(&timer);
     time_taken = end_epoch-start_epoch;
