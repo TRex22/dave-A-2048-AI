@@ -77,6 +77,7 @@ int count_computable_nodes(stack<Node*> stack);
 bool is_leaf(GameState* state);
 Node* get_optimal_leaf(std::stack<Node*> init_states, int optimal_proc);
 void save_subtree_to_file(std::stack<Node* >init_states);
+void save_subtree_to_file(std::stack<Node*> states, int boardSize);
 std::stack<Node*> push_parents_to_stack(Node* leaf);
 std::stack<Node*> push_parents_to_stack(Node* leaf,int min_depth);
 void save_and_send_stack_as_matrix(std::stack<Node*> states);
@@ -140,9 +141,10 @@ int main(int argc, char *argv[])
             }
         }
 
-        // Node* optimal_leaf = get_optimal_leaf(init_states, optimal_proc);
-        // std::stack<Node*> optimal_subtree = push_parents_to_stack(optimal_leaf);
-        // save_subtree_to_file(optimal_subtree);
+        Node* optimal_leaf = get_optimal_leaf(init_states, optimal_proc + 1);
+        std::stack<Node*> optimal_subtree = push_parents_to_stack(optimal_leaf);
+        printf("Proc 0: opt_sub size = %d\n", optimal_subtree.size());
+        save_subtree_to_file(optimal_subtree, board_size);
 
 
         //Just in case
@@ -174,13 +176,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        printf("Proc %d: waiting\n", myrank);
-        int mat_size;
-        MPI_Recv(&mat_size, 1, MPI_INT, optimal_proc+1, 0, MPI_COMM_WORLD, &status);
-        printf("Proc %d: size = %d\n", myrank, mat_size);
-        int solution[mat_size][board_size*board_size];
-        printf("Proc %d: made sol mat\n", myrank);
-        MPI_Recv(&solution, mat_size * board_size*board_size, MPI_INT, optimal_proc+1, 0, MPI_COMM_WORLD, &status);
+        
         
 
     }
@@ -382,10 +378,6 @@ void run_AI(GameState* state)
     {
         printf("Proc %d: I am the best proc :D\n", myrank);
         std::stack<Node*> optimal_solution = push_parents_to_stack(tree->optimal2048, tree->optimal2048->depth);
-        printf("made stack\n");
-        printf("sending\n");
-        save_and_send_stack_as_matrix(optimal_solution);
-        printf("sent\n");
         // save_subtree_to_file(optimal_solution);
     }
     else if (is_best_proc == 0)
@@ -600,11 +592,12 @@ Node* get_optimal_leaf(std::stack<Node*> init_states, int optimal_proc)
     while(!init_states.empty())
     {
         Node* node = init_states.top();
-        init_states.pop();
         if (node->process_num == optimal_proc)
         {
+            printf("Proc 0: found opt Node at proc - %d\n", node->process_num);
             return node;
         }
+        init_states.pop();
     }
 }
 
@@ -640,25 +633,53 @@ std::stack<Node*> push_parents_to_stack(Node* leaf, int min_depth)
 
 void save_subtree_to_file(std::stack<Node*> states)
 {
-    ofstream file;
     Node* node = states.top();
     int size = node->current_state->boardSize;
-    file.open("../../results/mpi_optimal_solution.txt", std::ofstream::app);
+    printf("got board size %d\n", size);
+
     while(!states.empty())
     {
-        Node* node = states.top();
-        int board[size*size];
+        node = states.top();
         for (int i = 0; i < size; ++i)
         {
             for (int j = 0; j < size; ++j)
             {
-                file << node->current_state->currentBoard[i][j];
-                if (i != size-1 && j != size-1)
+                printf("%d", node->current_state->currentBoard[i][j]);
+                if (i != size-1 || j != size-1)
                 {
-                    file << ",";
+                    printf(",");
                 }
             }
         }
+        printf("\n");
+        states.pop();
+    }
+}
+
+void save_subtree_to_file(std::stack<Node*> states, int boardSize)
+{
+    Node* node = states.top();
+    int size = boardSize;
+    printf("got board size %d\n", size);
+
+    while(!states.empty())
+    {
+        printf("!states.empty()\n");
+        node = states.top();
+        printf("node = top\n");
+        for (int i = 0; i < size; ++i)
+        {
+            for (int j = 0; j < size; ++j)
+            {
+                printf("%d", node->current_state->currentBoard[i][j]);
+                
+                if (i != size-1 || j != size-1)
+                {
+                    printf(",");
+                }
+            }
+        }
+        printf("\n");
         states.pop();
     }
 }
@@ -666,32 +687,48 @@ void save_subtree_to_file(std::stack<Node*> states)
 void save_and_send_stack_as_matrix(std::stack<Node*> states)
 {
     Node* node = states.top();
-    int max_state_size = states.size();
     int size = node->current_state->boardSize;
-    int state_mat[max_state_size][size*size];
 
-    printf("...rows = %d\n", max_state_size);
+    // printf("...rows = %d\n", max_state_size);
 
-    for (int k = 0; k < max_state_size; ++k)
+    // for (int k = 0; k < max_state_size; ++k)
+    // {
+    //     for (int i = 0; i < size; ++i)
+    //     {
+    //         for (int j = 0; j < size; ++j)
+    //         {
+    //             state_mat[k][i*size + j] = node->current_state->currentBoard[i][j];
+    //         }
+    //     }
+    //     node = states.top();
+    // }
+    // states.pop();
+
+    // printf("...done matrix\n");
+
+    // //send matrix size and the actual matrix
+    // MPI_Send(&max_state_size, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+    // printf("...sent size\n");
+    // MPI_Send(&state_mat, max_state_size * size*size, MPI_INT, 0, 0, MPI_COMM_WORLD);
+
+    // free(state_mat[0]);
+    // free(state_mat);
+
+    while(!states.empty())
     {
+        node = states.top();
         for (int i = 0; i < size; ++i)
         {
             for (int j = 0; j < size; ++j)
             {
-                state_mat[k][i*size + j] = node->current_state->currentBoard[i][j];
+                printf("%d", node->current_state->currentBoard[i][j]);
+                if (i != size-1 && j != size-1)
+                {
+                    printf(",");
+                }
             }
+            printf("\n");
         }
-        node = states.top();
+        states.pop();
     }
-    states.pop();
-
-    printf("...done matrix\n");
-
-    //send matrix size and the actual matrix
-    MPI_Send(&max_state_size, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-    printf("...sent size\n");
-    MPI_Send(&state_mat, max_state_size * size*size, MPI_INT, 0, 0, MPI_COMM_WORLD);
-
-    free(state_mat[0]);
-    free(state_mat);
 }
