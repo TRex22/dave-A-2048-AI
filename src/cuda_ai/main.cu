@@ -188,7 +188,7 @@ void run_AI()
     checkCudaErrors(cudaMemcpy(device_board_size, &board_size, sizeof(int), cudaMemcpyHostToDevice));
     
     dim3 dimBlock( warp, warp, 1 );
-    dim3 dimGrid( board_size*warp, board_size*warp );
+    dim3 dimGrid( height/warp, width/warp );
     
     if(print_output)
         printf("Start buildTree kernel...\n");
@@ -210,7 +210,7 @@ void run_AI()
         printf("Copy results back to host...\n\n");
     
     // cudaMemcpy(host_arr, device_arr, nodeArrSize, cudaMemcpyDeviceToHost);
-    checkCudaErrors(cudaMemcpy(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
+    // checkCudaErrors(cudaMemcpy(tstats, &device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
     // checkCudaErrors(cudaMemcpyToSymbol(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
     checkCudaErrors(cudaMemcpy2D(host_arr, width, device_arr, devPitch, width, height, cudaMemcpyDeviceToHost));
     
@@ -259,7 +259,7 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int* devi
     
     while(curr_node < *device_num_sub_tree_nodes-4)
     {
-        int arr_idx = x * (width*curr_node); //idx or x?
+        int arr_idx = y*width+x; //x * (width*curr_node); //idx or x?
         Node* currentNode = &device_arr[arr_idx];
         
         for (int i = 0; i < 4; i++)
@@ -323,7 +323,9 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int* devi
         }     
         
         curr_node++;
-    }        
+    }  
+    
+    __syncthreads();
 }
 
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes) {
