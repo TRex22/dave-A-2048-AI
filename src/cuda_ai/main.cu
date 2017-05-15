@@ -51,11 +51,37 @@ bool testResult = true;
 
 using namespace std;
 
+struct Tree_Stats {
+    int BOARD_SIZE = 0;
+    Node* root = NULL;
+    
+    Node* optimal2048 = NULL;
+    size_t idx = 0;
+    
+    int num_nodes = 0;
+    int max_depth = 0;   
+    int num_solutions = 0;
+    int num_leaves = 0;
+    int num_cutoff_states = 0;
+};
+
+void update_tree_stats(Tree_Stats* stats, Node* root, Node* optimal2048, size_t idx, int num_nodes, int max_depth, int num_solutions, int num_leaves, int num_cutoff_states)
+{
+    stats->root = root;
+    stats->optimal2048 = optimal2048;
+    stats->idx = idx;
+    stats->num_nodes = num_nodes;
+    stats->max_depth = max_depth;
+    stats->num_solutions = num_solutions;
+    stats->num_leaves = num_leaves;
+    stats->num_cutoff_states = num_cutoff_states;
+}
+
 /* Function Headers */
 int main(int argc, char *argv[]);
 
 /* device functions */
-__global__ void buildTree(Node** device_arr, int* device_num_sub_tree_nodes, int* board_size, curandState_t* rnd_states);
+__global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int* device_num_sub_tree_nodes, int* board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize);
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes);
 __device__ bool cuda_add_new_number(GameState *currentGame, curandState_t* states, int* device_num_sub_tree_nodes);
 
@@ -67,8 +93,8 @@ __device__ void cuda_process_down(GameState *currentGame, int* boardSize);
 
 /* host functions */
 void run_AI();
-void serialBuildTree(Tree* tree, int leaf_node_limit, Node** host_arr);
-void serialGenerateChidlren(Node* currentNode, Tree* tree, Node** host_arr);
+void serialBuildTree(Tree* tree, int leaf_node_limit, Node* host_arr, size_t height, size_t width, size_t nodeArrSize);
+void serialGenerateChidlren(Node* currentNode, Tree* tree, Node* host_arr, size_t height, size_t width, size_t nodeArrSize);
 Node* createHostTreeArray(Tree* tree, int num_host_leaves, int num_sub_tree_nodes);
     
 void process_args(int argc, char *argv[]);
@@ -107,6 +133,9 @@ void run_AI()
     
     float time_taken = 0.0;
     
+    Tree_Stats *tstats = new Tree_Stats;
+    tstats->BOARD_SIZE = board_size;
+    
     StopWatchInterface *timer = NULL;
     sdkCreateTimer(&timer);
     sdkStartTimer(&timer);    
@@ -127,31 +156,34 @@ void run_AI()
     
     if(print_output)
         printf("Allocate host arr...\n");
-    Node* host_arr[height]; //= (Node**)malloc(sizeof(Node*)*num_host_leaves+4);
-    for(int i = 0; i < height; i++)
-        host_arr[i] = (Node *)malloc(width);
+    Node* host_arr = (Node*)malloc(nodeArrSize);
     
     if(print_output)
         printf("Building initial tree...\n");
-    serialBuildTree(tree, num_host_leaves, host_arr);
+    serialBuildTree(tree, num_host_leaves, host_arr, height, width, nodeArrSize);
+    
+    //update tree stats
+    update_tree_stats(tstats, tree->root, tree->optimal2048, 0, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, tree->num_cutoff_states);
     
     if(print_output)
         printf("Move host array to device...\n");
     
     // device variables
-    Node** device_arr;
+    Node* device_arr;
+    Tree_Stats* device_tstats;
     int* device_num_sub_tree_nodes;
     int* device_board_size;
     size_t devPitch;
     
     // checkCudaErrors(cudaMalloc((void**)&device_arr, nodeArrSize));
-    checkCudaErrors(cudaMallocPitch((void**)&device_board_size, &devPitch, width, height));
+    checkCudaErrors(cudaMallocPitch((void**)&device_arr, &devPitch, width, height));
+    checkCudaErrors(cudaMalloc((void**)&device_tstats, sizeof(Tree_Stats)));
     checkCudaErrors(cudaMalloc((void**)&device_num_sub_tree_nodes, sizeof(int)));
     checkCudaErrors(cudaMalloc((void**)&device_board_size, sizeof(int)));
     
-    checkCudaErrors(cudaMemcpy2D(device_board_size, devPitch, &host_arr, nodeArrSize, width, height, cudaMemcpyHostToDevice));
-
-    printf("4...\n");
+    checkCudaErrors(cudaMemcpy2D(device_arr, devPitch, &host_arr, width, width, height, cudaMemcpyHostToDevice));
+    // checkCudaErrors(cudaMemcpy(device_tstats, &tstats, sizeof(Tree_Stats), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpyToSymbol(device_tstats, tstats, sizeof(Tree_Stats), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(device_num_sub_tree_nodes, &max_num_nodes, sizeof(int), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(device_board_size, &board_size, sizeof(int), cudaMemcpyHostToDevice));
     
@@ -172,12 +204,15 @@ void run_AI()
     cudaMalloc((void**) &states, warp*warp* sizeof(curandState_t)); //N*sizeof
     
     init_rnd<<<dimGrid, dimBlock>>>(seed, states, device_num_sub_tree_nodes);
-	buildTree<<<dimGrid, dimBlock>>>(device_arr, device_num_sub_tree_nodes, device_board_size, states);
+	buildTree<<<dimGrid, dimBlock>>>(device_arr, device_tstats, device_num_sub_tree_nodes, device_board_size, states, height, width, nodeArrSize);
     
     if(print_output)
         printf("Copy results back to host...\n\n");
+    
     // cudaMemcpy(host_arr, device_arr, nodeArrSize, cudaMemcpyDeviceToHost);
-    checkCudaErrors(cudaMemcpy2D(host_arr, devPitch, device_arr, nodeArrSize, width, height, cudaMemcpyDeviceToHost));
+    // checkCudaErrors(cudaMemcpy(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpyToSymbol(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy2D(host_arr, width, &device_arr, devPitch, width, height, cudaMemcpyDeviceToHost));
     
     float end_epoch = sdkGetTimerValue(&timer);
     time_taken = end_epoch-start_epoch;
@@ -189,10 +224,10 @@ void run_AI()
     
     if(print_output)
     {
-//         printf("board_size: %i, num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, ((double)tree->num_solutions/(double)tree->num_leaves));
+        printf("board_size: %i, num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tstats->num_nodes, tstats->max_depth, tstats->num_solutions, tstats->num_leaves, ((double)tstats->num_solutions/(double)tstats->num_leaves));
         
-//         if(tree->optimal2048)
-//             printf("min_depth: %d time_taken: %f\n", tree->optimal2048->depth, time_taken);
+        if(tstats->optimal2048)
+            printf("min_depth: %d time_taken: %f\n", tstats->optimal2048->depth, time_taken);
     }
 
     
@@ -214,7 +249,7 @@ void run_AI()
     checkCudaErrors(cudaFree(device_board_size));
 }
 
-__global__ void buildTree(Node** device_arr, int* device_num_sub_tree_nodes, int* board_size, curandState_t* rnd_states)
+__global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int* device_num_sub_tree_nodes, int* board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -224,7 +259,8 @@ __global__ void buildTree(Node** device_arr, int* device_num_sub_tree_nodes, int
     
     while(curr_node < *device_num_sub_tree_nodes-4)
     {
-        Node* currentNode = &device_arr[x][curr_node];
+        int arr_idx = x * (width*curr_node); //idx or x?
+        Node* currentNode = &device_arr[arr_idx];
         
         for (int i = 0; i < 4; i++)
         {
@@ -244,25 +280,50 @@ __global__ void buildTree(Node** device_arr, int* device_num_sub_tree_nodes, int
 
                     // currentNode->children[i] = new Node(currentNode, newState, currentDepth);
                     Node newNode(currentNode, newState, currentDepth);
-                    device_arr[x][curr_node+i+1] = newNode;
-                    currentNode->children[i] = &device_arr[x][curr_node+i+1];
+                    int new_arr_idx = x + (width*curr_node+i+1);
+                    // device_arr[x][curr_node+i+1] = newNode;
+                    device_arr[new_arr_idx] = newNode;
+                    currentNode->children[i] = &device_arr[new_arr_idx];
                     // tree->num_nodes++;
 
                     currentNode->hasChildren = true;
                 }
                 else
                 {
-                    currentNode->children[i] = nullptr;
+                    currentNode->children[i] = NULL;
                 }
             }
             else
             {
-                currentNode->children[i] = nullptr;
+                currentNode->children[i] = NULL;
             }
-        }
+            
+            if(determine_2048(currentNode->current_state)) //win and shortest path
+            {
+                if(device_tstats->optimal2048)
+                {
+                    if(currentNode->depth < device_tstats->optimal2048->depth) 
+                        device_tstats->optimal2048 = currentNode;
+                }
+                else
+                    device_tstats->optimal2048 = currentNode;
+
+                device_tstats->num_solutions++;
+            }
+
+            if(determine_2048(currentNode->current_state) || compare_game_states(currentNode->current_state, newState)) 
+            {
+                device_tstats->num_leaves++;
+            }
+
+            if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState)) 
+            {
+                device_tstats->num_cutoff_states++;
+            }  
+        }     
         
         curr_node++;
-    }
+    }        
 }
 
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes) {
@@ -476,7 +537,7 @@ __device__ void cuda_process_down(GameState *currentGame, int* boardSize)
     free(modified);
 }
 
-void serialBuildTree(Tree* tree, int leaf_node_limit, Node** host_arr)
+void serialBuildTree(Tree* tree, int leaf_node_limit, Node* host_arr, size_t height, size_t width, size_t nodeArrSize)
 {
     //todo: fix this not working correctly
 	stack<Node*> tracker;
@@ -489,7 +550,7 @@ void serialBuildTree(Tree* tree, int leaf_node_limit, Node** host_arr)
     
 		if(currentNode)
 		{
-			serialGenerateChidlren(currentNode, tree, host_arr);
+			serialGenerateChidlren(currentNode, tree, host_arr, height, width, nodeArrSize);
             
             for (int i = 3; i > -1; --i)
             {
@@ -504,7 +565,7 @@ void serialBuildTree(Tree* tree, int leaf_node_limit, Node** host_arr)
     }
 }
 
-void serialGenerateChidlren(Node* currentNode, Tree* tree, Node** host_arr)
+void serialGenerateChidlren(Node* currentNode, Tree* tree, Node* host_arr, size_t height, size_t width, size_t nodeArrSize)
 {
 	for (int i = 0; i < 4; i++)
 	{
@@ -557,7 +618,8 @@ void serialGenerateChidlren(Node* currentNode, Tree* tree, Node** host_arr)
         
         if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState)) 
         {
-            host_arr[tree->num_cutoff_states][0] = *currentNode;
+            int idx = tree->num_cutoff_states + width; //because 0 index of internal arr
+            host_arr[idx] = *currentNode;
             tree->num_cutoff_states++;
         }
 	}
