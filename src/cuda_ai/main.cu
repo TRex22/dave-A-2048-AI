@@ -157,7 +157,7 @@ void run_AI()
     if(print_output)
         printf("Allocate host arr...\n");
     Node* host_arr = (Node*)malloc(nodeArrSize);
-    Node* result_arr;
+    Node* result_arr = (Node*)malloc(nodeArrSize);
     
     if(print_output)
         printf("Building initial tree...\n");
@@ -253,14 +253,14 @@ void run_AI()
 __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int* device_num_sub_tree_nodes, int* board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int y = threadIdx.y + blockIdx.y * blockDim.y;
-    int idx = (*device_num_sub_tree_nodes)*y+x;
+    // int y = threadIdx.y + blockIdx.y * blockDim.y;
+    int idx = x+width;
     
     int curr_node = 0;
     
     while(curr_node < *device_num_sub_tree_nodes-4)
     {
-        int arr_idx = y*width+x; //x * (width*curr_node); //idx or x?
+        int arr_idx = idx+(width*curr_node); //y*width+x; //x * (width*curr_node); //idx or x?
         Node* currentNode = &device_arr[arr_idx];
         
         for (int i = 0; i < 4; i++)
