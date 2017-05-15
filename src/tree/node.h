@@ -16,6 +16,7 @@ class Node
 
 		Node* children[csize] = {node_left, node_right, node_up, node_down}; 
 		int depth = 0;
+		int process_num = -1;
 
 		bool isLeaf = false;
         bool hasChildren = false;

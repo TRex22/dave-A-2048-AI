@@ -75,6 +75,11 @@ std::stack<Node*> get_init_states(int nodes);
 void linearize_and_send(std::stack<Node*> stack, int comm_sz);
 int count_computable_nodes(stack<Node*> stack);
 bool is_leaf(GameState* state);
+Node* get_optimal_leaf(std::stack<Node*> init_states, int optimal_proc);
+void save_subtree_to_file(std::stack<Node* >init_states);
+std::stack<Node*> push_parents_to_stack(Node* leaf);
+std::stack<Node*> push_parents_to_stack(Node* leaf,int min_depth);
+void save_and_send_stack_as_matrix(std::stack<Node*> states);
 
 
 /* Definitions */
@@ -135,6 +140,11 @@ int main(int argc, char *argv[])
             }
         }
 
+        // Node* optimal_leaf = get_optimal_leaf(init_states, optimal_proc);
+        // std::stack<Node*> optimal_subtree = push_parents_to_stack(optimal_leaf);
+        // save_subtree_to_file(optimal_subtree);
+
+
         //Just in case
         if (min == -1)
         {
@@ -164,7 +174,13 @@ int main(int argc, char *argv[])
             }
         }
 
-        
+        printf("Proc %d: waiting\n", myrank);
+        int mat_size;
+        MPI_Recv(&mat_size, 1, MPI_INT, optimal_proc+1, 0, MPI_COMM_WORLD, &status);
+        printf("Proc %d: size = %d\n", myrank, mat_size);
+        int solution[mat_size][board_size*board_size];
+        printf("Proc %d: made sol mat\n", myrank);
+        MPI_Recv(&solution, mat_size * board_size*board_size, MPI_INT, optimal_proc+1, 0, MPI_COMM_WORLD, &status);
         
 
     }
@@ -285,13 +301,18 @@ bool is_leaf(GameState* state)
 
 void linearize_and_send(std::stack<Node*> stack, int comm_sz)
 {
+    std::stack<Node*> stack2;
+    int size = board_size;
+
     for (int k = 1; k < comm_sz; ++k)
     {
-        MPI_Request request;
-        int size = board_size;
-        int board[size*size]; 
+        MPI_Request request;        
+        int board[size*size];
+
         Node* node = stack.top();
+        stack2.push(node);
         stack.pop();
+        node->process_num = k;
 
         for (int i = 0; i < size; ++i)
         {
@@ -305,6 +326,13 @@ void linearize_and_send(std::stack<Node*> stack, int comm_sz)
         MPI_Send(board, size*size, MPI_INT, k, k, MPI_COMM_WORLD);
         MPI_Send(&max_num_nodes, 1, MPI_INT, k, k, MPI_COMM_WORLD);
         printf("sent init state to proc: %d\n", k);
+    }
+
+    while(!stack2.empty())
+    {
+        Node* top = stack2.top();
+        stack.push(top);
+        stack2.pop();
     }
 }
 
@@ -353,6 +381,12 @@ void run_AI(GameState* state)
     if (is_best_proc == 1)
     {
         printf("Proc %d: I am the best proc :D\n", myrank);
+        std::stack<Node*> optimal_solution = push_parents_to_stack(tree->optimal2048, tree->optimal2048->depth);
+        printf("made stack\n");
+        printf("sending\n");
+        save_and_send_stack_as_matrix(optimal_solution);
+        printf("sent\n");
+        // save_subtree_to_file(optimal_solution);
     }
     else if (is_best_proc == 0)
     {
@@ -360,15 +394,15 @@ void run_AI(GameState* state)
     }
 
 
-    if(save_to_file)
-    {
-        if (save_csv)
-            filepath.append(".csv");
-        else
-            filepath.append(".txt");
+    // if(save_to_file)
+    // {
+    //     if (save_csv)
+    //         filepath.append(".csv");
+    //     else
+    //         filepath.append(".txt");
                             
-        save_solution_to_file(tree, time_taken, filepath, save_csv);
-    }
+    //     save_solution_to_file(tree, time_taken, filepath, save_csv);
+    // }
 }
 
 Tree* buildTree(Tree* tree, int depth_limit = -1, int node_limit = -1, float start_time = -1.0, float time_limit=-1.0)
@@ -559,4 +593,105 @@ int log_4(int comm_sz)
     int b = log(4);
     int c = a/b;
     return c;
+}
+
+Node* get_optimal_leaf(std::stack<Node*> init_states, int optimal_proc)
+{
+    while(!init_states.empty())
+    {
+        Node* node = init_states.top();
+        init_states.pop();
+        if (node->process_num == optimal_proc)
+        {
+            return node;
+        }
+    }
+}
+
+std::stack<Node*> push_parents_to_stack(Node* leaf)
+{
+    std::stack<Node*> stack;
+    Node* node = leaf;
+    stack.push(node);
+
+    while(node->parent != NULL)
+    {
+        node = node->parent;
+        stack.push(node);
+    }
+
+    return stack;
+}
+
+std::stack<Node*> push_parents_to_stack(Node* leaf, int min_depth)
+{
+    std::stack<Node*> stack;
+    Node* node = leaf;
+    stack.push(node);
+
+    for (int i = 0; i < min_depth; ++i)
+    {
+        node = node->parent;
+        stack.push(node);
+    }
+
+    return stack;
+}
+
+void save_subtree_to_file(std::stack<Node*> states)
+{
+    ofstream file;
+    Node* node = states.top();
+    int size = node->current_state->boardSize;
+    file.open("../../results/mpi_optimal_solution.txt", std::ofstream::app);
+    while(!states.empty())
+    {
+        Node* node = states.top();
+        int board[size*size];
+        for (int i = 0; i < size; ++i)
+        {
+            for (int j = 0; j < size; ++j)
+            {
+                file << node->current_state->currentBoard[i][j];
+                if (i != size-1 && j != size-1)
+                {
+                    file << ",";
+                }
+            }
+        }
+        states.pop();
+    }
+}
+
+void save_and_send_stack_as_matrix(std::stack<Node*> states)
+{
+    Node* node = states.top();
+    int max_state_size = states.size();
+    int size = node->current_state->boardSize;
+    int state_mat[max_state_size][size*size];
+
+    printf("...rows = %d\n", max_state_size);
+
+    for (int k = 0; k < max_state_size; ++k)
+    {
+        for (int i = 0; i < size; ++i)
+        {
+            for (int j = 0; j < size; ++j)
+            {
+                state_mat[k][i*size + j] = node->current_state->currentBoard[i][j];
+            }
+        }
+        node = states.top();
+    }
+    states.pop();
+
+    printf("...done matrix\n");
+
+    //send matrix size and the actual matrix
+    MPI_Send(&max_state_size, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+    printf("...sent size\n");
+    MPI_Send(&state_mat, max_state_size * size*size, MPI_INT, 0, 0, MPI_COMM_WORLD);
+
+    free(state_mat[0]);
+    free(state_mat);
 }
