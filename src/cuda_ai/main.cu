@@ -157,6 +157,7 @@ void run_AI()
     if(print_output)
         printf("Allocate host arr...\n");
     Node* host_arr = (Node*)malloc(nodeArrSize);
+    Node* result_arr;
     
     if(print_output)
         printf("Building initial tree...\n");
@@ -212,7 +213,7 @@ void run_AI()
     // cudaMemcpy(host_arr, device_arr, nodeArrSize, cudaMemcpyDeviceToHost);
     // checkCudaErrors(cudaMemcpy(tstats, &device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
     // checkCudaErrors(cudaMemcpyToSymbol(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
-    checkCudaErrors(cudaMemcpy2D(host_arr, width, device_arr, devPitch, width, height, cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy2D(result_arr, width, device_arr, devPitch, width, height, cudaMemcpyDeviceToHost));
     
     float end_epoch = sdkGetTimerValue(&timer);
     time_taken = end_epoch-start_epoch;
