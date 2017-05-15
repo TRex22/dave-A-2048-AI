@@ -120,13 +120,16 @@ void run_AI()
     
     int num_host_leaves = 1024; //todo: dynamic calcs
     int num_sub_tree_nodes = 1024;
-    int nodeArrSize = (num_host_leaves+4)*num_sub_tree_nodes*sizeof(Node);
+    
+    size_t height = num_host_leaves+4;
+    size_t width = num_sub_tree_nodes*sizeof(Node);
+    size_t nodeArrSize = height*width;
     
     if(print_output)
         printf("Allocate host arr...\n");
-    Node* host_arr[num_host_leaves+4];//= (Node**)malloc(sizeof(Node*)*num_host_leaves+4);
-    for(int i = 0; i < num_host_leaves+4; i++)
-        host_arr[i] = (Node *)malloc(num_sub_tree_nodes*sizeof(Node));
+    Node* host_arr[height]; //= (Node**)malloc(sizeof(Node*)*num_host_leaves+4);
+    for(int i = 0; i < height; i++)
+        host_arr[i] = (Node *)malloc(width);
     
     if(print_output)
         printf("Building initial tree...\n");
@@ -139,11 +142,16 @@ void run_AI()
     Node** device_arr;
     int* device_num_sub_tree_nodes;
     int* device_board_size;
+    size_t devPitch;
     
-    checkCudaErrors(cudaMalloc((void**)&device_arr, nodeArrSize));
+    // checkCudaErrors(cudaMalloc((void**)&device_arr, nodeArrSize));
+    checkCudaErrors(cudaMallocPitch((void**)&device_board_size, &devPitch, width, height));
     checkCudaErrors(cudaMalloc((void**)&device_num_sub_tree_nodes, sizeof(int)));
     checkCudaErrors(cudaMalloc((void**)&device_board_size, sizeof(int)));
-    checkCudaErrors(cudaMemcpy(device_arr, host_arr, nodeArrSize, cudaMemcpyHostToDevice));
+    
+    checkCudaErrors(cudaMemcpy2D(device_board_size, devPitch, &host_arr, nodeArrSize, width, height, cudaMemcpyHostToDevice));
+
+    printf("4...\n");
     checkCudaErrors(cudaMemcpy(device_num_sub_tree_nodes, &max_num_nodes, sizeof(int), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(device_board_size, &board_size, sizeof(int), cudaMemcpyHostToDevice));
     
@@ -168,7 +176,8 @@ void run_AI()
     
     if(print_output)
         printf("Copy results back to host...\n\n");
-    cudaMemcpy(host_arr, device_arr, nodeArrSize, cudaMemcpyDeviceToHost);
+    // cudaMemcpy(host_arr, device_arr, nodeArrSize, cudaMemcpyDeviceToHost);
+    checkCudaErrors(cudaMemcpy2D(host_arr, devPitch, device_arr, nodeArrSize, width, height, cudaMemcpyDeviceToHost));
     
     float end_epoch = sdkGetTimerValue(&timer);
     time_taken = end_epoch-start_epoch;
@@ -216,6 +225,7 @@ __global__ void buildTree(Node** device_arr, int* device_num_sub_tree_nodes, int
     while(curr_node < *device_num_sub_tree_nodes-4)
     {
         Node* currentNode = &device_arr[x][curr_node];
+        
         for (int i = 0; i < 4; i++)
         {
             GameState* newState = new GameState(*board_size);
@@ -232,7 +242,10 @@ __global__ void buildTree(Node** device_arr, int* device_num_sub_tree_nodes, int
                     // if(tree->max_depth < currentDepth)
                     //     tree->max_depth = currentDepth;
 
-                    currentNode->children[i] = new Node(currentNode, newState, currentDepth);
+                    // currentNode->children[i] = new Node(currentNode, newState, currentDepth);
+                    Node newNode(currentNode, newState, currentDepth);
+                    device_arr[x][curr_node+i+1] = newNode;
+                    currentNode->children[i] = &device_arr[x][curr_node+i+1];
                     // tree->num_nodes++;
 
                     currentNode->hasChildren = true;
