@@ -148,7 +148,7 @@ void run_AI()
     stack<Node*> tracker;
     
     int num_host_leaves = 1024; //todo: dynamic calcs
-    int num_sub_tree_nodes = 10;
+    int num_sub_tree_nodes = 1024; //number threads
     
     //+4 to account for any extra nodes
     size_t height = num_host_leaves+4;
@@ -174,7 +174,6 @@ void run_AI()
     Tree_Stats* device_tstats;
     int* device_num_sub_tree_nodes;
     int* device_board_size;
-    size_t devPitch;
     
     // checkCudaErrors(cudaMalloc((void**)&device_arr, nodeArrSize));
     // checkCudaErrors(cudaMallocPitch((void**)&device_arr, &devPitch, width, height));
@@ -191,8 +190,11 @@ void run_AI()
     checkCudaErrors(cudaMemcpy(device_board_size, &board_size, sizeof(int), cudaMemcpyHostToDevice));
     
     // dim3 dimBlock( warp, 1, 1 );
-    dim3 dimBlock( warp );
-    dim3 dimGrid( height/warp, width/warp );
+    // dim3 dimBlock( warp );
+    // dim3 dimGrid( height/warp, width/warp );
+    
+    dim3 dimBlock( warp*height, 1 );
+	dim3 dimGrid( 1, 1 );
     
     if(print_output)
         printf("Start buildTree kernel...\n");
@@ -205,7 +207,7 @@ void run_AI()
         seed = 10000;
     
     curandState_t* states;
-    cudaMalloc((void**) &states, warp*warp* sizeof(curandState_t)); //N*sizeof
+    cudaMalloc((void**) &states, warp*warp* sizeof(curandState_t));
     
     init_rnd<<<dimGrid, dimBlock>>>(seed, states, device_num_sub_tree_nodes);
 	buildTree<<<dimGrid, dimBlock>>>(device_arr, device_tstats, num_sub_tree_nodes, device_board_size, states, height, width, nodeArrSize);
@@ -214,7 +216,7 @@ void run_AI()
         printf("Copy results back to host...\n\n");
     
     checkCudaErrors(cudaMemcpy(host_arr, device_arr, nodeArrSize, cudaMemcpyDeviceToHost));
-    // checkCudaErrors(cudaMemcpy(tstats, &device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
     // checkCudaErrors(cudaMemcpyToSymbol(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
     // checkCudaErrors(cudaMemcpy2D(host_arr, width, device_arr, devPitch, width, height, cudaMemcpyDeviceToHost));
     
@@ -259,10 +261,9 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
     int idx = x+width;
     
     int curr_node = 0;
-    
+    printf("Test %d\n", x);
     while(x < num_sub_tree_nodes) // curr_node < (height-4) &&
     {
-        // printf("Test %d\n", x);
         int arr_idx = idx+(width*curr_node);
         Node* currentNode = &device_arr[arr_idx];
         
@@ -279,8 +280,8 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
                 if(!fullBoard)
                 {
                     int currentDepth = currentNode->depth + 1;
-                    // if(tree->max_depth < currentDepth)
-                    //     tree->max_depth = currentDepth;
+                    if(device_tstats->max_depth < currentDepth)
+                        device_tstats->max_depth = currentDepth;
 
                     // currentNode->children[i] = new Node(currentNode, newState, currentDepth);
                     Node newNode(currentNode, newState, currentDepth);
@@ -289,7 +290,8 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
                     device_arr[new_arr_idx] = newNode;
                     currentNode->children[i] = &device_arr[new_arr_idx];
                     // tree->num_nodes++;
-                    print_board(newState);
+                    // print_board(newState);                    
+                    device_tstats->num_nodes++;
                     currentNode->hasChildren = true;
                 }
                 else
