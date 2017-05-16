@@ -148,7 +148,7 @@ void run_AI()
     stack<Node*> tracker;
     
     int num_host_leaves = 1024; //todo: dynamic calcs
-    int num_sub_tree_nodes = 1024; //number threads
+    int num_sub_tree_nodes = 1020; //number threads
     
     //+4 to account for any extra nodes
     size_t height = num_host_leaves+4;
@@ -193,7 +193,7 @@ void run_AI()
     // dim3 dimBlock( warp );
     // dim3 dimGrid( height/warp, width/warp );
     
-    dim3 dimBlock( warp*height, 1 );
+    dim3 dimBlock( num_sub_tree_nodes, 1, 1 );
 	dim3 dimGrid( 1, 1 );
     
     if(print_output)
@@ -261,7 +261,7 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
     int idx = x+width;
     
     int curr_node = 0;
-    printf("Test %d\n", x);
+    // printf("Test %d\n", x);
     while(x < num_sub_tree_nodes) // curr_node < (height-4) &&
     {
         int arr_idx = idx+(width*curr_node);
@@ -290,7 +290,7 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
                     device_arr[new_arr_idx] = newNode;
                     currentNode->children[i] = &device_arr[new_arr_idx];
                     // tree->num_nodes++;
-                    // print_board(newState);                    
+                    print_board(newState);                    
                     device_tstats->num_nodes++;
                     currentNode->hasChildren = true;
                 }
