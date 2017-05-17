@@ -43,6 +43,9 @@ string filepath = "./results/cuda _ai";
 bool DEBUG = false;
 float time_limit = -1.0;
 
+int num_host_leaves = 32;//1024; //todo: dynamic calcs
+int num_sub_tree_nodes = 1024; 
+
 #define DIM 1024
 #define warp 32
 
@@ -149,10 +152,7 @@ void run_AI()
 
 	Tree* tree = new Tree(initial_state);
     stack<Node*> tracker;
-    
-    int num_host_leaves = 1024; //todo: dynamic calcs
-    int num_sub_tree_nodes = 1024; 
-    
+      
     //+4 to account for any extra nodes
     size_t height = num_host_leaves+4; //number of needed threads
     size_t width = (num_sub_tree_nodes+4)*sizeof(Node);
@@ -275,7 +275,7 @@ void calc_thread_count(int* threadCount, int height)
         check = ceil(check);
         
         threadCount[0] = DIM;
-        threadCount[1] = check;
+        threadCount[1] = (int)check;
     }
     // printf("ThreadCount: %d, %d\n", threadCount[0], threadCount[1]);
 }
@@ -283,13 +283,14 @@ void calc_thread_count(int* threadCount, int height)
 __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_sub_tree_nodes, int* board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize)
 {
     int idx = threadIdx.y * blockDim.x + threadIdx.x;
-    
+        
     int curr_node = 0;
     
     // printf("Test %d\n", idx);
     while(curr_node < num_sub_tree_nodes) // curr_node < (height-4) && idx < num_sub_tree_nodes
     {
-        int arr_idx = width*idx;
+        int arr_idx = idx*width + curr_node*sizeof(Node);//curr_node+width*idx;
+        
         Node* currentNode = &device_arr[arr_idx];
         
         if(currentNode->isReal)
@@ -312,7 +313,7 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
 
                         // currentNode->children[i] = new Node(currentNode, newState, currentDepth);
                         Node newNode(currentNode, newState, currentDepth);
-                        int new_arr_idx = 4*arr_idx+(i+1);
+                        int new_arr_idx = (4*arr_idx+(i+1))*sizeof(Node);
                         device_arr[new_arr_idx] = newNode;
                         
                         currentNode->children[i] = &device_arr[new_arr_idx];
