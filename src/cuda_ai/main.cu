@@ -111,13 +111,15 @@ int main(int argc, char *argv[])
         print_usage(argc, argv);
         halt_execution_cuda("");
     }
+
+    process_args(argc, argv);
     
     if(use_rnd)
         srand(time(NULL));
     else
         srand(10000);
     
-    process_args(argc, argv);
+
     run_AI();
 
 	cudaDeviceReset();
@@ -262,33 +264,32 @@ void run_AI()
 
 void calc_thread_count(int* threadCount, int height)
 {
-    if (height < 1024)
+    if (height <= DIM)
     {
         threadCount[0] = height;
         threadCount[1] = 1;
     }
     else
     {
-        double check = height / 1024;
+        double check = height / DIM;
         check = ceil(check);
         
-        threadCount[0] = 1024;
+        threadCount[0] = DIM;
         threadCount[1] = check;
     }
+    printf("ThreadCount: %d, %d\n", threadCount[0], threadCount[1]);
 }
 
 __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_sub_tree_nodes, int* board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize)
 {
-    int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int y = threadIdx.y + blockIdx.y * blockDim.y;
-    int idx = x+y;
+    int idx = threadIdx.y * blockDim.x + threadIdx.x;
     
     // int curr_node = 0;
     
     // printf("Test %d\n", idx);
     while(idx < num_sub_tree_nodes) // curr_node < (height-4) && idx < num_sub_tree_nodes
     {
-        int arr_idx = idx+(width*idx);
+        int arr_idx = width*idx;
         Node* currentNode = &device_arr[arr_idx];
         
         for (int i = 0; i < 4; i++)
@@ -320,12 +321,12 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
                 }
                 else
                 {
-                    currentNode->children[i] = NULL;
+                    currentNode->children[i] = nullptr;
                 }
             }
             else
             {
-                currentNode->children[i] = NULL;
+                currentNode->children[i] = nullptr;
             }
             
 //             if(determine_2048(currentNode->current_state)) //win and shortest path
@@ -359,18 +360,14 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
 }
 
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes) {
-    int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int y = threadIdx.y + blockIdx.y * blockDim.y;
-    int idx = x+y;
+    int idx = threadIdx.y * blockDim.x + threadIdx.x;
     
     curand_init(seed, idx, 0, &states[idx]);
 }
 
 __device__ bool cuda_add_new_number(GameState *currentGame, curandState_t* states, int* device_num_sub_tree_nodes)
 {  
-    int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int y = threadIdx.y + blockIdx.y * blockDim.y;
-    int idx = x+y;
+    int idx = threadIdx.y * blockDim.x + threadIdx.x;
     
     curandState localState = states[idx];
     

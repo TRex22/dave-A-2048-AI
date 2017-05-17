@@ -1,14 +1,14 @@
 serial:
-	g++ -fopenmp -std=c++11 src/serial_ai/main.cpp -o bin/serial_ai.out
+	g++ -fopenmp -std=c++11 src/serial_ai/main.cpp -o bin/serial_ai.out -Wall -Wextra
 
 game:
-	g++ -fopenmp -std=c++11 src/gamemanager/cpp/main.cpp -o bin/2048.out
+	g++ -fopenmp -std=c++11 src/gamemanager/cpp/main.cpp -o bin/2048.out -Wall -Wextra
 
 cuda:
-	/usr/local/cuda/bin/nvcc src/cuda_ai/main.cu -I "/usr/local/cuda/samples/common/inc" -o bin/cuda1_ai.out -std=c++11
+	/usr/local/cuda/bin/nvcc src/cuda_ai/main.cu -I "/usr/local/cuda/samples/common/inc" -o bin/cuda1_ai.out -std=c++11 --compiler-options -Wall
 
 mpi:
-	mpic++ -fopenmp src/mpi_ai/main.cpp -o bin/mpi_ai.out -std=c++11
+	mpic++ -fopenmp src/mpi_ai/main.cpp -o bin/mpi_ai.out -std=c++11 -Wall -Wextra
 
 clean:
 	rm bin/2048.out

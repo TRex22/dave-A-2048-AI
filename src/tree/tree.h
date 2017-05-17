@@ -28,7 +28,7 @@ class Tree
 Tree::Tree(GameState* state)
 {
 	this->BOARD_SIZE = state->boardSize;
-	Node* parent;
+	Node* parent = nullptr;
 	Node* head = new Node(parent, state, 0);
     head -> isLeaf = false; // root is assumed never to be a leaf, not needed tho
 	this->root = head;
