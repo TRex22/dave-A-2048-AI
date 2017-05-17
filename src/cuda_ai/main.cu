@@ -9,35 +9,9 @@
 #define CUDA True //this is to use the same library functions
     
 #include "../helper/helper.h"
-#include "cuda_ai.h"
+#include "cuda_ai.h" //has all globals
 #include "cuda_2048.cpp"
 #include "serial_tree_builder.cpp"
-
-#define heading "CUDA Dave Ai for playing 2048 using matrix approach"
-#define results_header "children,nodes,time,win rate,flops"
-#define results_location "../results/results_cuda1_ai.csv"
-
-/* Global variables */
-#define app_name "Cuda 2048 AI - DaveAi"
-    
-int board_size = 4;
-bool use_rnd = false;
-int max_depth = -1;
-int max_num_nodes = 10000;
-bool save_to_file = false;
-bool print_output = false;
-bool print_path = false;
-bool save_csv = false;
-string initial_state_path = "";
-string filepath = "./results/cuda _ai";
-bool DEBUG = false;
-float time_limit = -1.0;
-
-int num_host_leaves = 32;//1024; //todo: dynamic calcs
-int num_sub_tree_nodes = 1024; 
-
-#define DIM 1024
-#define warp 32
 
 // Auto-Verification Code
 bool testResult = true;
