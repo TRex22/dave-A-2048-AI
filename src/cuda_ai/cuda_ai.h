@@ -6,6 +6,19 @@
 	Cuda Ai
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <stack>
+
+// Includes CUDA
+#include <cuda_runtime.h>
+#include <helper_functions.h>    // includes cuda.h and cuda_runtime_api.h
+#include <helper_cuda.h>         // helper functions for CUDA error check
+#include <curand.h>
+#include <curand_kernel.h>
+
 struct Tree_Stats {
     int BOARD_SIZE = 0;
     Node* root = NULL;

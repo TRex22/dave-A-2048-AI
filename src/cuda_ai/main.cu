@@ -7,22 +7,9 @@
 */
 
 #define CUDA True //this is to use the same library functions
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <stack>
-
+    
 #include "../helper/helper.h"
 #include "cuda_ai.h"
-
-// Includes CUDA
-#include <cuda_runtime.h>
-#include <helper_functions.h>    // includes cuda.h and cuda_runtime_api.h
-#include <helper_cuda.h>         // helper functions for CUDA error check
-#include <curand.h>
-#include <curand_kernel.h>
 
 #define heading "CUDA Dave Ai for playing 2048 using matrix approach"
 #define results_header "children,nodes,time,win rate,flops"
@@ -129,7 +116,7 @@ void run_AI()
     for(unsigned int i = 0;i < 4;i++)
     {
         print_board(host_arr[i*width].current_state);
-        printf("i*width = %d\n", i*width);
+        printf("i*width = %lui\n", i*width);
     }
     
     
@@ -144,7 +131,6 @@ void run_AI()
     Node* device_arr;
     Tree_Stats* device_tstats;
     int* device_num_sub_tree_nodes;
-    int* device_board_size;
     
     int threadCounts[2] = {0, 0};
     calc_thread_count(threadCounts, height);
