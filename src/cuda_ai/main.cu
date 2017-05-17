@@ -70,23 +70,18 @@ void run_AI()
     size_t height = num_host_leaves; 
     size_t width = (num_sub_tree_nodes);
     size_t nodeArrSize = height*width *sizeof(Node);
-    size_t boardsArrSize = height*board_size*board_size*sizeof(int);
+    size_t boardsArrSize = height*board_size*board_size;
+    size_t mboardsArrSize = height*board_size*board_size*sizeof(int);
+    // size_t boardsArrSize = height*board_size*board_size*sizeof(int);
                                                                                                                               
     if(print_output)
         printf("Allocate host arr...\n");
     Node* host_arr = new Node[height*width];
-    int*** host_boards = new int**[height]; //TODO deallocate this memory at end
-    for (unsigned int i = 0; i < height; ++i) 
+    int* host_boards = (int*)malloc(mboardsArrSize);//new int[boardsArrSize]; //TODO deallocate this memory at end 
+    for (unsigned int i = 0; i < boardsArrSize; ++i)
     {
-        host_boards[i] = new int*[board_size];
-
-        for (int j = 0; j < board_size; ++j)
-        {
-            host_boards[i][j] = new int[board_size];
-            // host_boards[i][j] = 0;
-        }
+        host_boards[i] = 0;
     }
-    
     
     if(print_output)
         printf("Building initial tree...\n");
@@ -98,9 +93,16 @@ void run_AI()
     {
         host_arr[i*width] = *init_states.top();
         // printf("Tests: %i\n", i);
-        host_boards[i] = host_arr[i*width].current_state->currentBoard;
-        // copy_board(host_boards[i], host_arr[i*width].current_state->currentBoard, board_size);
-        // print_board(host_boards[i], board_size);
+
+        for (int j = 0; j < board_size; j++)
+        {
+            for (int k = 0; k < board_size; k++)
+            {
+                // printf("Tests: %d\n", host_arr[i*width].current_state->currentBoard[j][k]);
+                host_boards[i*board_size*board_size+j+(j*k)] = host_arr[i*width].current_state->currentBoard[j][k];
+            }
+        }
+        
         init_states.pop();
     }
     
@@ -112,7 +114,7 @@ void run_AI()
     
     // device variables
     Node* device_arr;
-    int*** device_boards;
+    int* device_boards;
     Tree_Stats* device_tstats;
     int* device_num_sub_tree_nodes;
     
@@ -122,12 +124,12 @@ void run_AI()
 	dim3 dimGrid( 1, 1 );
     
     checkCudaErrors(cudaMalloc((void**)&device_arr, nodeArrSize));   
-    checkCudaErrors(cudaMalloc((void****)&device_boards, boardsArrSize));   
+    checkCudaErrors(cudaMalloc((void**)&device_boards, mboardsArrSize));   
     checkCudaErrors(cudaMalloc((void**)&device_tstats, sizeof(Tree_Stats)));
     checkCudaErrors(cudaMalloc((void**)&device_num_sub_tree_nodes, sizeof(int)));
     
     checkCudaErrors(cudaMemcpy(device_arr, host_arr, nodeArrSize, cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(device_boards, host_boards, boardsArrSize, cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(device_boards, host_boards, mboardsArrSize, cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(device_tstats, tstats, sizeof(Tree_Stats), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(device_num_sub_tree_nodes, &max_num_nodes, sizeof(int), cudaMemcpyHostToDevice));
     
@@ -144,8 +146,9 @@ void run_AI()
     curandState_t* states;
     cudaMalloc((void**) &states, threadCounts[0]*threadCounts[1]*sizeof(curandState_t));
     
+    init_root<<<dimGrid, dimBlock>>>(device_arr, device_boards, board_size, board_size*board_size);
     init_rnd<<<dimGrid, dimBlock>>>(seed, states, device_num_sub_tree_nodes);
-	buildTree<<<dimGrid, dimBlock>>>(device_arr, device_boards, device_tstats, num_sub_tree_nodes, board_size, states, height, width, nodeArrSize);
+	buildTree<<<dimGrid, dimBlock>>>(device_arr, device_tstats, num_sub_tree_nodes, board_size, states, height, width, nodeArrSize);
     
     if(print_output)
         printf("Copy results back to host...\n\n");
@@ -184,6 +187,7 @@ void run_AI()
     /* cleanup */
     sdkDeleteTimer(&timer);
 	checkCudaErrors(cudaFree(device_arr));
+    checkCudaErrors(cudaFree(device_boards));
     checkCudaErrors(cudaFree(device_tstats));
     checkCudaErrors(cudaFree(device_num_sub_tree_nodes));
 }
@@ -206,11 +210,35 @@ void calc_thread_count(int* threadCount, int height)
     // printf("ThreadCount: %d, %d\n", threadCount[0], threadCount[1]);
 }
 
-__global__ void buildTree(Node* device_arr, int*** device_boards, Tree_Stats* device_tstats, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize)
+__global__ void init_root(Node* device_arr, int* device_board, int board_size, size_t width)
+{
+    int idx = threadIdx.y * blockDim.x + threadIdx.x; 
+    int arr_idx = idx*width;
+    
+    int** currentBoard = new int*[board_size];
+	for (int i = 0; i < board_size; ++i)
+	{
+		currentBoard[i] = new int[board_size];
+        for (int j = 0; j < board_size; ++j)
+        {
+            currentBoard[i][j] = device_board[arr_idx+i+(i*j)];
+            // printf("Test: %d\n", currentBoard[i][j]);
+        }
+	}
+    
+    GameState* newState = new GameState(board_size, currentBoard);
+    printf("bs: %d\n", board_size);
+    print_board(newState);
+    device_arr[arr_idx].current_state = newState;  
+    
+    __syncthreads();
+}
+
+__global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize)
 {
     int idx = threadIdx.y * blockDim.x + threadIdx.x;       
     int curr_node = 0;
-       print_board(device_boards[idx], board_size);
+       
     // printf("Test %d\n", idx);
     while(curr_node < num_sub_tree_nodes)
     {
@@ -221,8 +249,10 @@ __global__ void buildTree(Node* device_arr, int*** device_boards, Tree_Stats* de
             for (int i = 0; i < 4; i++)
             {
                 // printf("bs: %d\n", this.boardSize);
-                GameState newState(board_size, device_boards[idx]);
-                print_board(device_boards[idx], board_size);
+                GameState newState(board_size);
+                
+                print_board(device_arr[arr_idx].current_state);
+                newState.copy(device_arr[arr_idx].current_state);
 
                 cuda_process_action(&newState, i, board_size);
                 

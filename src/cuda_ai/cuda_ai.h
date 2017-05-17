@@ -82,7 +82,8 @@ bool is_leaf(GameState* state);
 void generateChidlren(Node* currentNode, Tree* tree);  
 
 /* device functions */
-__global__ void buildTree(Node* device_arr, int*** device_boards, Tree_Stats* device_tstats, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize);
+__global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize);
+__global__ void init_root(Node* device_arr, int* device_board, int board_size, size_t width);
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes);
 
 /*cuda_2048.cpp*/
