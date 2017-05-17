@@ -70,10 +70,23 @@ void run_AI()
     size_t height = num_host_leaves; 
     size_t width = (num_sub_tree_nodes);
     size_t nodeArrSize = height*width *sizeof(Node);
+    size_t boardsArrSize = height*board_size*board_size*sizeof(int);
                                                                                                                               
     if(print_output)
         printf("Allocate host arr...\n");
-    Node* host_arr = (Node*)malloc(nodeArrSize);
+    Node* host_arr = new Node[height*width];
+    int*** host_boards = new int**[height]; //TODO deallocate this memory at end
+    for (unsigned int i = 0; i < height; ++i) 
+    {
+        host_boards[i] = new int*[board_size];
+
+        for (int j = 0; j < board_size; ++j)
+        {
+            host_boards[i][j] = new int[board_size];
+            // host_boards[i][j] = 0;
+        }
+    }
+    
     
     if(print_output)
         printf("Building initial tree...\n");
@@ -81,9 +94,13 @@ void run_AI()
     std::stack<Node*> init_states;
     init_states = get_init_states(num_host_leaves); //gets all the cut off nodes for gpu
     
-    for(unsigned int i = 0;i < height;i++)
+    for(unsigned int i = 0; i < height;i++)
     {
         host_arr[i*width] = *init_states.top();
+        // printf("Tests: %i\n", i);
+        host_boards[i] = host_arr[i*width].current_state->currentBoard;
+        // copy_board(host_boards[i], host_arr[i*width].current_state->currentBoard, board_size);
+        // print_board(host_boards[i], board_size);
         init_states.pop();
     }
     
@@ -95,6 +112,7 @@ void run_AI()
     
     // device variables
     Node* device_arr;
+    int*** device_boards;
     Tree_Stats* device_tstats;
     int* device_num_sub_tree_nodes;
     
@@ -103,10 +121,13 @@ void run_AI()
     dim3 dimBlock( threadCounts[0], threadCounts[1], 1 );
 	dim3 dimGrid( 1, 1 );
     
-    checkCudaErrors(cudaMalloc((void**)&device_arr, nodeArrSize));
+    checkCudaErrors(cudaMalloc((void**)&device_arr, nodeArrSize));   
+    checkCudaErrors(cudaMalloc((void****)&device_boards, boardsArrSize));   
     checkCudaErrors(cudaMalloc((void**)&device_tstats, sizeof(Tree_Stats)));
     checkCudaErrors(cudaMalloc((void**)&device_num_sub_tree_nodes, sizeof(int)));
+    
     checkCudaErrors(cudaMemcpy(device_arr, host_arr, nodeArrSize, cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(device_boards, host_boards, boardsArrSize, cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(device_tstats, tstats, sizeof(Tree_Stats), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(device_num_sub_tree_nodes, &max_num_nodes, sizeof(int), cudaMemcpyHostToDevice));
     
@@ -124,7 +145,7 @@ void run_AI()
     cudaMalloc((void**) &states, threadCounts[0]*threadCounts[1]*sizeof(curandState_t));
     
     init_rnd<<<dimGrid, dimBlock>>>(seed, states, device_num_sub_tree_nodes);
-	buildTree<<<dimGrid, dimBlock>>>(device_arr, device_tstats, num_sub_tree_nodes, board_size, states, height, width, nodeArrSize);
+	buildTree<<<dimGrid, dimBlock>>>(device_arr, device_boards, device_tstats, num_sub_tree_nodes, board_size, states, height, width, nodeArrSize);
     
     if(print_output)
         printf("Copy results back to host...\n\n");
@@ -185,33 +206,23 @@ void calc_thread_count(int* threadCount, int height)
     // printf("ThreadCount: %d, %d\n", threadCount[0], threadCount[1]);
 }
 
-__global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize)
+__global__ void buildTree(Node* device_arr, int*** device_boards, Tree_Stats* device_tstats, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize)
 {
-    int idx = threadIdx.y * blockDim.x + threadIdx.x;
-    if(threadIdx.x == 31)
-    {
-        printf("THREADIDX.X = %d\n", threadIdx.x);
-        printf("THREADIDX.Y = %d\n", threadIdx.y);
-        printf("IDX = %d\n", idx);
-    }
-        
+    int idx = threadIdx.y * blockDim.x + threadIdx.x;       
     int curr_node = 0;
-    
+       print_board(device_boards[idx], board_size);
     // printf("Test %d\n", idx);
-    while(curr_node < num_sub_tree_nodes) // curr_node < (height-4) && idx < num_sub_tree_nodes
+    while(curr_node < num_sub_tree_nodes)
     {
-        int arr_idx = idx*width + curr_node;//curr_node+width*idx;
-        
-        // Node* currentNode = &device_arr[arr_idx];
+        int arr_idx = idx*width + curr_node;
         
         if(device_arr[arr_idx].isReal)
         {
             for (int i = 0; i < 4; i++)
             {
                 // printf("bs: %d\n", this.boardSize);
-                GameState newState = GameState(board_size);
-                print_board(device_arr[arr_idx].current_state);
-                newState.copy(device_arr[arr_idx].current_state); //why?
+                GameState newState(board_size, device_boards[idx]);
+                print_board(device_boards[idx], board_size);
 
                 cuda_process_action(&newState, i, board_size);
                 
@@ -285,94 +296,4 @@ __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_n
     int idx = threadIdx.y * blockDim.x + threadIdx.x;
     
     curand_init(seed, idx, 0, &states[idx]);
-}
-
-//TODO:CMDLINE Stuff
-void process_args(int argc, char *argv[])
-{
-    for (int i = 1; i < argc; i++)
-    {
-        string str = string(argv[i]);
-        if(contains_string(str, "board_size"))
-        {
-            board_size = atoi(str.substr(str.find('=') + 1).c_str());
-            if(board_size < 2)
-            {
-                print_usage(argc, argv);
-                halt_execution_cuda("\nError: board_size must be grater than 1.");
-            }
-        }
-           
-        if(contains_string(str, "use_rnd"))
-        {
-            use_rnd = true;
-        }
-           
-        if(contains_string(str, "max_depth"))
-        {
-            max_depth = atoi(str.substr(str.find('=') + 1).c_str());
-            if(max_depth < 2)
-            {
-                print_usage(argc, argv);
-                halt_execution_cuda("\nError: max_depth must be grater than 1.");
-            }
-        }
-           
-        if(contains_string(str, "max_num_nodes"))
-        {
-            max_num_nodes = atoi(str.substr(str.find('=') + 1).c_str());
-            if(max_num_nodes < 2)
-            {
-                print_usage(argc, argv);
-                halt_execution_cuda("\nError: max_num_nodes must be grater than 1.");
-            }
-        }
-           
-        if(contains_string(str, "save_to_file"))
-        {
-            save_to_file = true;
-        }
-           
-        if(contains_string(str, "print_output"))
-        {
-            print_output = true;
-        }
-           
-        if(contains_string(str, "save_csv"))
-        {
-            save_csv = true;
-        }
-           
-        if(contains_string(str, "filepath"))
-        {
-            filepath = str.substr(str.find('=') + 1);
-        }
-                                                                                                           
-        if(contains_string(str, "print_path"))
-        {
-            print_path = true;
-        }
-           
-        if(contains_string(str, "DEBUG"))
-        {
-            DEBUG = true;
-        }
-        
-        if(contains_string(str, "usage"))
-        {
-            print_usage(argc, argv);
-            halt_execution_cuda("");
-        }
-
-        if(contains_string(str, "time_limit"))
-        {
-            time_limit = atof(str.substr(str.find('=') + 1).c_str());
-        }
-    }
-}
-
-void halt_execution_cuda(string message="")
-{
-    cudaDeviceReset();
-	halt_execution(message);
 }

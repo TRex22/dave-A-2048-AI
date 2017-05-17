@@ -82,7 +82,7 @@ bool is_leaf(GameState* state);
 void generateChidlren(Node* currentNode, Tree* tree);  
 
 /* device functions */
-__global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize);
+__global__ void buildTree(Node* device_arr, int*** device_boards, Tree_Stats* device_tstats, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize);
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes);
 
 /*cuda_2048.cpp*/
@@ -96,3 +96,104 @@ __device__ void cuda_process_down(GameState *currentGame, int boardSize);
   
 void process_args(int argc, char *argv[]);
 void halt_execution_cuda(string);
+
+void copy_board(int** to, int** from, int board_size)
+{
+    for(int i = 0; i < board_size; ++i)
+    {
+        for (int j = 0; j < board_size; ++j)
+        {
+            to[i][j] = from[i][j];
+        }
+    }
+}
+
+//TODO:CMDLINE Stuff
+void process_args(int argc, char *argv[])
+{
+    for (int i = 1; i < argc; i++)
+    {
+        string str = string(argv[i]);
+        if(contains_string(str, "board_size"))
+        {
+            board_size = atoi(str.substr(str.find('=') + 1).c_str());
+            if(board_size < 2)
+            {
+                print_usage(argc, argv);
+                halt_execution_cuda("\nError: board_size must be grater than 1.");
+            }
+        }
+           
+        if(contains_string(str, "use_rnd"))
+        {
+            use_rnd = true;
+        }
+           
+        if(contains_string(str, "max_depth"))
+        {
+            max_depth = atoi(str.substr(str.find('=') + 1).c_str());
+            if(max_depth < 2)
+            {
+                print_usage(argc, argv);
+                halt_execution_cuda("\nError: max_depth must be grater than 1.");
+            }
+        }
+           
+        if(contains_string(str, "max_num_nodes"))
+        {
+            max_num_nodes = atoi(str.substr(str.find('=') + 1).c_str());
+            if(max_num_nodes < 2)
+            {
+                print_usage(argc, argv);
+                halt_execution_cuda("\nError: max_num_nodes must be grater than 1.");
+            }
+        }
+           
+        if(contains_string(str, "save_to_file"))
+        {
+            save_to_file = true;
+        }
+           
+        if(contains_string(str, "print_output"))
+        {
+            print_output = true;
+        }
+           
+        if(contains_string(str, "save_csv"))
+        {
+            save_csv = true;
+        }
+           
+        if(contains_string(str, "filepath"))
+        {
+            filepath = str.substr(str.find('=') + 1);
+        }
+                                                                                                           
+        if(contains_string(str, "print_path"))
+        {
+            print_path = true;
+        }
+           
+        if(contains_string(str, "DEBUG"))
+        {
+            DEBUG = true;
+        }
+        
+        if(contains_string(str, "usage"))
+        {
+            print_usage(argc, argv);
+            halt_execution_cuda("");
+        }
+
+        if(contains_string(str, "time_limit"))
+        {
+            time_limit = atof(str.substr(str.find('=') + 1).c_str());
+        }
+    }
+}
+
+void halt_execution_cuda(string message="")
+{
+    cudaDeviceReset();
+	halt_execution(message);
+}

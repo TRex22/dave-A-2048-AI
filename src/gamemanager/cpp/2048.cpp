@@ -57,6 +57,11 @@ void print_board(GameState *currentGame);
 #ifdef CUDA 
     __host__ __device__
 #endif
+void print_board(int** currentBoard, int board_size);
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 void print_horizontal_boarder(int boardSize);
 
 bool add_new_number(GameState *currentGame);
@@ -108,6 +113,23 @@ int determine_highest_value(GameState *currentGame)
 	}
 
 	return max;
+}
+
+void print_board(int** currentBoard, int board_size)
+{
+	for (int i = 0; i < board_size; i++)
+	{
+		print_horizontal_boarder(board_size);
+
+		for (int j = 0; j < board_size; j++)
+		{
+			printf("| \t%d\t |", currentBoard[i][j]);
+		}
+
+		print_horizontal_boarder(board_size);
+		printf("\n");
+	}
+    printf("\n");
 }
 
 void print_board(GameState *currentGame)

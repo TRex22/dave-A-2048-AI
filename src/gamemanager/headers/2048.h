@@ -29,12 +29,15 @@ class GameState
 		bool isWon = false;
 		bool invalidMove = false;
 
-//     #define rnd( x ) (rand() % x) //(x * rand() / RAND_MAX)
-
 #ifdef CUDA    
     __host__ __device__
 #endif
 		GameState(int);
+    
+#ifdef CUDA 
+    __host__ __device__
+#endif
+        GameState(int __boardSize, int** __currentBoard);
     
 #ifdef CUDA 
     __host__ __device__
@@ -52,6 +55,9 @@ class GameState
 		void init_to_zero(GameState* state);
 };
 
+#ifdef CUDA 
+    __host__ __device__
+#endif
 GameState::GameState(int board_size)
 {
 	this->boardSize = board_size;
@@ -64,6 +70,18 @@ GameState::GameState(int board_size)
 	init_to_zero(this);
 }
 
+#ifdef CUDA 
+    __host__ __device__
+#endif
+GameState::GameState(int __boardSize, int** __currentBoard)
+{
+	this->boardSize = __boardSize;
+    this->currentBoard = __currentBoard;
+}
+
+#ifdef CUDA 
+    __host__ __device__
+#endif
 bool GameState::equals(GameState *state)
 {
 	bool result = true;
@@ -81,6 +99,9 @@ bool GameState::equals(GameState *state)
 	return result;
 }
 
+#ifdef CUDA 
+    __host__ __device__
+#endif
 void GameState::copy(GameState *state)
 {
 	this->boardSize = state->boardSize;
@@ -96,6 +117,9 @@ void GameState::copy(GameState *state)
 	}
 }
 
+#ifdef CUDA 
+    __host__ __device__
+#endif
 void GameState::init_to_zero(GameState* state)
 {
     for (int i = 0; i < state->boardSize; ++i)
@@ -105,4 +129,4 @@ void GameState::init_to_zero(GameState* state)
             state->currentBoard[i][j] = 0;
         }
     }
-}   
+} 
