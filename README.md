@@ -52,6 +52,10 @@ Cuda Ai Search
 - cudaCheckError on 2048 ifdef code
 - fix commandline params
 
+- fix curand issues
+- fix tree stats issues
+- check the profile results for more errors
+
 MPI Ai Search
 - ????? ;(
 - fix commandline params

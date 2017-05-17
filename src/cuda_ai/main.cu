@@ -154,7 +154,7 @@ void run_AI()
     size_t height = num_host_leaves+4;
     size_t width = (num_sub_tree_nodes+4)*sizeof(Node);
     size_t nodeArrSize = height*width;
-    
+//     109477888                                                                                                                                       
     if(print_output)
         printf("Allocate host arr...\n");
     Node* host_arr = (Node*)malloc(nodeArrSize);
@@ -280,8 +280,8 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
                 if(!fullBoard)
                 {
                     int currentDepth = currentNode->depth + 1;
-                    if(device_tstats->max_depth < currentDepth)
-                        device_tstats->max_depth = currentDepth;
+                    // if(device_tstats->max_depth < currentDepth)
+                    //     device_tstats->max_depth = currentDepth;
 
                     // currentNode->children[i] = new Node(currentNode, newState, currentDepth);
                     Node newNode(currentNode, newState, currentDepth);
@@ -291,7 +291,7 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
                     currentNode->children[i] = &device_arr[new_arr_idx];
                     // tree->num_nodes++;
                     print_board(newState);                    
-                    device_tstats->num_nodes++;
+                    // device_tstats->num_nodes++;
                     currentNode->hasChildren = true;
                 }
                 else
@@ -304,28 +304,28 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
                 currentNode->children[i] = NULL;
             }
             
-            if(determine_2048(currentNode->current_state)) //win and shortest path
-            {
-                if(device_tstats->optimal2048)
-                {
-                    if(currentNode->depth < device_tstats->optimal2048->depth) 
-                        device_tstats->optimal2048 = currentNode;
-                }
-                else
-                    device_tstats->optimal2048 = currentNode;
+//             if(determine_2048(currentNode->current_state)) //win and shortest path
+//             {
+//                 if(device_tstats->optimal2048)
+//                 {
+//                     if(currentNode->depth < device_tstats->optimal2048->depth) 
+//                         device_tstats->optimal2048 = currentNode;
+//                 }
+//                 else
+//                     device_tstats->optimal2048 = currentNode;
 
-                device_tstats->num_solutions++;
-            }
+//                 device_tstats->num_solutions++;
+//             }
 
-            if(determine_2048(currentNode->current_state) || compare_game_states(currentNode->current_state, newState)) 
-            {
-                device_tstats->num_leaves++;
-            }
+//             if(determine_2048(currentNode->current_state) || compare_game_states(currentNode->current_state, newState)) 
+//             {
+//                 device_tstats->num_leaves++;
+//             }
 
-            if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState)) 
-            {
-                device_tstats->num_cutoff_states++;
-            }  
+//             if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState)) 
+//             {
+//                 device_tstats->num_cutoff_states++;
+//             }  
         }     
         
         curr_node++;
