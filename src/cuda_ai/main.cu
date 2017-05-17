@@ -79,6 +79,8 @@ void update_tree_stats(Tree_Stats* stats, Node* root, Node* optimal2048, size_t 
 
 /* Function Headers */
 int main(int argc, char *argv[]);
+void run_AI();
+void calc_thread_count(int* threadCount, int height);
 
 /* device functions */
 __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_sub_tree_nodes, int* board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize);
@@ -92,7 +94,6 @@ __device__ void cuda_process_up(GameState *currentGame, int* boardSize);
 __device__ void cuda_process_down(GameState *currentGame, int* boardSize);
 
 /* host functions */
-void run_AI();
 void serialBuildTree(Tree* tree, int leaf_node_limit, Node* host_arr, size_t height, size_t width, size_t nodeArrSize);
 void serialGenerateChidlren(Node* currentNode, Tree* tree, Node* host_arr, size_t height, size_t width, size_t nodeArrSize);
 Node* createHostTreeArray(Tree* tree, int num_host_leaves, int num_sub_tree_nodes);
@@ -148,10 +149,10 @@ void run_AI()
     stack<Node*> tracker;
     
     int num_host_leaves = 1024; //todo: dynamic calcs
-    int num_sub_tree_nodes = 1020; //number threads
+    int num_sub_tree_nodes = 1024; 
     
     //+4 to account for any extra nodes
-    size_t height = num_host_leaves+4;
+    size_t height = num_host_leaves+4; //number of needed threads
     size_t width = (num_sub_tree_nodes+4)*sizeof(Node);
     size_t nodeArrSize = height*width;
 //     109477888                                                                                                                                       
@@ -175,6 +176,17 @@ void run_AI()
     int* device_num_sub_tree_nodes;
     int* device_board_size;
     
+    // dim3 dimBlock( warp, 1, 1 );
+    // dim3 dimBlock( warp );
+    // dim3 dimGrid( height/warp, width/warp );
+    //1024 x 1024
+    // size_t number_x_threads = height/warp;
+    
+    int threadCounts[2] = {0, 0};
+    calc_thread_count(threadCounts, height);
+    dim3 dimBlock( threadCounts[0], threadCounts[1], 1 );
+	dim3 dimGrid( 1, 1 );
+    
     // checkCudaErrors(cudaMalloc((void**)&device_arr, nodeArrSize));
     // checkCudaErrors(cudaMallocPitch((void**)&device_arr, &devPitch, width, height));
     checkCudaErrors(cudaMalloc((void**)&device_arr, nodeArrSize));
@@ -189,13 +201,6 @@ void run_AI()
     checkCudaErrors(cudaMemcpy(device_num_sub_tree_nodes, &max_num_nodes, sizeof(int), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(device_board_size, &board_size, sizeof(int), cudaMemcpyHostToDevice));
     
-    // dim3 dimBlock( warp, 1, 1 );
-    // dim3 dimBlock( warp );
-    // dim3 dimGrid( height/warp, width/warp );
-    size_t number_x_threads = height/warp;
-    dim3 dimBlock( number_x_threads, 1, 1 );
-	dim3 dimGrid( 1, 1 );
-    
     if(print_output)
         printf("Start buildTree kernel...\n");
     
@@ -207,7 +212,7 @@ void run_AI()
         seed = 10000;
     
     curandState_t* states;
-    cudaMalloc((void**) &states, number_x_threads*sizeof(curandState_t));
+    cudaMalloc((void**) &states, threadCounts[0]*threadCounts[1]*sizeof(curandState_t));
     
     init_rnd<<<dimGrid, dimBlock>>>(seed, states, device_num_sub_tree_nodes);
 	buildTree<<<dimGrid, dimBlock>>>(device_arr, device_tstats, num_sub_tree_nodes, device_board_size, states, height, width, nodeArrSize);
@@ -255,10 +260,28 @@ void run_AI()
     checkCudaErrors(cudaFree(device_board_size));
 }
 
+void calc_thread_count(int* threadCount, int height)
+{
+    if (height < 1024)
+    {
+        threadCount[0] = height;
+        threadCount[1] = 1;
+    }
+    else
+    {
+        double check = height / 1024;
+        check = ceil(check);
+        
+        threadCount[0] = 1024;
+        threadCount[1] = check;
+    }
+}
+
 __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_sub_tree_nodes, int* board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int idx = x+width;
+    int y = threadIdx.y + blockIdx.y * blockDim.y;
+    int idx = x+y;
     
     int curr_node = 0;
     // printf("Test %d\n", x);
@@ -335,14 +358,17 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
 
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes) {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int idx = x; //(*device_num_sub_tree_nodes)*y+x;
+    int y = threadIdx.y + blockIdx.y * blockDim.y;
+    int idx = x+y;
+    
     curand_init(seed, idx, 0, &states[idx]);
 }
 
 __device__ bool cuda_add_new_number(GameState *currentGame, curandState_t* states, int* device_num_sub_tree_nodes)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int idx = x; //(*device_num_sub_tree_nodes)*y+x;
+    int y = threadIdx.y + blockIdx.y * blockDim.y;
+    int idx = x+y;
     
     int rand_row = curand(&states[idx]) % currentGame->boardSize;
     int rand_col = curand(&states[idx]) % currentGame->boardSize;

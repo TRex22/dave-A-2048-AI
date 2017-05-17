@@ -55,6 +55,7 @@ Cuda Ai Search
 - fix curand issues
 - fix tree stats issues
 - check the profile results for more errors
+- make better use of available threads
 
 MPI Ai Search
 - ????? ;(
