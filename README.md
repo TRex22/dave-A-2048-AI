@@ -56,6 +56,7 @@ Cuda Ai Search
 - fix tree stats issues
 - check the profile results for more errors
 - make better use of available threads
+- use device properties 
 
 MPI Ai Search
 - ????? ;(

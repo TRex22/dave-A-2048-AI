@@ -179,7 +179,7 @@ void run_AI()
     // dim3 dimBlock( warp, 1, 1 );
     // dim3 dimBlock( warp );
     // dim3 dimGrid( height/warp, width/warp );
-    //1024 x 1024
+    // 1024 x 1024
     // size_t number_x_threads = height/warp;
     
     int threadCounts[2] = {0, 0};
@@ -283,11 +283,12 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
     int y = threadIdx.y + blockIdx.y * blockDim.y;
     int idx = x+y;
     
-    int curr_node = 0;
-    // printf("Test %d\n", x);
-    while(x < num_sub_tree_nodes) // curr_node < (height-4) &&
+    // int curr_node = 0;
+    
+    // printf("Test %d\n", idx);
+    while(idx < num_sub_tree_nodes) // curr_node < (height-4) && idx < num_sub_tree_nodes
     {
-        int arr_idx = idx+(width*curr_node);
+        int arr_idx = idx+(width*idx);
         Node* currentNode = &device_arr[arr_idx];
         
         for (int i = 0; i < 4; i++)
@@ -308,8 +309,8 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
 
                     // currentNode->children[i] = new Node(currentNode, newState, currentDepth);
                     Node newNode(currentNode, newState, currentDepth);
-                    int new_arr_idx = x + (width*curr_node+i+1);
-                    // device_arr[x][curr_node+i+1] = newNode;
+                    int new_arr_idx = idx+(width*idx);
+                    
                     device_arr[new_arr_idx] = newNode;
                     currentNode->children[i] = &device_arr[new_arr_idx];
                     // tree->num_nodes++;
@@ -351,9 +352,10 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
 //             }  
         }     
         
-        curr_node++;
-        __syncthreads();
-    }  
+        // curr_node++;
+        // __syncthreads();
+    }
+    __syncthreads();
 }
 
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes) {
@@ -365,25 +367,32 @@ __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_n
 }
 
 __device__ bool cuda_add_new_number(GameState *currentGame, curandState_t* states, int* device_num_sub_tree_nodes)
-{
+{  
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
     int idx = x+y;
     
-    int rand_row = curand(&states[idx]) % currentGame->boardSize;
-    int rand_col = curand(&states[idx]) % currentGame->boardSize;
-
+    curandState localState = states[idx];
+    
+    int rand_row = curand(&localState) % currentGame->boardSize;
+    int rand_col = curand(&localState) % currentGame->boardSize;
+    
+    // printf("%d\n",rand_row);
+    
 	if(checkBoardEmptySlot(currentGame))
 	{
 		while(currentGame->currentBoard[rand_row][rand_col] != 0)
 		{
-            rand_row = curand(&states[idx]) % currentGame->boardSize;
-            rand_col = curand(&states[idx]) % currentGame->boardSize;
+            rand_row = curand(&localState) % currentGame->boardSize;
+            rand_col = curand(&localState) % currentGame->boardSize;
 		}
 
 		currentGame->currentBoard[rand_row][rand_col] = 2;
 		return true;
 	}
+    
+    states[idx] = localState;
+    
 	return false;
 }
 
