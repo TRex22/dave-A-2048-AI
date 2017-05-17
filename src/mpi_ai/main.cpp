@@ -88,6 +88,10 @@ int main(int argc, char *argv[])
 {
     int myrank, comm_sz;
     int local_size = 0;
+    int total_num_nodes = 0;
+    int total_max_depth = 0;
+    int total_sols = 0;
+    int toal_leaves = 0;
     
     //start MPI
     MPI_Init(&argc, &argv);
@@ -156,41 +160,49 @@ int main(int argc, char *argv[])
             optimal_subtree.push(node);
         }
 
-        //prints optimal subtree
-        save_subtree_to_file(optimal_subtree, board_size);
 
 
 
+        //If there is a solution
+        if (min != -1)
+        {
+			//prints optimal subtree
+        	save_subtree_to_file(optimal_subtree, board_size);
 
-        //Just in case
-        if (min == -1)
+            
+            for (int i = 0; i < comm_sz-1; ++i)
+            {
+                printf("%d ", local_optima[i]);
+            }
+            printf("\noptimal_proc: %d\n", optimal_proc+1);
+            printf("min: %d\n", min);
+            
+
+            //Send a '1' to proc with best solution
+            int one = 1;
+            int zero = 0;
+            for (int i = 0; i < comm_sz-1; ++i)
+            {
+                if (i != optimal_proc)
+                {
+                    MPI_Send(&zero, 1, MPI_INT, i+1, i+1, MPI_COMM_WORLD);
+                }
+                else if (i == optimal_proc)
+                {
+                    MPI_Send(&one, 1, MPI_INT, i+1, i+1, MPI_COMM_WORLD);
+                }
+            }
+        }
+        else if (min == -1)
         {
             printf("NO SOLUTION!!!!!!\n");
-        }
-
-        for (int i = 0; i < comm_sz-1; ++i)
-        {
-            printf("%d ", local_optima[i]);
-        }
-        printf("\noptimal_proc: %d\n", optimal_proc+1);
-        printf("min: %d\n", min);
-        
-
-        //Send a '1' to proc with best solution
-        int one = 1;
-        int zero = 0;
-        for (int i = 0; i < comm_sz-1; ++i)
-        {
-            if (i != optimal_proc)
+            //Send a '0' to all procs
+            int zero = 0;
+            for (int i = 0; i < comm_sz-1; ++i)
             {
                 MPI_Send(&zero, 1, MPI_INT, i+1, i+1, MPI_COMM_WORLD);
             }
-            else if (i == optimal_proc)
-            {
-                MPI_Send(&one, 1, MPI_INT, i+1, i+1, MPI_COMM_WORLD);
-            }
         }
-
         
         
 
@@ -393,7 +405,7 @@ void run_AI(GameState* state)
     {
         printf("Proc %d: I am the best proc :D\n", myrank);
         std::stack<Node*> optimal_solution = push_parents_to_stack(tree->optimal2048, tree->optimal2048->depth);
-        // save_subtree_to_file(optimal_solution);
+        save_subtree_to_file(optimal_solution);
     }
     else if (is_best_proc == 0)
     {
