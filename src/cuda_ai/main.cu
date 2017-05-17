@@ -277,7 +277,7 @@ void calc_thread_count(int* threadCount, int height)
         threadCount[0] = DIM;
         threadCount[1] = check;
     }
-    printf("ThreadCount: %d, %d\n", threadCount[0], threadCount[1]);
+    // printf("ThreadCount: %d, %d\n", threadCount[0], threadCount[1]);
 }
 
 __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_sub_tree_nodes, int* board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize)
@@ -287,7 +287,7 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
     int curr_node = 0;
     
     // printf("Test %d\n", idx);
-    while(idx < num_sub_tree_nodes) // curr_node < (height-4) && idx < num_sub_tree_nodes
+    while(curr_node < num_sub_tree_nodes) // curr_node < (height-4) && idx < num_sub_tree_nodes
     {
         int arr_idx = width*idx;
         Node* currentNode = &device_arr[arr_idx];
@@ -359,10 +359,10 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
     //             {
     //                 device_tstats->num_cutoff_states++;
     //             }  
-            }
-            curr_node++;
-            // __syncthreads(); 
-        }    
+            } 
+        }
+        curr_node++;
+        // __syncthreads();
     }
     __syncthreads();
 }
