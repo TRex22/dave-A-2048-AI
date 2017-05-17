@@ -284,7 +284,7 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
 {
     int idx = threadIdx.y * blockDim.x + threadIdx.x;
     
-    // int curr_node = 0;
+    int curr_node = 0;
     
     // printf("Test %d\n", idx);
     while(idx < num_sub_tree_nodes) // curr_node < (height-4) && idx < num_sub_tree_nodes
@@ -292,69 +292,77 @@ __global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_s
         int arr_idx = width*idx;
         Node* currentNode = &device_arr[arr_idx];
         
-        for (int i = 0; i < 4; i++)
+        if(currentNode->isReal)
         {
-            GameState* newState = new GameState(*board_size);
-            newState->copy(currentNode->current_state);
-
-            cuda_process_action(newState, i, board_size);
-            
-            if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState))
+            for (int i = 0; i < 4; i++)
             {
-                bool fullBoard = !cuda_add_new_number(newState, rnd_states, &num_sub_tree_nodes);
-                if(!fullBoard)
-                {
-                    int currentDepth = currentNode->depth + 1;
-                    // if(device_tstats->max_depth < currentDepth)
-                    //     device_tstats->max_depth = currentDepth;
+                GameState* newState = new GameState(*board_size);
+                newState->copy(currentNode->current_state); //why?
 
-                    // currentNode->children[i] = new Node(currentNode, newState, currentDepth);
-                    Node newNode(currentNode, newState, currentDepth);
-                    int new_arr_idx = idx+(width*idx);
-                    
-                    device_arr[new_arr_idx] = newNode;
-                    currentNode->children[i] = &device_arr[new_arr_idx];
-                    // tree->num_nodes++;
-                    print_board(newState);                    
-                    // device_tstats->num_nodes++;
-                    currentNode->hasChildren = true;
+                cuda_process_action(newState, i, board_size);
+                
+                if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState))
+                {
+                    bool fullBoard = !cuda_add_new_number(newState, rnd_states, &num_sub_tree_nodes);
+                    if(!fullBoard)
+                    {
+                        int currentDepth = currentNode->depth + 1;
+                        // if(device_tstats->max_depth < currentDepth)
+                        //     device_tstats->max_depth = currentDepth;
+
+                        // currentNode->children[i] = new Node(currentNode, newState, currentDepth);
+                        Node newNode(currentNode, newState, currentDepth);
+                        int new_arr_idx = 4*arr_idx+(i+1);
+                        device_arr[new_arr_idx] = newNode;
+                        
+                        currentNode->children[i] = &device_arr[new_arr_idx];
+                        // tree->num_nodes++;
+                        print_board(newState);                    
+                        // device_tstats->num_nodes++;
+                        currentNode->hasChildren = true;
+                    }
+                    else
+                    {
+                        currentNode->children[i] = nullptr;
+                        Node newNode = Node();
+                        int new_arr_idx = 4*arr_idx+(i+1);
+                        device_arr[new_arr_idx] = newNode;
+                    }
                 }
                 else
                 {
                     currentNode->children[i] = nullptr;
+                    Node newNode = Node();
+                    int new_arr_idx = 4*arr_idx+(i+1);
+                    device_arr[new_arr_idx] = newNode;
                 }
+                
+    //             if(determine_2048(currentNode->current_state)) //win and shortest path
+    //             {
+    //                 if(device_tstats->optimal2048)
+    //                 {
+    //                     if(currentNode->depth < device_tstats->optimal2048->depth) 
+    //                         device_tstats->optimal2048 = currentNode;
+    //                 }
+    //                 else
+    //                     device_tstats->optimal2048 = currentNode;
+
+    //                 device_tstats->num_solutions++;
+    //             }
+
+    //             if(determine_2048(currentNode->current_state) || compare_game_states(currentNode->current_state, newState)) 
+    //             {
+    //                 device_tstats->num_leaves++;
+    //             }
+
+    //             if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState)) 
+    //             {
+    //                 device_tstats->num_cutoff_states++;
+    //             }  
             }
-            else
-            {
-                currentNode->children[i] = nullptr;
-            }
-            
-//             if(determine_2048(currentNode->current_state)) //win and shortest path
-//             {
-//                 if(device_tstats->optimal2048)
-//                 {
-//                     if(currentNode->depth < device_tstats->optimal2048->depth) 
-//                         device_tstats->optimal2048 = currentNode;
-//                 }
-//                 else
-//                     device_tstats->optimal2048 = currentNode;
-
-//                 device_tstats->num_solutions++;
-//             }
-
-//             if(determine_2048(currentNode->current_state) || compare_game_states(currentNode->current_state, newState)) 
-//             {
-//                 device_tstats->num_leaves++;
-//             }
-
-//             if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState)) 
-//             {
-//                 device_tstats->num_cutoff_states++;
-//             }  
-        }     
-        
-        // curr_node++;
-        // __syncthreads();
+            curr_node++;
+            // __syncthreads(); 
+        }    
     }
     __syncthreads();
 }

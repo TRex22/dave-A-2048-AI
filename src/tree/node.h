@@ -20,7 +20,13 @@ class Node
 
 		bool isLeaf = false;
         bool hasChildren = false;
+        bool isReal = true;
         
+        #ifdef CUDA    
+            __host__ __device__
+        #endif
+		Node();
+    
         #ifdef CUDA    
             __host__ __device__
         #endif
@@ -31,6 +37,14 @@ class Node
         #endif
 		~Node();
 };
+
+Node::Node()
+{
+	parent = nullptr;
+	current_state = nullptr;
+	depth = 0;
+    isReal = false;
+}
 
 Node::Node(Node* _parent, GameState* state, int _depth)
 {
