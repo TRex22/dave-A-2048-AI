@@ -227,8 +227,7 @@ __global__ void init_root(Node* device_arr, int* device_board, int board_size, s
 	}
     
     GameState* newState = new GameState(board_size, currentBoard);
-    printf("bs: %d\n", board_size);
-    print_board(newState);
+    // print_board(newState);
     device_arr[arr_idx].current_state = newState;  
     
     __syncthreads();
