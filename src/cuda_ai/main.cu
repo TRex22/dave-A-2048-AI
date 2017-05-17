@@ -105,23 +105,13 @@ void run_AI()
         printf("Building initial tree...\n");
 
     std::stack<Node*> init_states;
-    init_states = get_init_states(num_host_leaves);
+    init_states = get_init_states(num_host_leaves); //gets all the cut off nodes for gpu
     
     for(unsigned int i = 0;i < height;i++)
     {
         host_arr[i*width] = *init_states.top();
         init_states.pop();
     }
-    
-    
-    //TEST
-    for(unsigned int i = 0;i < 4;i++)
-    {
-        print_board(host_arr[i*width].current_state);
-        printf("i*width = %lui\n", i*width);
-    }
-    
-    
     
     //update tree stats
     update_tree_stats(tstats, tree->root, tree->optimal2048, 0, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, tree->num_cutoff_states);
