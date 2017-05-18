@@ -235,8 +235,91 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
+std::stack<Node*> get_init_states(int nodes)
+{
+    int depth = log_4(nodes);
+    int i = 1;
+    int computable_nodes = 0;
 
--
+
+    GameState* initial_state = new GameState(board_size);
+    add_new_number(initial_state);
+
+    Tree* tree = new Tree(initial_state);
+    stack<Node*> tracker;
+
+    tracker.push(tree->root);
+
+    do
+    {
+        Node* currentNode = tracker.top();
+        tracker.pop();
+
+        if(currentNode)
+        {
+            generateChidlren(currentNode, tree);
+            
+            for (int i = 3; i >1;-i)
+            {
+                if (currentNode->children[i])
+                {
+                    tracker.push(currentNode->children[i]);
+                }
+                
+            }
+        }
+        computable_nodes = count_computable_nodes(tracker);
+
+    }while(computable_nodes < nodes);
+
+    printf("DONE GETTING %d INIT STATES\n", count_computable_nodes(tracker));
+
+    return tracker;
+}
+
+int count_computable_nodes(stack<Node*> stack)
+{
+    int count = 0;
+    std::stack<Node*> tracker;
+
+    while(!stack.empty())
+    {
+        Node* node = stack.top();
+        if( !determine_2048(node->current_state) && !is_leaf(node->current_state) )
+        {
+            count++;
+        }
+        stack.pop();
+        tracker.push(node);
+    }
+
+    while(!tracker.empty())
+    {
+        Node* node = tracker.top();
+        tracker.pop();
+        stack.push(node);
+    }
+
+    return count;
+}
+
+bool is_leaf(GameState* state)
+{
+    bool result = true;
+    for (int i = 0; i < 4; i++)
+    {
+        GameState* newState = new GameState(board_size);
+        newState->copy(state);
+        process_action(newState, i);
+
+        if(compare_game_states(state, newState) == false)
+        {
+            result = false;
+            return result;
+        }
+    }
+    return result;
+}
 
 void linearize_and_send(std::stack<Node*> stack, int comm_sz)
 {

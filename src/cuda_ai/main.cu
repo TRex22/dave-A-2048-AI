@@ -246,35 +246,25 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
                 {
                     // printf("nes\n");
                     bool fullBoard = !cuda_add_new_number(&newState, rnd_states, &num_sub_tree_nodes);
-                    if(!fullBoard)
-                    {
-                        int currentDepth = device_arr[arr_idx].depth + 1;
-                        // if(device_tstats.max_depth < currentDepth)
-                        //     device_tstats.max_depth = currentDepth;
+                    int currentDepth = device_arr[arr_idx].depth + 1;
+                    // if(device_tstats.max_depth < currentDepth)
+                    //     device_tstats.max_depth = currentDepth;
 
-                        Node newNode(&device_arr[arr_idx], &newState, currentDepth);
-                        int new_arr_idx = (4*arr_idx+(i+1));
-                        device_arr[new_arr_idx] = newNode;
-                        
-                        device_arr[arr_idx].children[i] = &device_arr[new_arr_idx];
-                        // tree.num_nodes++;
-                    
-                        if(idx == 1)
-                        {
-                            print_board(device_arr[arr_idx].current_state);
-                            print_board(&newState);
-                        }
-                        
-                        // device_tstats.num_nodes++;
-                        device_arr[arr_idx].hasChildren = true;
-                    }
-                    else
+                    Node newNode(&device_arr[arr_idx], &newState, currentDepth);
+                    int new_arr_idx = (4*arr_idx+(i+1));
+                    device_arr[new_arr_idx] ;//= newNode;
+
+                    device_arr[arr_idx].children[i] = &device_arr[new_arr_idx];
+                    // tree.num_nodes++;
+
+                    if(idx == 25)
                     {
-                        device_arr[arr_idx].children[i] = nullptr;
-                        Node newNode = Node();
-                        int new_arr_idx = 4*arr_idx+(i+1);
-                        device_arr[new_arr_idx] = newNode;
+                        print_board(device_arr[arr_idx].current_state);
+                        print_board(&newState);
                     }
+
+                    // device_tstats.num_nodes++;
+                    device_arr[arr_idx].hasChildren = true;
                 }
                 else
                 {
@@ -310,7 +300,10 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
         }
         
         curr_node_idx++;
+        currentBoard = device_arr[arr_idx].current_state->currentBoard;
     }
+    
+    printf("Num Nodes: %d thread: %uli\n", curr_node_idx, idx);
 
     // if(idx == 2)
     //     cuda_print_board(device_arr[arr_idx].current_state->currentBoard, board_size);

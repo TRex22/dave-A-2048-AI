@@ -32,10 +32,10 @@ class Node
         #endif
 		Node(Node*, GameState*, int);
     
-        #ifdef CUDA    
-            __host__ __device__
-        #endif
-		~Node();
+		// #ifdef CUDA    
+		// __host__ __device__
+		// #endif
+		// ~Node();
 };
 
 Node::Node()
@@ -53,15 +53,15 @@ Node::Node(Node* _parent, GameState* state, int _depth)
 	depth = _depth;
 }
 
-Node::~Node()
-{
-	delete children[0];
-	delete children[1];
-	delete children[2];
-	delete children[3];
+// Node::~Node()
+// {
+// 	delete children[0];
+// 	delete children[1];
+// 	delete children[2];
+// 	delete children[3];
 
-	delete current_state;
-	delete &depth;
-	delete &isLeaf;
-	delete &hasChildren;
-}
+// 	delete current_state;
+// 	delete &depth;
+// 	delete &isLeaf;
+// 	delete &hasChildren;
+// }
