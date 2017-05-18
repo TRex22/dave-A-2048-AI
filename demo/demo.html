@@ -1,0 +1,224 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>The HTML5 Herald</title>
+  <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <meta charset="utf-8">
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+
+	<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+	<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="bootstrap/css/bootstrap-theme.css" rel="stylesheet">
+	<link href="bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
+	<script src="bootstrap/js/bootstrap.js"></script>
+	<script src="bootstrap/js/bootstrap.min.js"></script>
+
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<div class="row">
+		  <div class="col">col</div>
+		  <div class="col">col</div>
+		  <div class="col">col</div>
+		  <div class="col">col</div>
+		</div>
+		<div class="row">
+		  <div class="col">col</div>
+		  <div class="col">col</div>
+		  <div class="col">col</div>
+		  <div class="col">col</div>
+		</div>
+	</div>
+
+
+
+<script type="text/javascript">
+	function myFunction() 
+	{
+	    var csv = document.getElementById("myFile");
+	    var file = readTextFile("serial_ai.csv");
+	    var delimeter = ',';
+	    var array = csv2array(file.responseText, delimeter);
+	    console.log(array[0]);
+	}
+
+	function process(dataString) 
+	{
+	  var lines = dataString
+	    .split(/\n/)
+	    .map(function(lineStr) {
+	        return lineStr.split(",");
+	    });
+	  
+	  var keys = lines[0];
+
+	  var objects = lines
+	    .slice(1)
+	    .map(function(arr) {
+	      return arr.reduce(function(obj, val, i) {
+	        obj[keys[i]] = val; 
+	        return obj;
+	      }, {});
+	    });
+	}
+
+	function csv2array(data, delimeter) {
+	  // Retrieve the delimeter
+	  if (delimeter == undefined) 
+	    delimeter = ',';
+	  if (delimeter && delimeter.length > 1)
+	    delimeter = ',';
+
+	  // initialize variables
+	  var newline = '\n';
+	  var eof = '';
+	  var i = 0;
+	  var c = data.charAt(i);
+	  var row = 0;
+	  var col = 0;
+	  var array = new Array();
+
+	  while (c != eof) {
+	    // skip whitespaces
+	    while (c == ' ' || c == '\t' || c == '\r') {
+	      c = data.charAt(++i); // read next char
+	    }
+	    
+	    // get value
+	    var value = "";
+	    if (c == '\"') {
+	      // value enclosed by double-quotes
+	      c = data.charAt(++i);
+	      
+	      do {
+	        if (c != '\"') {
+	          // read a regular character and go to the next character
+	          value += c;
+	          c = data.charAt(++i);
+	        }
+	        
+	        if (c == '\"') {
+	          // check for escaped double-quote
+	          var cnext = data.charAt(i+1);
+	          if (cnext == '\"') {
+	            // this is an escaped double-quote. 
+	            // Add a double-quote to the value, and move two characters ahead.
+	            value += '\"';
+	            i += 2;
+	            c = data.charAt(i);
+	          }
+	        }
+	      }
+	      while (c != eof && c != '\"');
+	      
+	      if (c == eof) {
+	        throw "Unexpected end of data, double-quote expected";
+	      }
+
+	      c = data.charAt(++i);
+	    }
+	    else {
+	      // value without quotes
+	      while (c != eof && c != delimeter && c!= newline && c != ' ' && c != '\t' && c != '\r') {
+	        value += c;
+	        c = data.charAt(++i);
+	      }
+	    }
+
+	    // add the value to the array
+	    if (array.length <= row) 
+	      array.push(new Array());
+	    array[row].push(value);
+	    
+	    // skip whitespaces
+	    while (c == ' ' || c == '\t' || c == '\r') {
+	      c = data.charAt(++i);
+	    }
+
+	    // go to the next row or column
+	    if (c == delimeter) {
+	      // to the next column
+	      col++;
+	    }
+	    else if (c == newline) {
+	      // to the next row
+	      col = 0;
+	      row++;
+	    }
+	    else if (c != eof) {
+	      // unexpected character
+	      throw "Delimiter expected after character " + i;
+	    }
+	    
+	    // go to the next character
+	    c = data.charAt(++i);
+	  }  
+	  
+	 	return array;
+	}
+
+	function processData(allText) 
+	{
+	    var allTextLines = allText.split(/\r\n|\n/);
+	    var headers = allTextLines[0].split(',');
+	    var lines = [];
+
+	    for (var i=1; i<allTextLines.length; i++) {
+	        var data = allTextLines[i].split(',');
+	        if (data.length == headers.length) {
+
+	            var tarr = [];
+	            for (var j=0; j<headers.length; j++) {
+	                tarr.push(headers[j]+":"+data[j]);
+	            }
+	            lines.push(tarr);
+	        }
+	    }
+		console.log(lines);
+	}
+
+	function getAsText(readFile) 
+	{
+	    var reader = new FileReader();
+	    reader.readAsArrayBuffer(readFile);
+	    reader.onload = loaded;
+	    console.log(reader);
+	}
+
+	function readTextFile(file)
+	{
+	    var rawFile = new XMLHttpRequest();
+	    rawFile.open("GET", file, false);
+	    rawFile.onreadystatechange = function ()
+	    {
+	        if(rawFile.readyState === 4)
+	        {
+	            if(rawFile.status === 200 || rawFile.status == 0)
+	            {
+	                var allText = rawFile.responseText;
+	            }
+	        }
+	    }
+	    rawFile.send(null);
+	    return rawFile;
+	}
+</script>
+
+<!-- jQuery first, then Tether, then Bootstrap JS. -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+</body>
+</html>
