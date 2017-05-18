@@ -124,7 +124,7 @@ void run_AI()
     // device variables
     Node* device_arr;
     int* device_boards;
-    int* result;
+    int*** result;
     Tree_Stats* device_tstats;
     int* device_num_sub_tree_nodes;
     
@@ -135,7 +135,7 @@ void run_AI()
      
     checkCudaErrors(cudaMalloc((void**)&device_arr, nodeArrSize));
     checkCudaErrors(cudaMalloc((void**)&device_boards, mboardsArrSize));
-    checkCudaErrors(cudaMalloc((void**)&result, resultSize));
+    checkCudaErrors(cudaMalloc((void****)&result, resultSize));
     checkCudaErrors(cudaMalloc((void**)&device_tstats, sizeof(Tree_Stats)));
     checkCudaErrors(cudaMalloc((void**)&device_num_sub_tree_nodes, sizeof(int)));
     
@@ -158,12 +158,14 @@ void run_AI()
     
     //height/threadCounts[0], height
     init_rnd<<<dimGrid, dimBlock>>>(seed, rnd_states, device_num_sub_tree_nodes);
-    build_trees<<<dimGrid, dimBlock>>>(device_arr, device_boards, result, num_sub_tree_nodes, board_size, rnd_states, height, width);
+    build_trees<<<dimGrid, dimBlock>>>(device_arr, device_boards, device_tstats, result, num_sub_tree_nodes, board_size, rnd_states, height, width);
     
     if(print_output)
         printf("Copy results back to host...\n\n");
-
-    // checkCudaErrors(cudaMemcpy(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
+    
+    int*** h_result = (int***)malloc(resultSize);
+    checkCudaErrors(cudaMemcpy(h_result, result, resultSize, cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
     
     float end_epoch = sdkGetTimerValue(&timer);
     time_taken = end_epoch-start_epoch;
@@ -176,7 +178,7 @@ void run_AI()
     if(print_output)
     {
         printf("board_size: %i, num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tstats->num_nodes, tstats->max_depth, tstats->num_solutions, tstats->num_leaves, ((double)tstats->num_solutions/(double)tstats->num_leaves));
-        
+        printf("time_taken: %f\n", time_taken);
         // if(tstats->optimal2048)
         //     printf("min_depth: %d time_taken: %f\n", tstats->optimal2048->depth, time_taken);
     }
@@ -205,12 +207,14 @@ __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_n
     curand_init(seed, idx, 0, &states[idx]);
 }
 
-__global__ void build_trees(Node* device_arr, int* device_boards, int* result, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width)
+__global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* device_tstats, int*** result, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width)
 {
     int idx = threadIdx.y * blockDim.x + threadIdx.x;       
     int curr_node_idx = 0;
     int arr_idx = idx*width + curr_node_idx;
     int num_nodes = 1;
+    
+    // printf("height: %d\n", height);
     
 //     Init root from boards
     int board_idx = idx*board_size*board_size;
@@ -235,7 +239,7 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
         Node curr_node(nullptr, &currState, 0);
         device_arr[arr_idx] = curr_node;
         
-        if(idx == 0)
+        if(idx == 0 && false)
         {
             // print_board(device_arr[arr_idx].current_state);
             print_board(&currState);
@@ -252,7 +256,7 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
 
                 cuda_process_action(&newState, i, board_size);
                 
-                int new_arr_idx = (4*arr_idx+(i+1));
+                new_arr_idx = (4*arr_idx+(i+1));
                 
                 if(!determine_2048(device_arr[arr_idx].current_state) && !compare_game_states(device_arr[arr_idx].current_state, &newState))
                 {
@@ -268,14 +272,13 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
                     device_arr[arr_idx].children[i] = &device_arr[new_arr_idx];
                     // tree.num_nodes++;
 
-                    if(idx == 0)
+                    if(idx == 0 && false)
                     {
                         printf("curr_node_idx: %d, arr_idx: %d, new_arr_idx: %d, num_nodes: %d\n", curr_node_idx, arr_idx, new_arr_idx, num_nodes);
                         // print_board(device_arr[arr_idx].current_state);
                         print_board(&newState);
                     }
 
-                    // device_tstats.num_nodes++;
                     device_arr[arr_idx].hasChildren = true;
                 }
                 else
@@ -285,41 +288,70 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
                     device_arr[new_arr_idx] = newNode;
                 }
                 
-    //             if(determine_2048(currentNode.current_state)) //win and shortest path
-    //             {
-    //                 if(device_tstats->optimal2048)
-    //                 {
-    //                     if(currentNode->depth < device_tstats->optimal2048->depth) 
-    //                         device_tstats->optimal2048 = currentNode;
-    //                 }
-    //                 else
-    //                     device_tstats->optimal2048 = currentNode;
 
-    //                 device_tstats->num_solutions++;
-    //             }
-
-    //             if(determine_2048(currentNode->current_state) || compare_game_states(currentNode->current_state, newState)) 
-    //             {
-    //                 device_tstats->num_leaves++;
-    //             }
-
-    //             if(!determine_2048(currentNode->current_state) && !compare_game_states(currentNode->current_state, newState)) 
-    //             {
-    //                 device_tstats->num_cutoff_states++;
-    //             }  
+                if(idx == 0)
+                    if(determine_2048(device_arr[arr_idx].current_state) || compare_game_states(device_arr[arr_idx].current_state, &newState)) 
+                {
+                    device_tstats->num_leaves++;
+                }
+                if(idx == 0)
+                    if(!determine_2048(device_arr[arr_idx].current_state) && !compare_game_states(device_arr[arr_idx].current_state, &newState)) 
+                {
+                    device_tstats->num_cutoff_states++;
+                }  
             } 
         }
         
         curr_node_idx++;
         currentBoard = device_arr[arr_idx].current_state->currentBoard;
+        device_tstats->num_nodes += num_nodes;
     }
     
-    printf("Num Nodes: %d thread: %uli\n", curr_node_idx, idx);
+    // printf("Num Nodes: %d thread: %uli\n", curr_node_idx, idx);
 
     // if(idx == 2)
     //     cuda_print_board(device_arr[arr_idx].current_state->currentBoard, board_size);
 
-    // __syncthreads();
+    __syncthreads();
+    
+    
+//     Find solution
+    if(idx == 0)
+    {
+        Node optimal2048(nullptr, nullptr, width);
+        optimal2048.isReal = false;
+        
+        for(int i = (height*width)-1; i >=0; i--)
+        {
+            if(device_arr[i].isReal)
+                if(determine_2048(device_arr[i].current_state))
+                {
+                    device_tstats->num_solutions++;
+                    printf("Solution!\n");
+                    if(device_arr[i].depth < optimal2048.depth)
+                        optimal2048 = device_arr[i];
+                }
+        }
+        
+        // write to results arr
+        // size_t resultSize = width*board_size*board_size*sizeof(int);
+        if(optimal2048.isReal)
+        {
+            result[optimal2048.depth] = optimal2048.current_state->currentBoard;
+            for (int i = optimal2048.depth-1; i >= 0; i++)
+            {
+                Node curr_node = *optimal2048.parent;
+                result[i] = curr_node.current_state->currentBoard;
+            }
+        }
+        
+    }
+    
+    if(idx == 0)
+    {
+        device_tstats->num_nodes = height*width;
+    }
+    
 }
 
 void calc_thread_count(int* threadCount, int height)
