@@ -4,15 +4,15 @@
 <head>
   <meta charset="utf-8">
 
-  <title>The HTML5 Herald</title>
+  <title>2048 Demo</title>
   <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-    <meta charset="utf-8">
+
   <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+  	<script src="jquery-3.2.1.min.js"></script>
+  	<script src="tether.min.js"></script>
 
 	<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
 	<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -20,6 +20,38 @@
 	<link href="bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
 	<script src="bootstrap/js/bootstrap.js"></script>
 	<script src="bootstrap/js/bootstrap.min.js"></script>
+
+	<style>
+	  	#files {
+	        background: #333;
+			color: #FFF;
+			border-radius: 4px;
+			border: 0;
+			padding: 10px 14px;
+		}
+		#fileDisplayArea {
+				margin-top: 2em;
+				width: 100%;
+				overflow-x: auto;
+		    	width: 600px;
+				background: #FFF;
+				padding: 1em;
+				margin: 1em auto;
+				min-height: 300px;
+				border-top: 5px solid #69c773;
+				box-shadow: 0 2px 10px rgba(0,0,0,0.8);
+			}
+		#fileHeading
+		{
+				margin-top: 2em;
+				width: 100%;
+				overflow-x: auto;
+		    	width: 600px;
+				background: #FFF;
+				padding: 1em;
+				margin: 1em auto;
+		}
+	</style>
 
   <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
@@ -42,16 +74,52 @@
 		</div>
 	</div>
 
+	<br/><br/><br/>
+	<input type="file" id="files" name="files[]" multiple />
+	<input id="files" type="button" value="Begin" onclick="myFunction();" />
+	<output id="list"></output>
+	<br/><br/><br/>
+	<h1 id="fileHeading">Raw Output:</h1>
+	<pre id="fileDisplayArea"><pre>
 
 
 <script type="text/javascript">
-	function myFunction() 
+// https://www.html5rocks.com/en/tutorials/file/dndfiles/
+	var files = []; // FileList object
+	var fileDisplayArea = document.getElementById('fileDisplayArea');
+
+	function handleFileSelect(evt) {
+		files = evt.target.files;
+		// files is a FileList of File objects. List some properties.
+		var output = [];
+		for (var i = 0, f; f = files[i]; i++) {
+		  output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+		              f.size, ' bytes, last modified: ',
+		              f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+		              '</li>');
+	}
+	document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+	}
+
+	document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+
+	function myFunction(fileloc) 
 	{
-	    var csv = document.getElementById("myFile");
-	    var file = readTextFile("serial_ai.csv");
-	    var delimeter = ',';
-	    var array = csv2array(file.responseText, delimeter);
-	    console.log(array[0]);
+		if(files)
+		{
+		    var csv = document.getElementById("myFile");
+		    var reader = readTextFile(); //"serial_ai.csv"
+		    reader.readAsText(files[0]);
+
+		    reader.onloadend = function(evt)
+		    {
+		    	fileDisplayArea.innerText = reader.result;
+			    var delimeter = ',';
+			    var array = csv2array(reader.result, delimeter);
+			    console.log(array[0]);
+		    }
+		}
 	}
 
 	function process(dataString) 
@@ -197,28 +265,30 @@
 	    console.log(reader);
 	}
 
-	function readTextFile(file)
+// /http://blog.teamtreehouse.com/reading-files-using-the-html5-filereader-api
+	function readTextFile()
 	{
-	    var rawFile = new XMLHttpRequest();
-	    rawFile.open("GET", file, false);
-	    rawFile.onreadystatechange = function ()
-	    {
-	        if(rawFile.readyState === 4)
-	        {
-	            if(rawFile.status === 200 || rawFile.status == 0)
-	            {
-	                var allText = rawFile.responseText;
-	            }
-	        }
-	    }
-	    rawFile.send(null);
-	    return rawFile;
+		var reader = new FileReader();
+		var result = "";
+		reader.onload = function(e) {
+			result = reader.result;
+		}
+
+		return reader;
 	}
+
+	// Check for the various File API support.
+	if (window.File && window.FileReader && window.FileList && window.Blob) {
+	  // Great success! All the File APIs are supported.
+	} else {
+	  alert('The File APIs are not fully supported in this browser.');
+	}
+
 </script>
 
 <!-- jQuery first, then Tether, then Bootstrap JS. -->
-    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+<!--     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script> -->
 </body>
 </html>
