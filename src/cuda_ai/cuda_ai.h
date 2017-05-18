@@ -38,8 +38,8 @@ string filepath = "./results/cuda _ai";
 bool DEBUG = false;
 float time_limit = -1.0;
 
-int num_host_leaves = 32;//1024; //todo: dynamic calcs
-int num_sub_tree_nodes = 1024; 
+int num_host_leaves = 1;//1024; //todo: dynamic calcs
+int num_sub_tree_nodes = 64;//1024; 
 
 #define DIM 1024
 #define warp 32

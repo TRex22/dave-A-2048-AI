@@ -69,12 +69,12 @@ void run_AI()
     stack<Node*> tracker;
       
     size_t height = num_host_leaves; 
-    size_t width = (num_sub_tree_nodes);    
+    size_t width = (num_sub_tree_nodes)+1;    
     size_t nodeArrSize = height*width *sizeof(Node);
     size_t boardsArrSize = height*board_size*board_size;
     size_t mboardsArrSize = height*board_size*board_size*sizeof(int);
     size_t resultSize = width*board_size*board_size*sizeof(int);
-                                                                                                                              
+    // printf("%d\n", height*width);                                                                                                             
     if(print_output)
         printf("Allocate host arr...\n");
     Node* host_arr = new Node[height*width];
@@ -209,7 +209,8 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
 {
     int idx = threadIdx.y * blockDim.x + threadIdx.x;       
     int curr_node_idx = 0;
-    int arr_idx = 0;
+    int arr_idx = idx*width + curr_node_idx;
+    int num_nodes = 1;
     
 //     Init root from boards
     int board_idx = idx*board_size*board_size;
@@ -224,23 +225,28 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
         }
     }
     
-    while(curr_node_idx < num_sub_tree_nodes)
+    int new_arr_idx = 0;
+    
+    GameState currState(board_size, currentBoard);
+    Node curr_node(nullptr, &currState, 0);
+    device_arr[arr_idx] = curr_node;
+    
+    while(num_nodes < num_sub_tree_nodes)
     {
         arr_idx = idx*width + curr_node_idx;
-        
-        GameState currState(board_size, currentBoard);
-        Node curr_node(nullptr, &currState, 0);
-        device_arr[arr_idx] = curr_node;
         
         if(device_arr[arr_idx].isReal)
         {
             for (int i = 0; i < 4; i++)
             {
+                num_nodes++;
                 // printf("bs: %d\n", this.boardSize);
                 GameState newState(board_size);               
                 newState.copy(device_arr[arr_idx].current_state);
 
                 cuda_process_action(&newState, i, board_size);
+                
+                int new_arr_idx = (4*arr_idx+(i+1));
                 
                 if(!determine_2048(device_arr[arr_idx].current_state) && !compare_game_states(device_arr[arr_idx].current_state, &newState))
                 {
@@ -251,15 +257,15 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
                     //     device_tstats.max_depth = currentDepth;
 
                     Node newNode(&device_arr[arr_idx], &newState, currentDepth);
-                    int new_arr_idx = (4*arr_idx+(i+1));
-                    device_arr[new_arr_idx] ;//= newNode;
+                    device_arr[new_arr_idx] = newNode;
 
                     device_arr[arr_idx].children[i] = &device_arr[new_arr_idx];
                     // tree.num_nodes++;
 
-                    if(idx == 25)
+                    if(idx == 0)
                     {
-                        print_board(device_arr[arr_idx].current_state);
+                        printf("curr_node_idx: %d, arr_idx: %d, new_arr_idx: %d, num_nodes: %d\n", curr_node_idx, arr_idx, new_arr_idx, num_nodes);
+                        // print_board(device_arr[arr_idx].current_state);
                         print_board(&newState);
                     }
 
@@ -270,7 +276,6 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
                 {
                     device_arr[arr_idx].children[i] = nullptr;
                     Node newNode = Node();
-                    int new_arr_idx = 4*arr_idx+(i+1);
                     device_arr[new_arr_idx] = newNode;
                 }
                 
