@@ -48,9 +48,9 @@ __device__ void cuda_process_action(GameState *currentGame, int action, int boar
 
 __device__ void cuda_process_left(GameState *currentGame, int boardSize)
 {
-    bool* modified = (bool*)malloc(sizeof(bool)*(boardSize));
 	for (int i = 0; i < boardSize; ++i)
 	{
+        bool* modified = (bool*)malloc(sizeof(bool)*(boardSize));
 		for (int p = 0; p < boardSize; ++p)
 		{
 			modified[p] = false;
@@ -83,15 +83,15 @@ __device__ void cuda_process_left(GameState *currentGame, int boardSize)
 			}
 			
 		}
-	}
-    free(modified);
+        free(modified);
+    }
 }
 
 __device__ void cuda_process_right(GameState *currentGame, int boardSize)
 {
-    bool* modified = (bool*)malloc(sizeof(bool)*(boardSize));
 	for (int i = 0; i < boardSize; ++i)
-	{          
+	{
+        bool* modified = (bool*)malloc(sizeof(bool)*(boardSize));
 		for (int p = 0; p < boardSize; ++p)
 		{
 			modified[p] = false;
@@ -123,15 +123,15 @@ __device__ void cuda_process_right(GameState *currentGame, int boardSize)
 				}
 			}
 		}
-	}
-    free(modified);
+        free(modified);
+    }
 }
 
 __device__ void cuda_process_up(GameState *currentGame, int boardSize)
-{
-    bool* modified = (bool*)malloc(sizeof(bool)*(boardSize));   
+{   
 	for (int j = 0; j < boardSize; ++j)
-	{          
+	{   
+        bool* modified = (bool*)malloc(sizeof(bool)*(boardSize));
 		for (int p = 0; p < boardSize; ++p)
 		{
 			modified[p] = false;
@@ -163,15 +163,15 @@ __device__ void cuda_process_up(GameState *currentGame, int boardSize)
 				}
 			}
 		}
-	}
-    free(modified);
+        free(modified);
+    }
 }
 
 __device__ void cuda_process_down(GameState *currentGame, int boardSize)
-{
-    bool* modified = (bool*)malloc(sizeof(bool)*(boardSize));   
+{ 
 	for (int j = 0; j < boardSize; ++j)
-	{      
+	{
+        bool* modified = (bool*)malloc(sizeof(bool)*(boardSize));  
 		for (int p = 0; p < boardSize; ++p)
 		{
 			modified[p] = false;
@@ -203,8 +203,8 @@ __device__ void cuda_process_down(GameState *currentGame, int boardSize)
 				}
 			}
 		}
-	}
-    free(modified);
+        free(modified);
+    }
 }
 
 __device__ void cuda_print_board(int** currentBoard, int board_size)

@@ -235,6 +235,12 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
         Node curr_node(nullptr, &currState, 0);
         device_arr[arr_idx] = curr_node;
         
+        if(idx == 0)
+        {
+            // print_board(device_arr[arr_idx].current_state);
+            print_board(&currState);
+        }
+        
         if(device_arr[arr_idx].isReal)
         {
             for (int i = 0; i < 4; i++)
