@@ -88,10 +88,10 @@ int main(int argc, char *argv[])
 {
     int myrank, comm_sz;
     int local_size = 0;
-    int total_num_nodes = 0;
-    int total_max_depth = 0;
-    int total_sols = 0;
-    int toal_leaves = 0;
+    // int total_num_nodes = 0;
+    // int total_max_depth = 0;
+    // int total_sols = 0;
+    // int toal_leaves = 0;
     
     //start MPI
     MPI_Init(&argc, &argv);
@@ -114,6 +114,8 @@ int main(int argc, char *argv[])
             srand(10000);
 
         process_args(argc, argv);
+
+        double start = MPI_Wtime();
 
         std::stack<Node*> init_states;
         init_states = get_init_states(comm_sz);
@@ -167,7 +169,7 @@ int main(int argc, char *argv[])
         if (min != -1)
         {
 			//prints optimal subtree
-        	save_subtree_to_file(optimal_subtree, board_size);
+        	// save_subtree_to_file(optimal_subtree, board_size);
 
             
             for (int i = 0; i < comm_sz-1; ++i)
@@ -204,7 +206,9 @@ int main(int argc, char *argv[])
             }
         }
         
-        
+        double end = MPI_Wtime();
+
+        printf("%d,%f\n", max_num_nodes, end - start);
 
     }
 
@@ -259,7 +263,7 @@ std::stack<Node*> get_init_states(int nodes)
         {
             generateChidlren(currentNode, tree);
             
-            for (int i = 3; i >1;-i)
+            for (int i = 3; i > 1; --i)
             {
                 if (currentNode->children[i])
                 {
@@ -404,7 +408,7 @@ void run_AI(GameState* state)
     {
         printf("Proc %d: I am the best proc :D\n", myrank);
         std::stack<Node*> optimal_solution = push_parents_to_stack(tree->optimal2048, tree->optimal2048->depth);
-        save_subtree_to_file(optimal_solution);
+        // save_subtree_to_file(optimal_solution);
     }
     else if (is_best_proc == 0)
     {
