@@ -226,14 +226,14 @@ __global__ void build_trees(Node* device_arr, int* device_boards, int* result, i
     }
     
     int new_arr_idx = 0;
-    
-    GameState currState(board_size, currentBoard);
-    Node curr_node(nullptr, &currState, 0);
-    device_arr[arr_idx] = curr_node;
-    
+       
     while(num_nodes < num_sub_tree_nodes)
     {
         arr_idx = idx*width + curr_node_idx;
+        
+        GameState currState(board_size, currentBoard);
+        Node curr_node(nullptr, &currState, 0);
+        device_arr[arr_idx] = curr_node;
         
         if(device_arr[arr_idx].isReal)
         {
