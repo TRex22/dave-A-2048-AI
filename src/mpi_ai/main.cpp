@@ -108,12 +108,12 @@ int main(int argc, char *argv[])
             halt_execution();
         }
         
+        process_args(argc, argv);
+        
         if(use_rnd)
             srand(time(NULL));
         else
             srand(10000);
-
-        process_args(argc, argv);
 
         double start = MPI_Wtime();
 

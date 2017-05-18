@@ -79,12 +79,13 @@ int main(int argc, char *argv[])
         halt_execution();
     }
     
+    process_args(argc, argv);
+    
     if(use_rnd)
         srand(time(NULL));
     else
         srand(10000);
 
-    process_args(argc, argv);
     run_AI();
     
     return EXIT_SUCCESS;
