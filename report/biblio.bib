@@ -8,11 +8,34 @@
   year = 2015
 }
 
-@book{example,
- author = {Sanders, Jason and Kandrot, Edward},
- title = {CUDA by Example: An Introduction to General-Purpose GPU Programming},
- year = {2010},
- isbn = {0131387685, 9780131387683},
- edition = {1st},
- publisher = {Addison-Wesley Professional},
-} 
+@incollection{AIModern,
+    author = {Russell, Stuart and Norvig, Peter},
+    Chapter = {5},
+    Pages = {"161-189"},
+    howpublished = {Hardcover},
+    isbn = {0136042597},
+    keywords = {ai, phd},
+    priority = {0},
+    publisher = {Pearson},
+    title = {{Artificial Intelligence: A Modern Approach (3rd Edition)}},
+    address = {https://www.amazon.com/gp/product/0136042597},
+    year = {2009},
+    annote = {
+		\textbf{Aim:} Examine situations which arise when building artificial agents in multiagent environments where these environments are competitive and then propose computational strategies to deal with these situations in a practical manner. \\\\
+		
+		\textbf{Style/Type:} Textbook chapter, theoretical, hypothetical and practical. \\\\
+		
+		\textbf{Cross References:} The alpha-beta algorithm \cite{AIM030} is presented in this textbook and then extended into a number of new strategies such as using past knowledge to influence the order of the states during the pruning process. Another extension to the alpha-beta algorithm is when it is applied with the expectiminimax algorithm when dealing with games which contain a certain degree of chance. Here the use of bounds on the objective function is used to reduce the computational requirement of averaging every child node of the chance node in question. Monte Carlo simulation is also presented as an alternative to evaluating a position for use with alpha-beta. \\\\
+		
+		\textbf{Summary:} This chapter of the textbook begins by defining the fundamental components that make up an adversarial game. The chapter then goes onto looking at search trees used for automated play of these games and the minimax algorithm which is used to find the optimal strategy at a specific position whilst trying to avoid the worst decision the "player" MAX can make and the effects of that decision. The chapter then goes onto discuss the downsides of minimax which is the time and space complexity of the search for exceptionally large game states. Solutions such as alpha-beta pruning are provided. Later in the chapter heuristic solutions to the exponential growth of the minimax tree are given such estimating expected outcomes of a given position, cutting off the minimax search at a pre-specified depth and in the case of stochastic and partially observable games running Monte Carlo simulations and storing a look-up table of a set of known policies such as end states and killer moves.
+    }
+}
+
+@book{bronson2012c++,
+  title={{C++ Programming: Principles and Practices for Scientists and Engineers}},
+  author={{Bronson, G.J.}},
+  isbn={9781133188612},
+  url={https://books.google.co.uk/books?id=pAxbpwAACAAJ},
+  year={2012},
+  publisher={Cengage Learning}
+}
