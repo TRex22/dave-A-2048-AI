@@ -206,3 +206,20 @@ __device__ void cuda_process_down(GameState *currentGame, int boardSize)
 	}
     free(modified);
 }
+
+__device__ void cuda_print_board(int** currentBoard, int board_size)
+{
+	for (int q = 0; q < board_size; q++)
+	{
+		print_horizontal_boarder(board_size);
+
+		for (int p = 0; p < board_size; p++)
+		{
+			printf("| \t%d\t |", currentBoard[q][p]);
+		}
+
+		print_horizontal_boarder(board_size);
+		printf("\n");
+	}
+    printf("\n");
+}

@@ -75,7 +75,6 @@ int main(int argc, char *argv[]);
 void run_AI();
 void calc_thread_count(int* threadCount, int height);
 
-
 /* Serial Tree Build */
 std::stack<Node*> get_init_states(int nodes);
 int count_computable_nodes(stack<Node*> stack);
@@ -83,9 +82,10 @@ bool is_leaf(GameState* state);
 void generateChidlren(Node* currentNode, Tree* tree);  
 
 /* device functions */
+__global__ void buildTree(Node* device_arr, Tree_Stats* device_tstats, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, size_t nodeArrSize);
+__global__ void init_root(Node* device_arr, int* device_board, int board_size, size_t width);
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes);
-__global__ void build_trees(Node* device_arr, int* device_boards, int* result, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width);
-    
+
 /*cuda_2048.cpp*/
 __device__ bool cuda_add_new_number(GameState *currentGame, curandState_t* states, int* device_num_sub_tree_nodes);
 
@@ -94,8 +94,6 @@ __device__ void cuda_process_left(GameState *currentGame, int boardSize);
 __device__ void cuda_process_right(GameState *currentGame, int boardSize);
 __device__ void cuda_process_up(GameState *currentGame, int boardSize);
 __device__ void cuda_process_down(GameState *currentGame, int boardSize);
-
-__device__ void cuda_print_board(int** currentBoard, int board_size);
   
 void process_args(int argc, char *argv[]);
 void halt_execution_cuda(string);
