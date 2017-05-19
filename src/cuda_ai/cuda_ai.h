@@ -28,7 +28,7 @@
 int board_size = 4;
 bool use_rnd = false;
 int max_depth = -1;
-int max_num_nodes = 10000;
+int max_num_nodes = 1024;
 bool save_to_file = false;
 bool print_output = false;
 bool print_path = false;
@@ -39,7 +39,7 @@ bool DEBUG = false;
 float time_limit = -1.0;
 
 int num_host_leaves = 1024;//1;//1024; //todo: dynamic calcs
-int num_sub_tree_nodes = 2048;//1024; 
+int num_sub_tree_nodes = 1024;//1024; 
 
 #define DIM 1024
 #define warp 32
@@ -84,7 +84,7 @@ void generateChidlren(Node* currentNode, Tree* tree);
 
 /* device functions */
 __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_num_sub_tree_nodes);
-__global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* device_tstats, int*** result, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width);
+__global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* device_tstats, int*** result, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, bool print_output, bool DEBUG);
     
 /*cuda_2048.cpp*/
 __device__ bool cuda_add_new_number(GameState *currentGame, curandState_t* states, int* device_num_sub_tree_nodes);
@@ -145,7 +145,7 @@ void process_args(int argc, char *argv[])
         if(contains_string(str, "max_num_nodes"))
         {
             max_num_nodes = atoi(str.substr(str.find('=') + 1).c_str());
-            num_sub_tree_nodes = max_num_nodes;
+            // num_sub_tree_nodes = max_num_nodes;
             if(max_num_nodes < 2)
             {
                 print_usage(argc, argv);

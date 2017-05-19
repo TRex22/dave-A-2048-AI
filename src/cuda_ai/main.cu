@@ -68,13 +68,14 @@ void run_AI()
 	Tree* tree = new Tree(initial_state);
     stack<Node*> tracker;
       
-    size_t height = num_host_leaves; 
-    size_t width = (num_sub_tree_nodes)+1;    
+    size_t width = (num_sub_tree_nodes)+1;
+    size_t height = (max_num_nodes/width); 
+    
     size_t nodeArrSize = height*width *sizeof(Node);
     size_t boardsArrSize = height*board_size*board_size;
     size_t mboardsArrSize = height*board_size*board_size*sizeof(int);
     size_t resultSize = width*board_size*board_size*sizeof(int);
-    // printf("%d\n", height*width);                                                                                                             
+    // printf("%d\n", height);                                                                                                             
     if(print_output)
         printf("Allocate host arr...\n");
     Node* host_arr = new Node[height*width];
@@ -158,7 +159,7 @@ void run_AI()
     
     //height/threadCounts[0], height
     init_rnd<<<dimGrid, dimBlock>>>(seed, rnd_states, device_num_sub_tree_nodes);
-    build_trees<<<dimGrid, dimBlock>>>(device_arr, device_boards, device_tstats, result, num_sub_tree_nodes, board_size, rnd_states, height, width);
+    build_trees<<<dimGrid, dimBlock>>>(device_arr, device_boards, device_tstats, result, num_sub_tree_nodes, board_size, rnd_states, height, width, print_output, DEBUG);
     
     if(print_output)
         printf("Copy results back to host...\n\n");
@@ -177,7 +178,7 @@ void run_AI()
     
     if(print_output)
     {
-        printf("board_size: %i, num_nodes: %d, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, tstats->num_nodes, tstats->max_depth, tstats->num_solutions, tstats->num_leaves, ((double)tstats->num_solutions/(double)tstats->num_leaves));
+        printf("board_size: %i, num_nodes: %lui, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, height*width, tstats->max_depth, tstats->num_solutions, tstats->num_leaves, ((double)tstats->num_solutions/(double)tstats->num_leaves));
         printf("time_taken: %f\n", time_taken);
         // if(tstats->optimal2048)
         //     printf("min_depth: %d time_taken: %f\n", tstats->optimal2048->depth, time_taken);
@@ -207,7 +208,7 @@ __global__ void init_rnd(unsigned int seed, curandState_t* states, int* device_n
     curand_init(seed, idx, 0, &states[idx]);
 }
 
-__global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* device_tstats, int*** result, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width)
+__global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* device_tstats, int*** result, int num_sub_tree_nodes, int board_size, curandState_t* rnd_states, size_t height, size_t width, bool print_output, bool DEBUG)
 {
     int idx = threadIdx.y * blockDim.x + threadIdx.x;       
     int curr_node_idx = 0;
@@ -239,7 +240,7 @@ __global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* de
         Node curr_node(nullptr, &currState, 0);
         device_arr[arr_idx] = curr_node;
         
-        if(idx == 0 && false)
+        if(idx == 0 && DEBUG)
         {
             // print_board(device_arr[arr_idx].current_state);
             print_board(&currState);
@@ -272,7 +273,7 @@ __global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* de
                     device_arr[arr_idx].children[i] = &device_arr[new_arr_idx];
                     // tree.num_nodes++;
 
-                    if(idx == 0 && false)
+                    if(idx == 0 && DEBUG)
                     {
                         printf("curr_node_idx: %d, arr_idx: %d, new_arr_idx: %d, num_nodes: %d\n", curr_node_idx, arr_idx, new_arr_idx, num_nodes);
                         // print_board(device_arr[arr_idx].current_state);
