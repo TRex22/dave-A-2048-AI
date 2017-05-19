@@ -8,6 +8,7 @@
 \usepackage{amssymb}
 \usepackage{natbib}
 \usepackage{csvsimple}
+\usepackage{float}
 
 \graphicspath{ {images/} }
  
@@ -45,8 +46,8 @@
 %----------------------------------------------------------------------------------------
 
 \HRule \\[0.4cm]
-{ \huge \bfseries COMS4040: High Performance Computing and Scientific Data Management Group Assignment}\\[0.4cm] % Title of your document \\
-  \larger Parallel Tree Search In Playing The Game 2048
+{ \huge \bfseries Parallel Tree Search In Playing The Game 2048}\\[0.4cm] % Title of your document \\
+  \larger COMS4040: High Performance Computing and Scientific Data Management Group Assignment
   \large 21 April 2017
 \HRule \\[1.5cm]
  
@@ -97,7 +98,7 @@ The textbook, Artificial Intelligence: A Modern Approach /cite{AIModern} describ
 \section{Methodology}
 \subsection{General Assumptions}
 All drawn diagrams were drawn using \url{http://draw.io/} and charts were made with Microsoft Excel 2013.\\ All results were calculated as an average of running the same experiment six times and calculating the average result.\\
-\noindent The system used for empirical analysis, was the wits cluster which is called Hydra. It consists of around 100 nodes where each node has a quad core CPU where three of the cores are exposed to the cluster. Each node also contains two GTX 750Ti GPUS with 4096MB on-board global memory.
+\noindent The system used for empirical analysis, was the wits cluster which is called Hydra. It consists of around 100 nodes where each node has a quad core CPU where three of the cores are exposed to the cluster. Each node also contains two GTX 750Ti GPUS with 2048MB on-board global memory. For our experiments we used 2 cores per node for the serial and the MPI implementations.
 Three implementations of tree searching was used. These being a serial C++ approach, a MPI approach and a Cuda GPU-based approach. All three approaches uses the C++11 standard.
 In the Cuda approach we assumed that the sub-trees (computed in parallel) are all completed where dead-nodes are just assigned as ‘empty’ type nodes and then ignored.
 
@@ -117,7 +118,7 @@ For both MPI and Cuda our strategy was to initially generate a tree using a seri
 		\item We used a user controlled stack in order to build the tree.
 		\item From the root node, all possible children are pushed to the stack.
 		\item Then for each node at the top of the stack:
-		  \begin{itemize}[<.(1)->]
+		  \begin{itemize}
 		    \item Each child is checked to see if it’s a dead state or if it is a solution state
 		    \item A dead state is one where there are no possible moves left.
 		    \item If not dead state or solution state then it is pushed to the top of the stack
@@ -155,16 +156,46 @@ We would start each AI with an initial state which would be generated using a ps
 We used the PBS scripts to allow us to repeat each experiment (with a precise configuration) many times to get a more accurate result. Each AI was capable (via the helper functions we made) to save their results as csv files which we were then able to open in Excel to process and generate graphs for each implementation’s performance. 
 
 
-\section{Results and discussions}
-
-\subsection{Comparison of Implementations}
+\section{Results and discussionss
 
 \subsection{Charts}
 
-\subsection{Discussion on performance results}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.3\textwidth]{images/serial_graph}
+	\caption{Serial execution time}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.3\textwidth]{images/mpi_4procs}
+	\caption{MPI execution time where number of nodes is divided amongst 4 processes evenly}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.3\textwidth]{images/mpi_16procs}
+	\caption{MPI execution time where number of nodes is divided amongst 16 processes evenly}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.3\textwidth]{images/mpi_32procs}
+	\caption{MPI execution time where number of nodes is divided amongst 32 processes evenly}
+\end{figure}
+
+\subsection{Discussion on performance of results}
+Using the serial algorithm on the cluster and using anything over 3 million nodes resulted in the program being killed as there was too much computation for one process to do. From our results we found that increasing the board size produces a linear increase in time. In the serial implementation, 5 million nodes on a 4x4 board took 17.882812 seconds, while using MPI with 4 processes resulted 4.659657 seconds. This means there is a speedup of 3.838. Using MPI with 16 processes and the same setup resulted in 3.904706 seconds. This means there is a speedup of 4.580.
+The results for using 32 processes resulted in haphazard timing for a low number of nodes. This could be due to each process doing a very little amount of work and as such the problem size should be increased to keep the same efficiency as using 4 processes and 16 processes. 
+
+By running the serial algorithm using increasing board sizes, we found that as the board size is increased the percentage of leaf nodes that are solutions also increases. When usig a 4x4 board, only 12\% of the leaves are solutions.However, using a 16x16 board, 99\% of the leaves are solutions. This could be due to the increased space which allows for more correcting of mistakes and hence less states to be trapped in.
+
+\subsubsection{Complexity Analysis}
+Because the tree is asymmetric, the exact size of the tree cannot be determined. If we assume that the tree is complete then there would be $4^n$ nodes, where $n$ is depth of the search. We found that the minimum depth is always around 1000. This means that is the tree were complete then there would be $4^1000$ nodes.
 
 \subsection{Problems we encountered with this project}
-We came had many problems in this project and found solutions or workarounds to a lot of these problems.\\
+We had many problems in this project and found solutions or workarounds to a lot of these problems.\\
 
 We initially attempted to implement an in-place depth-first-search because we believed that it would be more memory efficient than either a recursive or user-managed stack approach. We found that the implementation was difficult and ended up changing our implementation to a user-managed stack.\\
 
