@@ -89,7 +89,7 @@ void run_AI()
         printf("Building initial tree...\n");
 
     std::stack<Node*> init_states;
-    init_states = get_init_states(num_host_leaves); //gets all the cut off nodes for gpu
+    init_states = get_init_states(height); //gets all the cut off nodes for gpu
     
     for(unsigned int i = 0; i < height;i++)
     {
