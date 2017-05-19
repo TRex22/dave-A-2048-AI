@@ -27,7 +27,7 @@
 /* Global variables */
 int board_size = 4;
 bool use_rnd = false;
-int max_depth = -1;
+int max_depth = 2096;
 int max_num_nodes = 1024;
 bool save_to_file = false;
 bool print_output = false;
@@ -39,7 +39,7 @@ bool DEBUG = false;
 float time_limit = -1.0;
 
 int num_host_leaves = 1024;//1;//1024; //todo: dynamic calcs
-int num_sub_tree_nodes = 1024;//1024; 
+int num_sub_tree_nodes = 1024;//3096;//1024; 
 
 #define DIM 1024
 #define warp 32

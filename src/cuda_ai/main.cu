@@ -68,7 +68,7 @@ void run_AI()
 	Tree* tree = new Tree(initial_state);
     stack<Node*> tracker;
       
-    size_t width = (num_sub_tree_nodes)+1;
+    size_t width = max_depth;//(num_sub_tree_nodes);
     size_t height = (max_num_nodes/width); 
     
     size_t nodeArrSize = height*width *sizeof(Node);
@@ -178,7 +178,7 @@ void run_AI()
     
     if(print_output)
     {
-        printf("board_size: %i, num_nodes: %lui, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, height*width, tstats->max_depth, tstats->num_solutions, tstats->num_leaves, ((double)tstats->num_solutions/(double)tstats->num_leaves));
+        printf("board_size: %i, num_nodes: %lu, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, height*width, tstats->max_depth, tstats->num_solutions, tstats->num_leaves, ((double)tstats->num_solutions/(double)tstats->num_leaves));
         printf("time_taken: %f\n", time_taken);
         // if(tstats->optimal2048)
         //     printf("min_depth: %d time_taken: %f\n", tstats->optimal2048->depth, time_taken);
@@ -231,6 +231,13 @@ __global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* de
     }
     
     int new_arr_idx = 0;
+    
+    if(idx == 0)
+    {
+        device_tstats->num_leaves = 0;
+        device_tstats->num_cutoff_states = 0;
+        device_tstats->max_depth = 0;
+    }
        
     while(num_nodes < num_sub_tree_nodes)
     {
@@ -264,8 +271,11 @@ __global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* de
                     // printf("nes\n");
                     bool fullBoard = !cuda_add_new_number(&newState, rnd_states, &num_sub_tree_nodes);
                     int currentDepth = device_arr[arr_idx].depth + 1;
-                    // if(device_tstats.max_depth < currentDepth)
-                    //     device_tstats.max_depth = currentDepth;
+                    if(idx == 0)
+                    {
+                        if(device_tstats->max_depth < currentDepth)
+                            device_tstats->max_depth = currentDepth;
+                    }
 
                     Node newNode(&device_arr[arr_idx], &newState, currentDepth);
                     device_arr[new_arr_idx] = newNode;
@@ -321,6 +331,7 @@ __global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* de
     {
         Node optimal2048(nullptr, nullptr, width);
         optimal2048.isReal = false;
+        device_tstats->num_solutions = 0;
         
         for(int i = (height*width)-1; i >=0; i--)
         {
@@ -328,7 +339,7 @@ __global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* de
                 if(determine_2048(device_arr[i].current_state))
                 {
                     device_tstats->num_solutions++;
-                    printf("Solution!\n");
+                    // printf("Solution!\n");
                     if(device_arr[i].depth < optimal2048.depth)
                         optimal2048 = device_arr[i];
                 }
@@ -351,6 +362,7 @@ __global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* de
     if(idx == 0)
     {
         device_tstats->num_nodes = height*width;
+        // printf("Solution: %d\n", device_tstats->num_solutions);
     }
     
 }
