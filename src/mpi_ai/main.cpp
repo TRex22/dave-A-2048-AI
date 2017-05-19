@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
         if (min != -1)
         {
 			//prints optimal subtree
-        	// save_subtree_to_file(optimal_subtree, board_size);
+        	save_subtree_to_file(optimal_subtree, board_size);
 
             
             for (int i = 0; i < comm_sz-1; ++i)
@@ -408,7 +408,7 @@ void run_AI(GameState* state)
     {
         printf("Proc %d: I am the best proc :D\n", myrank);
         std::stack<Node*> optimal_solution = push_parents_to_stack(tree->optimal2048, tree->optimal2048->depth);
-        // save_subtree_to_file(optimal_solution);
+        save_subtree_to_file(optimal_solution);
     }
     else if (is_best_proc == 0)
     {
@@ -696,9 +696,9 @@ void save_subtree_to_file(std::stack<Node*> states, int boardSize)
 
     while(!states.empty())
     {
-        printf("!states.empty()\n");
+        //printf("!states.empty()\n");
         node = states.top();
-        printf("node = top\n");
+        //printf("node = top\n");
         for (int i = 0; i < size; ++i)
         {
             for (int j = 0; j < size; ++j)

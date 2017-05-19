@@ -2,12 +2,12 @@
 ### Set the job name
 #PBS -N 2048
 ### Log files
-#PBS -e /home-108/lmizrahi/2048/2048.err
-#PBS -o /home-108/lmizrahi/2048/2048.log
+#PBS -e /home-108/lmizrahi/2048/serial.err
+#PBS -o /home-108/lmizrahi/2048/serial.log
 ### Queue name (batch)
 #PBS -q batch
 ### Request 1 node, the maximum time for your job.
-#PBS -l nodes=16:ppn=2,walltime=0:07:00
+#PBS -l nodes=1:ppn=3,walltime=0:07:00
 
 #echo ------------------------------------------------------
 #echo -n 'Job is running on node '; cat $PBS_NODEFILE
@@ -26,8 +26,6 @@
 #echo ------------------------------------------------------
 
 cd $PBS_O_WORKDIR
-rm 2048.log
-rm 2048.err
-make mpi
+make serial
 
-mpirun -np 16 bin/mpi_ai.out --max_num_nodes=100000 --print_output --print_path --board-size=4
+./bin/serial_ai.out --max_num_nodes=500000 --save_to_file --save_csv --print_output --print_path --use_rnd --board_size=4
