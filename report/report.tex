@@ -111,7 +111,7 @@ We also tested the algorithms on three board sizes, namely 4x4, 6x6, and 8x8.
 
 \subsection{Implementation}
 All the technologies use some form of the C/C++ programming language and specification. All implementations were designed to use a helper class which contains code which is the same across the three implementations. The three implementations also share a class structure for the tree and the nodes of the tree respectively. We made use of a node and pointer tree implementation. The Cuda implementation makes use of many pre-compiler directives to change the shared function calls into Cuda specific function calls – this was done to try and reuse code as much as possible. Certain functions had to be duplicated and parts modified to fit in the correct specification and paradigm depending on the implementation used.
-For both MPI and Cuda our strategy was to initially generate a tree using a serial method which would go to a depth where the number of cut-off states (the states which are not win states or dead-ends) are equal to the scale of parallelism we want – the number of nodes in MPI and the number of threads in Cuda. This meant that we could then treat these cut-off states as their own local roots of their respective sub-trees which we would then generate in parallel on each respective computing device. This strategy worked very well because the number of parallel tree constructions was far smaller than the final number of nodes we were able to generate. We believed that the overhead of parallelising the tree building in a dynamic load balancing manner --FIX THIS CITE-- /cite{parallel_book}  would be far greater than the cost of a very small initial serial step. This meant that no parallel data communication was needed after each process got their initial node from which to build their respective sub-tree.
+For both MPI and Cuda our strategy was to initially generate a tree using a serial method which would go to a depth where the number of cut-off states (the states which are not win states or dead-ends) are equal to the scale of parallelism we want – the number of nodes in MPI and the number of threads in Cuda. This meant that we could then treat these cut-off states as their own local roots of their respective sub-trees which we would then generate in parallel on each respective computing device. This strategy worked very well because the number of parallel tree constructions was far smaller than the final number of nodes we were able to generate. We believed that the overhead of parallelising the tree building in a dynamic load balancing manner --FIX THIS CITE-- \cite{parallel_book}  would be far greater than the cost of a very small initial serial step. This meant that no parallel data communication was needed after each process got their initial node from which to build their respective sub-tree.
 
 \subsubsection{Serial Approach}
 	\begin{itemize}
@@ -127,6 +127,12 @@ For both MPI and Cuda our strategy was to initially generate a tree using a seri
 		\item However, since the game tree is so big for 2048, the tree is limited by the number of nodes.
 	\end{itemize}
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.3\textwidth]{images/tree}
+	\caption{Tree structure of 2048 in serial approach}
+\end{figure}
+
 \subsubsection{MPI Approach}
 	\begin{itemize}
 		\item The MPI approach is very similar to the serial approach.
@@ -137,6 +143,14 @@ For both MPI and Cuda our strategy was to initially generate a tree using a seri
 		\item The root process compares them and chooses the minimum.
 	\end{itemize}
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.3\textwidth]{images/tree_mpi}
+	\caption{Tree structure of 2048 in MPI approach. The leaf nodes are distributed to each process where a serial tree search is run using the leaf nodes as the new root nodes.}
+\end{figure}
+
+The leaf nodes are distributed to each process where a serial tree search is run using the leaf nodes as the new root nodes.
+
 \subsubsection{Cuda Approach}
 	\begin{itemize}
 		\item The CUDA approach starts in a similar manner to the MPI approach.
@@ -145,6 +159,13 @@ For both MPI and Cuda our strategy was to initially generate a tree using a seri
 		\item For each entry in its row, each thread creates the nodes children and places them in the row of the matrix.
 		\item For this approach to work, we must assume the tree is complete and symmetric.
 	\end{itemize}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.3\textwidth]{images/tree_cuda}
+	\caption{Tree structure of 2048 in Cuda approach. The leaf nodes are stored in an array where the first column has the initial states for each thread and each row represents a subtree to be explored.}
+\end{figure}
 
 A down side with the Cuda implementation is that we were unable to perform a warm-up step – beyond initialising the cuRand library - as that would mean building the entire tree twice.
 
@@ -192,7 +213,7 @@ The results for using 32 processes resulted in haphazard timing for a low number
 By running the serial algorithm using increasing board sizes, we found that as the board size is increased the percentage of leaf nodes that are solutions also increases. When usig a 4x4 board, only 12\% of the leaves are solutions.However, using a 16x16 board, 99\% of the leaves are solutions. This could be due to the increased space which allows for more correcting of mistakes and hence less states to be trapped in.
 
 \subsubsection{Complexity Analysis}
-Because the tree is asymmetric, the exact size of the tree cannot be determined. If we assume that the tree is complete then there would be $4^n$ nodes, where $n$ is depth of the search. We found that the minimum depth is always around 1000. This means that is the tree were complete then there would be $4^1000$ nodes.
+Because the tree is asymmetric, the exact size of the tree cannot be determined. If we assume that the tree is complete then there would be $4^n$ nodes, where $n$ is depth of the search. We found that the minimum depth is always around 1000. This means that is the tree were complete then there would be $4^1000$ nodes. 
 
 \subsection{Problems we encountered with this project}
 We had many problems in this project and found solutions or workarounds to a lot of these problems.\\
@@ -206,8 +227,6 @@ Attempting to code in a way which reduced redundant code for three different par
 
 The Cuda implementation was the most challenging part of the project. Cuda is not very well documented and every new generation of GPU introduces new features and quirks. We worked on the 700 series which has now become deprecated. This means that ways of doing things which are now supported were not for us. A big issue is that Cuda does not like nested data in classes and will not copy such data from the host to the device or vice versa. Random number generation was also difficult because the cuRand library does not follow the same conventions as the main parts of the Cuda runtime, such as returning errors. The final issue we had was that indexing was very difficult because we had to flatten our class structure and use primitive 1D arrays where possible. We spent lots of time figuring out how our indexes worked. What we had to do in the end is flatten our data structures and only give the device each initial game board we had computed in serial. The GPU would then generate in device global memory each sub-tree (per thread) and return only the most optimal path and its respective thread. We know how many nodes were generated because we had to assume that the tree was complete and any node which was a dead-end became an empty node.\\
 
-\\
-MPI Stuff\\
 The cluster’s restrictions killed the serial AI when it was busy executing 4000000 and 5000000 nodes.
 
 

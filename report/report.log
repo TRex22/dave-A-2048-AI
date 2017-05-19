@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Debian) (preloaded format=pdflatex 2017.2.23)  19 MAY 2017 12:39
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Debian) (preloaded format=pdflatex 2017.2.23)  19 MAY 2017 15:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -666,71 +666,6 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-
-! LaTeX Error: Environment page undefined.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.25 \begin{page}
-                 
-Your command was ignored.
-Type  I <command> <return>  to replace it with another command,
-or  <return>  to continue without it.
-
-! Undefined control sequence.
-l.50   \larger
-               COMS4040: High Performance Computing and Scientific Data Mana...
-The control sequence at the end of the top line
-of your error message was never \def'ed. If you have
-misspelled it (e.g., `\hobx'), type `I' and the correct
-spelling (e.g., `I\hbox'). Otherwise just continue,
-and I'll forget about whatever was undefined.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 58--60
-
- []
-
-LaTeX Font Info:    Try loading font information for U+msa on input line 60.
-(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Try loading font information for U+msb on input line 60.
-
-(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-
-! LaTeX Error: \begin{document} ended by \end{page}.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.65 \end{page}
-               
-Your command was ignored.
-Type  I <command> <return>  to replace it with another command,
-or  <return>  to continue without it.
-
-
-! LaTeX Error: Environment page undefined.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.67 \begin{page}
-                 
-Your command was ignored.
-Type  I <command> <return>  to replace it with another command,
-or  <return>  to continue without it.
-
-[1
-
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 LaTeX Font Info:    Try loading font information for OMS+cmr on input line 87.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
@@ -745,41 +680,22 @@ Package Fancyhdr Warning: \headheight is too small (12.0pt):
  We now make it that large for the rest of the document.
  This may cause the page layout to be inconsistent, however.
 
-[1
+[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
-] [2]
-! Missing $ inserted.
-<inserted text> 
-                $
-l.114 ... manner --FIX THIS CITE-- /cite{parallel_
-                                                  book}  would be far greate...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
+]
+LaTeX Font Info:    Try loading font information for U+msa on input line 100.
 
-! Extra }, or forgotten $.
-l.114 ...er --FIX THIS CITE-- /cite{parallel_book}
-                                                    would be far greater tha...
-I've deleted a group-closing symbol because it seems to be
-spurious, as in `$x}$'. But perhaps the } is legitimate and
-you forgot something else, as in `\hbox{$x}'. In such cases
-the way to recover is to insert both the forgotten and the
-deleted material, e.g., by typing `I$}'.
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 100.
 
-! Missing $ inserted.
-<inserted text> 
-                $
-l.115 
-      
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+) [2]
 
-
-Overfull \hbox (656.12077pt too wide) in paragraph at lines 113--115
-\OT1/cmr/m/n/10.95 /citeparallel$[]\OML/cmm/m/it/10.95 ookwouldbefargreaterthan
-thecostofaverysmallinitialserialstep:Thismeantthatnoparalleldatacommunicationwa
-sneededaftereachprocessgottheirinitialnodefromwhichtobuildtheirrespectivesub \O
-MS/cmsy/m/n/10.95 ^^@
- []
+Package natbib Warning: Citation `parallel_book' on page iii undefined on input
+ line 114.
 
 [3]
 Underfull \hbox (badness 10000) in paragraph at lines 152--153
@@ -791,172 +707,31 @@ Underfull \hbox (badness 10000) in paragraph at lines 154--155
 
  []
 
-<images/serial_graph.png, id=120, 1420.30624pt x 797.98125pt>
-File: images/serial_graph.png Graphic file (type png)
-
-<use images/serial_graph.png>
-Package pdftex.def Info: images/serial_graph.png used on input line 168.
-(pdftex.def)             Requested size: 468.0011pt x 262.9328pt.
-
-Overfull \hbox (108.0011pt too wide) in paragraph at lines 168--169
- [][] 
- []
-
-[5] <images/mpi_4procs.png, id=126, 1420.30624pt x 797.98125pt>
-File: images/mpi_4procs.png Graphic file (type png)
-
-<use images/mpi_4procs.png>
-Package pdftex.def Info: images/mpi_4procs.png used on input line 174.
-(pdftex.def)             Requested size: 468.0011pt x 262.9328pt.
-
-Overfull \hbox (108.0011pt too wide) in paragraph at lines 174--175
- [][] 
- []
-
-[6pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) 
-has been already used, duplicate ignored
-
-\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
-                                                  \fi \fi 
-l.177 
-       <./images/serial_graph.png>]
-<images/mpi_16procs.png, id=134, 1420.30624pt x 797.98125pt>
-File: images/mpi_16procs.png Graphic file (type png)
-
-<use images/mpi_16procs.png>
-Package pdftex.def Info: images/mpi_16procs.png used on input line 180.
-(pdftex.def)             Requested size: 468.0011pt x 262.9328pt.
-
-Overfull \hbox (108.0011pt too wide) in paragraph at lines 180--181
- [][] 
- []
-
-[7pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) 
-has been already used, duplicate ignored
-
-\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
-                                                  \fi \fi 
-l.183 
-       <./images/mpi_4procs.png>]
-<images/mpi_32procs.png, id=141, 1420.30624pt x 797.98125pt>
-File: images/mpi_32procs.png Graphic file (type png)
-
-<use images/mpi_32procs.png>
-Package pdftex.def Info: images/mpi_32procs.png used on input line 186.
-(pdftex.def)             Requested size: 468.0011pt x 262.9328pt.
-
-Overfull \hbox (108.0011pt too wide) in paragraph at lines 186--187
- [][] 
- []
-
-[8pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) 
-has been already used, duplicate ignored
-
-\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
-                                                  \fi \fi 
-l.189 
-       <./images/mpi_16procs.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 194--195
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 196--197
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 198--199
-
- []
-
-[9pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) 
-has been already used, duplicate ignored
-
-\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
-                                                  \fi \fi 
-l.199 
-       <./images/mpi_32procs.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 200--202
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 203--204
-
- []
-
-
-! LaTeX Error: There's no line here to end.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.206 M
-       PI Stuff\\
-Your command was ignored.
-Type  I <command> <return>  to replace it with another command,
-or  <return>  to continue without it.
-
-[10]
-No file report.bbl.
-
-! LaTeX Error: \begin{document} ended by \end{page}.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.217 \end{page}
-                
-Your command was ignored.
-Type  I <command> <return>  to replace it with another command,
-or  <return>  to continue without it.
-
-! Missing } inserted.
+)
+Runaway argument?
+{Results and discussionss \par \subsection {Charts} \par \par \begin \ETC.
+! File ended while scanning use of \@xdblarg.
 <inserted text> 
-                }
-l.217 \end{page}
-                
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
+                \par 
+<*> report.tex
+              
+I suspect you have forgotten a `}', causing me
+to read past where you wanted me to stop.
+I'll try to recover; but if the error is serious,
+you'd better type `E' or `X' now and fix your file.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 220.
-[11]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 220.
- (./report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 220.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 220.
-Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: BA4A94DC37AA9DCA9AB76D7054AB0BD7;1323.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 220.
- ) 
+! Emergency stop.
+<*> report.tex
+              
+*** (job aborted, no legal \end found)
+
+ 
 Here is how much of TeX's memory you used:
- 8077 strings out of 493013
- 122871 string characters out of 6135682
- 214789 words of memory out of 5000000
- 11473 multiletter control sequences out of 15000+600000
- 13077 words of font info for 49 fonts, out of 8000000 for 9000
+ 8003 strings out of 493013
+ 121831 string characters out of 6135682
+ 214786 words of memory out of 5000000
+ 11432 multiletter control sequences out of 15000+600000
+ 9974 words of font info for 38 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 40i,10n,46p,1265b,534s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-di
-st/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/font
-s/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
-c/amsfonts/cm/cmti12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmtt10.pfb>
-Output written on report.pdf (12 pages, 316618 bytes).
-PDF statistics:
- 209 PDF objects out of 1000 (max. 8388607)
- 175 compressed objects within 2 object streams
- 39 named destinations out of 1000 (max. 500000)
- 189 words of extra memory for PDF output out of 10000 (max. 10000000)
-
+ 40i,10n,46p,1265b,450s stack positions out of 5000i,500n,10000p,200000b,80000s
+!  ==> Fatal error occurred, no output PDF file produced!
