@@ -38,8 +38,8 @@ string filepath = "./results/cuda _ai";
 bool DEBUG = false;
 float time_limit = -1.0;
 
-int num_host_leaves = 1;//1024; //todo: dynamic calcs
-int num_sub_tree_nodes = 1000;//1024; 
+int num_host_leaves = 1024;//1;//1024; //todo: dynamic calcs
+int num_sub_tree_nodes = 2048;//1024; 
 
 #define DIM 1024
 #define warp 32
@@ -145,6 +145,7 @@ void process_args(int argc, char *argv[])
         if(contains_string(str, "max_num_nodes"))
         {
             max_num_nodes = atoi(str.substr(str.find('=') + 1).c_str());
+            num_sub_tree_nodes = max_num_nodes;
             if(max_num_nodes < 2)
             {
                 print_usage(argc, argv);

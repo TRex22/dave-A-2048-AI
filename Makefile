@@ -5,7 +5,7 @@ game:
 	g++ -fopenmp -std=c++11 src/gamemanager/cpp/main.cpp -o bin/2048.out -Wall -Wextra
 
 cuda:
-	/usr/local/cuda/bin/nvcc src/cuda_ai/main.cu -I "/usr/local/cuda/samples/common/inc" -o bin/cuda1_ai.out -std=c++11 --compiler-options -Wall
+	/usr/local/cuda/bin/nvcc src/cuda_ai/main.cu -I "/usr/local/cuda/samples/common/inc" -o bin/cuda_ai.out -std=c++11 --compiler-options -Wall
 
 mpi:
 	mpic++ -fopenmp src/mpi_ai/main.cpp -o bin/mpi_ai.out -std=c++11 -Wall -Wextra
