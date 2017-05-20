@@ -7,6 +7,7 @@
 */
 
 #define CUDA True //this is to use the same library functions
+#define time_filename "../results/cuda_times.csv"
 // #define BOARD_SIZE 4 
 
 #include "../helper/helper.h"
@@ -26,7 +27,7 @@ int main(int argc, char *argv[])
     
     if (argc == 1)
     {
-        print_usage(argc, argv);
+        print_cuda_usage(argc, argv);
         halt_execution_cuda("");
     }
 
@@ -51,6 +52,16 @@ int main(int argc, char *argv[])
     float end_epoch = sdkGetTimerValue(&timer);
     time_taken = end_epoch-start_epoch;
     printf("\nFinal Time Taken: %f\n", time_taken);
+    
+    int h = (max_num_nodes/max_depth); ///width
+    
+    if(num_trees > 0)
+    {
+        h = num_trees;
+    }  
+    
+    if(save_time)
+        save_time_to_file(h, max_depth, board_size, time_taken);
     
     printf("%s completed, returned %s\n",
            heading,

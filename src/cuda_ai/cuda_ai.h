@@ -38,6 +38,7 @@ string initial_state_path = "";
 string filepath = "./results/cuda _ai";
 bool DEBUG = false;
 float time_limit = -1.0;
+bool save_time = false;
 
 int num_host_leaves = 1024;//1;//1024; //todo: dynamic calcs
 int num_sub_tree_nodes = 1024;//3096;//1024; 
@@ -120,7 +121,7 @@ void print_cuda_usage(int argc, char *argv[])
     printf("num_trees will override max_num_nodes\n\n");
     printf("usage: %s --use_rnd --max_depth=n --max_num_nodes=n --num_trees=n\n", argv[0]);
     printf("\t--save_to_file --print_output --print_path --save_csv\n");
-    printf("\t--DEBUG --usage\n");
+    printf("\t--DEBUG --usage --save_time\n");
 }
 
 //TODO:CMDLINE Stuff
@@ -190,7 +191,12 @@ void process_args(int argc, char *argv[])
         {
             save_csv = true;
         }
-           
+        
+        if(contains_string(str, "save_time"))
+        {
+            save_time = true;
+        }
+        
         if(contains_string(str, "filepath"))
         {
             filepath = str.substr(str.find('=') + 1);

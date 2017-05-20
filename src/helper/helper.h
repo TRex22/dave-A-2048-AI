@@ -11,6 +11,7 @@
 
 using namespace std;
 
+void save_time_to_file(int h, int w, int b, float time_taken);
 void save_solution_to_file(Tree* tree, float time_taken, std::string filename, bool csv);
 string flatten_path(Tree* tree, Node* final_node, string delimit);
 string str_node(GameState* currentGame, string delimit);

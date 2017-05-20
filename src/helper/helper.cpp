@@ -1,3 +1,17 @@
+void save_time_to_file(int h, int w, int b, float time_taken)
+{
+    string out = "";
+    string delimit = ",";
+    
+    ostringstream ss;
+     ss << to_string(h*w) << delimit << to_string(time_taken) << delimit << to_string(b) << delimit << to_string(h) << delimit << to_string(w);
+
+    ss << "\n";
+    out = ss.str();
+    
+    write_results_to_file (time_filename, out);
+}
+
 void save_solution_to_file(Tree* tree, float time_taken, std::string filename, bool csv)
 {
     string out = "";
