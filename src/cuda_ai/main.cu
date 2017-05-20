@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     
     if (argc == 1)
     {
-        print_usage(argc, argv);
+        print_cuda_usage(argc, argv);
         halt_execution_cuda("");
     }
 
@@ -43,7 +43,10 @@ int main(int argc, char *argv[])
     sdkStartTimer(&timer);    
     float start_epoch = sdkGetTimerValue(&timer);
     
-    run_AI();
+    if(!run_time_test)
+        run_AI();
+    else
+        run_test();
     
     cudaDeviceSynchronize();
 	cudaDeviceReset();
@@ -56,6 +59,77 @@ int main(int argc, char *argv[])
            heading,
            testResult ? "OK" : "ERROR!");
     exit(testResult ? EXIT_SUCCESS : EXIT_FAILURE);
+}
+
+void run_test()
+{
+    //cuda_time_test_save(float time_taken)
+    for(int b = 4; b < 9; b=b+2)
+    {
+       for(int h=0; h < 1000001; h=h*10)
+       {
+           int n = 10000;
+           run(b, h, n);
+           n = 50000;
+           run(b, h, n);
+           n = 100000;
+           run(b, h, n);
+           n = 200000;
+           run(b, h, n);
+           n = 300000;
+           run(b, h, n);
+           n = 400000;
+           run(b, h, n);
+           n = 500000;
+           run(b, h, n);
+           n = 600000;
+           run(b, h, n);
+           n = 700000;
+           run(b, h, n);
+           n = 800000;
+           run(b, h, n);
+           n = 900000;
+           run(b, h, n);
+           n = 1000000;
+           run(b, h, n);
+           n = 2000000;
+           run(b, h, n);
+           n = 3000000;
+           run(b, h, n);
+           n = 4000000;
+           run(b, h, n);
+           n = 5000000;
+           run(b, h, n);
+       }
+    }
+}
+
+void run(int b, int h, int n)
+{
+    //cuda_time_test_save(float time_taken)
+    cudaDeviceReset();
+    
+    float time_taken = 0.0;
+    StopWatchInterface *timer = NULL;
+    sdkCreateTimer(&timer);
+    sdkStartTimer(&timer);    
+    float start_epoch = sdkGetTimerValue(&timer);
+    
+    //test
+    board_size = b;
+    num_trees = h;
+    max_num_nodes = n;
+    max_depth = n/h;
+    
+    run_AI();
+    
+    cudaDeviceSynchronize();
+	cudaDeviceReset();
+    
+    float end_epoch = sdkGetTimerValue(&timer);
+    time_taken = end_epoch-start_epoch;
+    
+    cuda_time_test_save(time_taken, h, max_depth);
 }
 
 void run_AI()

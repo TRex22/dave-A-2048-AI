@@ -14,8 +14,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+// #include <iostream>
+// #include <string>
 #include <math.h>
 #include <stack>
+    
+#include <sstream>
+
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+        ( std::ostringstream() << std::dec << x ) ).str()
 
 // Includes CUDA
 #include <cuda_runtime.h>
@@ -34,6 +41,7 @@ bool save_to_file = false;
 bool print_output = false;
 bool print_path = false;
 bool save_csv = false;
+bool run_time_test = false;
 string initial_state_path = "";
 string filepath = "./results/cuda _ai";
 bool DEBUG = false;
@@ -74,6 +82,8 @@ void update_tree_stats(Tree_Stats* stats, Node* root, Node* optimal2048, size_t 
 /* Function Headers */
 int main(int argc, char *argv[]);
 void run_AI();
+void run_test();
+void run(int b, int h, int n);
 void calc_thread_count(int* threadCount, int height);
 
 
@@ -102,6 +112,7 @@ void process_args(int argc, char *argv[]);
 void halt_execution_cuda(string);
 
 void print_cuda_usage(int argc, char *argv[]);
+void cuda_time_test_save(float time_taken, int h, int w);
 
 void copy_board(int** to, int** from, int board_size)
 {
@@ -120,7 +131,24 @@ void print_cuda_usage(int argc, char *argv[])
     printf("num_trees will override max_num_nodes\n\n");
     printf("usage: %s --use_rnd --max_depth=n --max_num_nodes=n --num_trees=n\n", argv[0]);
     printf("\t--save_to_file --print_output --print_path --save_csv\n");
-    printf("\t--DEBUG --usage\n");
+    printf("\t--DEBUG --usage --run_time_test\n");
+}
+
+void cuda_time_test_save(float time_taken, int h, int w)
+{
+    //start 10000 to 5000000 nodes ->
+    string filename = "../results/cuda_time_test_trees_%d_bs_%d.csv", height, board_size;
+    int num_nodes = h * w;
+    
+    string out = "";
+    string delimit = ",";
+    
+    ostringstream ss;
+    ss <<  SSTR(num_nodes) << delimit << SSTR(time_taken) << delimit << SSTR(board_size);
+    ss << "\n";
+    
+    out = ss.str();    
+    write_results_to_file (filename, out);
 }
 
 //TODO:CMDLINE Stuff
@@ -179,6 +207,11 @@ void process_args(int argc, char *argv[])
         if(contains_string(str, "save_to_file"))
         {
             save_to_file = true;
+        }
+        
+        if(contains_string(str, "run_time_test"))
+        {
+            run_time_test = true;
         }
            
         if(contains_string(str, "print_output"))
