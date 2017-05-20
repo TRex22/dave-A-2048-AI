@@ -177,8 +177,8 @@ void print_usage(int argc, char *argv[])
 {   
     printf("At least one parameter must be selected.\n-1 will denote inf value\n\n");
     printf("usage: %s --board_size=n --use_rnd --max_depth=n --max_num_nodes=n\n", argv[0]);
-    printf("\t--save_to_file --print_output --print_path --save_csv --initial_state_path=p\n");
-    printf("\t--filepath=p --DEBUG --usage --time_limit=n\n");
+    printf("\t--save_to_file --print_output --print_path --save_csv\n");
+    printf("\t--DEBUG --usage --time_limit=n\n");
 }
 
 bool contains_string(string input, string str)

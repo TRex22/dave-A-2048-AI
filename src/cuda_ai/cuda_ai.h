@@ -27,8 +27,9 @@
 /* Global variables */
 int board_size = 4;
 bool use_rnd = false;
-int max_depth = 2096;
-int max_num_nodes = 1024;
+int max_depth = 600;
+int max_num_nodes = 6000;
+int num_trees = -1;
 bool save_to_file = false;
 bool print_output = false;
 bool print_path = false;
@@ -100,6 +101,8 @@ __device__ void cuda_print_board(int** currentBoard, int board_size);
 void process_args(int argc, char *argv[]);
 void halt_execution_cuda(string);
 
+void print_cuda_usage(int argc, char *argv[]);
+
 void copy_board(int** to, int** from, int board_size)
 {
     for(int i = 0; i < board_size; ++i)
@@ -109,6 +112,15 @@ void copy_board(int** to, int** from, int board_size)
             to[i][j] = from[i][j];
         }
     }
+}
+
+void print_cuda_usage(int argc, char *argv[])
+{   
+    printf("At least one parameter must be selected.\n-1 will denote inf value\n");
+    printf("num_trees will override max_num_nodes\n\n");
+    printf("usage: %s --use_rnd --max_depth=n --max_num_nodes=n --num_trees=n\n", argv[0]);
+    printf("\t--save_to_file --print_output --print_path --save_csv\n");
+    printf("\t--DEBUG --usage\n");
 }
 
 //TODO:CMDLINE Stuff
@@ -122,7 +134,7 @@ void process_args(int argc, char *argv[])
             board_size = atoi(str.substr(str.find('=') + 1).c_str());
             if(board_size < 2)
             {
-                print_usage(argc, argv);
+                print_cuda_usage(argc, argv);
                 halt_execution_cuda("\nError: board_size must be grater than 1.");
             }
         }
@@ -135,10 +147,10 @@ void process_args(int argc, char *argv[])
         if(contains_string(str, "max_depth"))
         {
             max_depth = atoi(str.substr(str.find('=') + 1).c_str());
-            if(max_depth < 2)
+            if(max_depth < 1)
             {
-                print_usage(argc, argv);
-                halt_execution_cuda("\nError: max_depth must be grater than 1.");
+                print_cuda_usage(argc, argv);
+                halt_execution_cuda("\nError: max_depth must be grater than 0.");
             }
         }
            
@@ -148,8 +160,19 @@ void process_args(int argc, char *argv[])
             // num_sub_tree_nodes = max_num_nodes;
             if(max_num_nodes < 2)
             {
-                print_usage(argc, argv);
+                print_cuda_usage(argc, argv);
                 halt_execution_cuda("\nError: max_num_nodes must be grater than 1.");
+            }
+        }
+        
+        if(contains_string(str, "num_trees"))
+        {
+            num_trees = atoi(str.substr(str.find('=') + 1).c_str());
+            // num_sub_tree_nodes = max_num_nodes;
+            if(max_num_nodes < 1)
+            {
+                print_cuda_usage(argc, argv);
+                halt_execution_cuda("\nError: num_trees must be grater than 0.");
             }
         }
            
@@ -185,7 +208,7 @@ void process_args(int argc, char *argv[])
         
         if(contains_string(str, "usage"))
         {
-            print_usage(argc, argv);
+            print_cuda_usage(argc, argv);
             halt_execution_cuda("");
         }
 

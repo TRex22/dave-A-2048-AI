@@ -37,10 +37,21 @@ int main(int argc, char *argv[])
     else
         srand(10000);
     
-
+    float time_taken = 0.0;
+    StopWatchInterface *timer = NULL;
+    sdkCreateTimer(&timer);
+    sdkStartTimer(&timer);    
+    float start_epoch = sdkGetTimerValue(&timer);
+    
     run_AI();
-
+    
+    cudaDeviceSynchronize();
 	cudaDeviceReset();
+
+    float end_epoch = sdkGetTimerValue(&timer);
+    time_taken = end_epoch-start_epoch;
+    printf("\nFinal Time Taken: %f\n", time_taken);
+    
     printf("%s completed, returned %s\n",
            heading,
            testResult ? "OK" : "ERROR!");
@@ -69,15 +80,22 @@ void run_AI()
     stack<Node*> tracker;
       
     size_t width = max_depth;//(num_sub_tree_nodes);
-    size_t height = (max_num_nodes/width); 
+    size_t height = (max_num_nodes/width); ///width
+    
+    if(num_trees > 0)
+    {
+        height = num_trees;
+    }   
     
     size_t nodeArrSize = height*width *sizeof(Node);
     size_t boardsArrSize = height*board_size*board_size;
     size_t mboardsArrSize = height*board_size*board_size*sizeof(int);
     size_t resultSize = width*board_size*board_size*sizeof(int);
-    // printf("%d\n", height);                                                                                                             
+    // printf("%d\n", height); 
+    
     if(print_output)
         printf("Allocate host arr...\n");
+    
     Node* host_arr = new Node[height*width];
     int* host_boards = (int*)malloc(mboardsArrSize);//new int[boardsArrSize]; //TODO deallocate this memory at end 
     for (unsigned int i = 0; i < boardsArrSize; ++i)
@@ -89,33 +107,22 @@ void run_AI()
         printf("Building initial tree...\n");
 
     std::stack<Node*> init_states;
-    init_states = get_init_states(num_host_leaves); //height //gets all the cut off nodes for gpu
+    init_states = get_init_states(height); //height num_host_leaves //gets all the cut off nodes for gpu
     
     for(unsigned int i = 0; i < height;i++)
     {
         host_arr[i*width] = *init_states.top();
-        // printf("Tests: %i\n", i);
-
         for (int j = 0; j < board_size; j++)
         {
             for (int k = 0; k < board_size; k++)
             {
-                // printf("Tests: %d\n", host_arr[i*width].current_state->currentBoard[j][k]);
                 host_boards[i*board_size*board_size+j+(j*k)] = host_arr[i*width].current_state->currentBoard[j][k];
-                // printf("%d\n", host_arr[i*width].current_state->currentBoard[j][k]);
             }
         }
         
         init_states.pop();
     }
-    
-//     int board_idx = 0*board_size*board_size;
-
-//     for (int i = 0; i < board_size; ++i){
-//         for (int j = 0; j < board_size; ++j)
-//             printf("%d\n", host_boards[board_idx+i+(i*j)]);
-//     }
-    
+       
     //update tree stats
     update_tree_stats(tstats, tree->root, tree->optimal2048, 0, tree->num_nodes, tree->max_depth, tree->num_solutions, tree->num_leaves, tree->num_cutoff_states);
     
@@ -142,7 +149,7 @@ void run_AI()
     
 //     copy in values
     checkCudaErrors(cudaMemcpy(device_boards, host_boards, mboardsArrSize, cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(device_num_sub_tree_nodes, &max_num_nodes, sizeof(int), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(device_num_sub_tree_nodes, &height, sizeof(int), cudaMemcpyHostToDevice));
     
     if(print_output)
         printf("Start buildTree kernel...\n");
@@ -164,9 +171,9 @@ void run_AI()
     if(print_output)
         printf("Copy results back to host...\n\n");
     
-    int*** h_result = (int***)malloc(resultSize);
-    checkCudaErrors(cudaMemcpy(h_result, result, resultSize, cudaMemcpyDeviceToHost));
-    checkCudaErrors(cudaMemcpy(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
+    // int*** h_result = (int***)malloc(resultSize);
+    // checkCudaErrors(cudaMemcpy(h_result, result, resultSize, cudaMemcpyDeviceToHost));
+    // checkCudaErrors(cudaMemcpy(tstats, device_tstats, sizeof(Tree_Stats), cudaMemcpyDeviceToHost));
     
     float end_epoch = sdkGetTimerValue(&timer);
     time_taken = end_epoch-start_epoch;
@@ -179,7 +186,7 @@ void run_AI()
     if(print_output)
     {
         printf("board_size: %i, num_nodes: %lu, max_depth: %d, sols: %d, leaves: %d, stats: %f\n", board_size, height*width, tstats->max_depth, tstats->num_solutions, tstats->num_leaves, ((double)tstats->num_solutions/(double)tstats->num_leaves));
-        printf("time_taken: %f\n", time_taken);
+        printf("time_taken (probably only host time...): %f\n", time_taken);
         // if(tstats->optimal2048)
         //     printf("min_depth: %d time_taken: %f\n", tstats->optimal2048->depth, time_taken);
     }
@@ -258,7 +265,6 @@ __global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* de
             for (int i = 0; i < 4; i++)
             {
                 num_nodes++;
-                // printf("bs: %d\n", this.boardSize);
                 GameState newState(board_size);               
                 newState.copy(device_arr[arr_idx].current_state);
 
@@ -268,7 +274,6 @@ __global__ void build_trees(Node* device_arr, int* device_boards, Tree_Stats* de
                 
                 if(!determine_2048(device_arr[arr_idx].current_state) && !compare_game_states(device_arr[arr_idx].current_state, &newState))
                 {
-                    // printf("nes\n");
                     bool fullBoard = !cuda_add_new_number(&newState, rnd_states, &num_sub_tree_nodes);
                     int currentDepth = device_arr[arr_idx].depth + 1;
                     if(idx == 0)

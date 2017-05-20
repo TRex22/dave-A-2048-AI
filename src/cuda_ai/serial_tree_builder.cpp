@@ -32,8 +32,9 @@ std::stack<Node*> get_init_states(int nodes)
         computable_nodes = count_computable_nodes(tracker);
 
     }while(computable_nodes < nodes);
-
-    printf("DONE GETTING %d INIT STATES\n", count_computable_nodes(tracker));
+    
+    if(print_output)
+        printf("DONE GETTING %d INIT STATES\n", count_computable_nodes(tracker));
 
     return tracker;
 }
