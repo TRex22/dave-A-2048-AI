@@ -1,71 +1,82 @@
-\documentclass[11pt]{article}
+\documentclass[a4paper]{report}
 
-\usepackage[utf8]{inputenc}
-\usepackage{fancyhdr}
-\usepackage{hyperref}
-\usepackage{graphicx}
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
 \usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{natbib}
-\usepackage{csvsimple}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
 \usepackage{float}
 
 \graphicspath{ {images/} }
- 
-\pagestyle{fancy}
-\fancyhf{}
-\lhead{University of the Witwatersrand}
-\rfoot{School of Computer Science and Applied Mathematics}
-\pagenumbering{roman}
-\fancyfoot[R]{\thepage}
-\renewcommand{\headrulewidth}{0pt} % to remove line on header
-\renewcommand{\footrulewidth}{0pt} % to remove line on footer
+
+\title{Parallel Tree Search In Playing The Game 2048}
+\author{}
+% Update supervisor and other title stuff in title/title.tex
 
 \begin{document}
-\begin{page}
-\thispagestyle{empty}
+\begin{titlepage}
 
-\newcommand{\HRule}{\rule{\linewidth}{0.3mm}} % Defines a new command for the horizontal lines, change thickness here
-\renewcommand\section{\@startsection{section}{1}{\z@}%
-                                  {-3.5ex \@plus -1ex \@minus -.2ex}%
-                                  {2.3ex \@plus.2ex}%
-                                  {\normalfont\large\bfseries}}
-\setlength{\parindent}{0pt}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
 
 \center % Center everything on the page
  
 %----------------------------------------------------------------------------------------
-% HEADING SECTIONS
+%	HEADING SECTIONS
 %----------------------------------------------------------------------------------------
 
 \textsc{\LARGE University of the Witwatersrand}\\[1.5cm] % Name of your university/college
-\textsc{\Large School of Computer Science and Applied Mathematics}\\[0.5cm] % Major heading such as course name
+\textsc{\Large COMS4040: High Performance Computing and Scientific Data Management Group Assignment}\\[0.5cm] % Major heading such as course name
+% \textsc{\large Minor Heading}\\[0.5cm] % Minor heading such as course title
 
 %----------------------------------------------------------------------------------------
-% TITLE SECTION
+%	TITLE SECTION
 %----------------------------------------------------------------------------------------
-
+\makeatletter
 \HRule \\[0.4cm]
-{ \huge \bfseries Parallel Tree Search In Playing The Game 2048}\\[0.4cm] % Title of your document \\
-  \larger COMS4040: High Performance Computing and Scientific Data Management Group Assignment
-  \large 21 April 2017
+{ \huge \bfseries \@title}\\[0.4cm] % Title of your document
 \HRule \\[1.5cm]
  
 %----------------------------------------------------------------------------------------
-% AUTHOR SECTION
-%------------- ---------------------------------------------------------------------------
+%	AUTHOR SECTION
+%----------------------------------------------------------------------------------------
+{\large \today}\\[2cm] % Date, change the \today to a set date if you want to be precise
+
 \begin{minipage}{1\textwidth}
   \Large \emph By Mizrahi, M. (708810)\\
   \Large \emph By Chalom, J. (711985)\\
 \end{minipage}
 
+% If you don't want a supervisor, uncomment the two lines below and remove the section above
+%\Large \emph{Author:}\\
+%John \textsc{Smith}\\[3cm] % Your name
+
+%----------------------------------------------------------------------------------------
+%	DATE SECTION
+%----------------------------------------------------------------------------------------
+
+
+
+%----------------------------------------------------------------------------------------
+%	LOGO SECTION
+%----------------------------------------------------------------------------------------
+
+% \includegraphics[width=8cm]{title/logo.png}\\[1cm] % Include a department/university logo - this will require the graphicx package
+ 
+%----------------------------------------------------------------------------------------
 
 \vfill % Fill the rest of the page with whitespace
 
-\end{page}
+\end{titlepage}
 
-\begin{page}
-\lfoot{School of Computer Science and Applied Mathematics}
+% \lfoot{School of Computer Science and Applied Mathematics}
 \clearpage
 \setcounter{page}{1}
 \pagenumbering{arabic}
@@ -73,14 +84,14 @@
 \section{Abstract}
 
 \section{Introduction}
-Games provide an interesting set of problems for artificial intelligence since they provide a level of complexity whilst having clearly defined rules which lends these problems to implementation and simulation. Many games have solution spaces which are intractably large and therefore algorithms and methods employed to solve or approximate any optimal solution to these spaces have to employ smart techniques to deal with the computational constraints of such problems. High performance computing then lends itself to expanding the capabilities of these methods to deal with much larger solution spaces in much shorter amounts of time than a serial approach’s performance could achieve. /cite{AIModern}
+Games provide an interesting set of problems for artificial intelligence since they provide a level of complexity whilst having clearly defined rules which lends these problems to implementation and simulation. Many games have solution spaces which are intractably large and therefore algorithms and methods employed to solve or approximate any optimal solution to these spaces have to employ smart techniques to deal with the computational constraints of such problems. High performance computing then lends itself to expanding the capabilities of these methods to deal with much larger solution spaces in much shorter amounts of time than a serial approach’s performance could achieve. \cite{AIModern}
 
 \subsection{Problem statement}
 We wish to enhance a tree search algorithm by using high performance technologies so that we can improve its performance. The tree search algorithm will be applied to a game called 2048.
 
 \section{Background}
 \subsection{The game 2048}
-This is a single-player non-determinist sliding block puzzle game. It’s a fairly simple game with the aim of producing one tile on the board which is equal to 2048. /cite{rules}
+This is a single-player non-deterministic sliding block puzzle game. It’s a fairly simple game with the aim of producing one tile on the board which is equal to 2048. /cite{rules}
 
 \subsection{The Rules of the game:}
 	\begin{itemize}
@@ -93,7 +104,7 @@ This is a single-player non-determinist sliding block puzzle game. It’s a fair
 	\end{itemize}
 
 \subsection{Game Trees}
-The textbook, Artificial Intelligence: A Modern Approach /cite{AIModern} describes game trees as being directed graphs where each node indicates a game state and each edge indicates an action. A list of edges or connected nodes is a path. A game tree is called complete if it contains all possible actions from each possible state. This means that the size of a game tree can be massive and even exceed the available memory resources of the computing system being used. Each divergent path or sub-tree is mutually exclusive from other sub-trees which branch off either before or at the level of the sub-tree this means that these data structures are highly parallelisable. The main issues with trees is their branching factor and how to assign resources in a smart way to handle the exponentially growing number of nodes.
+The textbook, Artificial Intelligence: A Modern Approach \cite{AIModern} describes game trees as being directed graphs where each node indicates a game state and each edge indicates an action. A list of edges or connected nodes is a path. A game tree is called complete if it contains all possible actions from each possible state. This means that the size of a game tree can be massive and even exceed the available memory resources of the computing system being used. Each divergent path or sub-tree is mutually exclusive from other sub-trees which branch off either before or at the level of the sub-tree this means that these data structures are highly parallelisable. The main issues with trees is their branching factor and how to assign resources in a smart way to handle the exponentially growing number of nodes.
 
 \section{Methodology}
 \subsection{General Assumptions}
@@ -111,7 +122,7 @@ We also tested the algorithms on three board sizes, namely 4x4, 6x6, and 8x8.
 
 \subsection{Implementation}
 All the technologies use some form of the C/C++ programming language and specification. All implementations were designed to use a helper class which contains code which is the same across the three implementations. The three implementations also share a class structure for the tree and the nodes of the tree respectively. We made use of a node and pointer tree implementation. The Cuda implementation makes use of many pre-compiler directives to change the shared function calls into Cuda specific function calls – this was done to try and reuse code as much as possible. Certain functions had to be duplicated and parts modified to fit in the correct specification and paradigm depending on the implementation used.
-For both MPI and Cuda our strategy was to initially generate a tree using a serial method which would go to a depth where the number of cut-off states (the states which are not win states or dead-ends) are equal to the scale of parallelism we want – the number of nodes in MPI and the number of threads in Cuda. This meant that we could then treat these cut-off states as their own local roots of their respective sub-trees which we would then generate in parallel on each respective computing device. This strategy worked very well because the number of parallel tree constructions was far smaller than the final number of nodes we were able to generate. We believed that the overhead of parallelising the tree building in a dynamic load balancing manner --FIX THIS CITE-- \cite{parallel_book}  would be far greater than the cost of a very small initial serial step. This meant that no parallel data communication was needed after each process got their initial node from which to build their respective sub-tree.
+For both MPI and Cuda our strategy was to initially generate a tree using a serial method which would go to a depth where the number of cut-off states (the states which are not win states or dead-ends) are equal to the scale of parallelism we want – the number of nodes in MPI and the number of threads in Cuda. This meant that we could then treat these cut-off states as their own local roots of their respective sub-trees which we would then generate in parallel on each respective computing device. This strategy worked very well because the number of parallel tree constructions was far smaller than the final number of nodes we were able to generate. We believed that the overhead of parallelising the tree building in a dynamic load balancing manner \cite{parallel_book}  would be far greater than the cost of a very small initial serial step. This meant that no parallel data communication was needed after each process got their initial node from which to build their respective sub-tree.
 
 \subsubsection{Serial Approach}
 	\begin{itemize}
@@ -177,7 +188,7 @@ We would start each AI with an initial state which would be generated using a ps
 We used the PBS scripts to allow us to repeat each experiment (with a precise configuration) many times to get a more accurate result. Each AI was capable (via the helper functions we made) to save their results as csv files which we were then able to open in Excel to process and generate graphs for each implementation’s performance. 
 
 
-\section{Results and discussionss
+\section{Results and discussions}
 
 \subsection{Charts}
 
@@ -191,19 +202,19 @@ We used the PBS scripts to allow us to repeat each experiment (with a precise co
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1.3\textwidth]{images/mpi_4procs}
-	\caption{MPI execution time where number of nodes is divided amongst 4 processes evenly}
+	\caption{MPI execution time where number of nodes is divided by 4 processes evenly}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1.3\textwidth]{images/mpi_16procs}
-	\caption{MPI execution time where number of nodes is divided amongst 16 processes evenly}
+	\caption{MPI execution time where number of nodes is divided by 16 processes evenly}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1.3\textwidth]{images/mpi_32procs}
-	\caption{MPI execution time where number of nodes is divided amongst 32 processes evenly}
+	\caption{MPI execution time where number of nodes is divided by 32 processes evenly}
 \end{figure}
 
 \subsection{Discussion on performance of results}
@@ -225,7 +236,7 @@ We thought that we would be able to search the entire game tree for 2048 but it 
 We initially used strings to represent our game state. Cuda does not support strings and we had issues managing states. We fixed this by moving to an array of ints.
 Attempting to code in a way which reduced redundant code for three different paradigms was difficult and sometimes impossible. We ended up having some forced redundancy when certain functions or methods were incompatible with one of our implementations, namely Cuda.\\
 
-The Cuda implementation was the most challenging part of the project. Cuda is not very well documented and every new generation of GPU introduces new features and quirks. We worked on the 700 series which has now become deprecated. This means that ways of doing things which are now supported were not for us. A big issue is that Cuda does not like nested data in classes and will not copy such data from the host to the device or vice versa. Random number generation was also difficult because the cuRand library does not follow the same conventions as the main parts of the Cuda runtime, such as returning errors. The final issue we had was that indexing was very difficult because we had to flatten our class structure and use primitive 1D arrays where possible. We spent lots of time figuring out how our indexes worked. What we had to do in the end is flatten our data structures and only give the device each initial game board we had computed in serial. The GPU would then generate in device global memory each sub-tree (per thread) and return only the most optimal path and its respective thread. We know how many nodes were generated because we had to assume that the tree was complete and any node which was a dead-end became an empty node.\\
+The Cuda implementation was the most challenging part of the project. Cuda is not very well documented and every new generation of GPU introduces new features and quirks. We worked on the 700 series which has now become deprecated. This means that ways of doing things which are now supported were not for us. A big issue is that Cuda does not like nested data in classes and will not copy such data from the host to the device or vice versa. Random number generation was also difficult because the cuRand library does not follow the same conventions as the main parts of the Cuda run-time, such as returning errors. The final issue we had was that indexing was very difficult because we had to flatten our class structure and use primitive 1D arrays where possible. We spent lots of time figuring out how our indexes worked. What we had to do in the end is flatten our data structures and only give the device each initial game board we had computed in serial. The GPU would then generate in device global memory each sub-tree (per thread) and return only the most optimal path and its respective thread. We know how many nodes were generated because we had to assume that the tree was complete and any node which was a dead-end became an empty node.\\
 
 The cluster’s restrictions killed the serial AI when it was busy executing 4000000 and 5000000 nodes.
 
@@ -237,7 +248,5 @@ We made use of the CUDA 8.0 SDK and its associated images and sample programs. W
 
 \bibliographystyle{plain}
 \bibliography{biblio}{}
-\end{page}
-
 
 \end{document}
