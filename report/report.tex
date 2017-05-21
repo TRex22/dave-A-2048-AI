@@ -219,9 +219,37 @@ Since the game 2048 is a single player game we were able to independently run ea
 	\caption{MPI execution time where number of nodes is divided by 32 processes evenly}
 \end{figure}
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/cuda_1thread}
+	\caption{Cuda execution time for 1 thread}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/cuda_2threads}
+	\caption{Cuda execution time for 2 threads}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/cuda_100threads}
+	\caption{Cuda execution time for 100 threads}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/cuda_1000threads}
+	\caption{Cuda execution time for 1000 threads}
+\end{figure}
+
+
 \subsection{Discussion on performance of results}
 Using the serial algorithm on the cluster and using anything over 3 million nodes resulted in the program being killed as there was too much computation for one process to do. From our results we found that increasing the board size produces a linear increase in time. In the serial implementation, 5 million nodes on a 4x4 board took 17.882812 seconds, while using MPI with 4 processes resulted 4.659657 seconds. This means there is a speedup of 3.838. Using MPI with 16 processes and the same setup resulted in 3.904706 seconds. This means there is a speedup of 4.580.
 The results for using 32 processes resulted in haphazard timing for a low number of nodes. This could be due to each process doing a very little amount of work and as such the problem size should be increased to keep the same efficiency as using 4 processes and 16 processes. 
+
+The Cuda results show a spike in times when the work required is very little. When the work size is increased the graphs tend to stabilize and show a linear relationship between the time taken and the number of nodes.
 
 \noindent By running the serial algorithm using increasing board sizes, we found that as the board size is increased the percentage of leaf nodes that are solutions also increases. When usig a 4x4 board, only 12\% of the leaves are solutions.However, using a 16x16 board, 99\% of the leaves are solutions. This could be due to the increased space which allows for more correcting of mistakes and hence less states to be trapped in.
 
