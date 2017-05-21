@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/W32TeX) (preloaded format=pdflatex 2017.3.14)  21 MAY 2017 17:36
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/W32TeX) (preloaded format=pdflatex 2017.3.14)  21 MAY 2017 17:56
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -723,51 +723,53 @@ File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 100.
-LaTeX Font Info:    Try loading font information for T1+cmtt on input line 113.
-
-
-(c:/texlive/2016/texmf-dist/tex/latex/base/t1cmtt.fd
-File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
-)pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has
- been already used, duplicate ignored
+pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
+been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.117 
+l.110 
        [1
 
-] <images/tree.jpg, id=114, 1165.35374pt x 312.16624pt>
-File: images/tree.jpg Graphic file (type jpg)
+]
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 113.
 
-<use images/tree.jpg>
+ (c:/texlive/2016/texmf-dist/tex/latex/base/t1cmtt.fd
+File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
+) [2]
+<images/tree.jpg, id=120, 1165.35374pt x 312.16624pt>
+File: images/tree.jpg Graphic file (type jpg)
+ <use images/tree.jpg>
 Package pdftex.def Info: images/tree.jpg used on input line 145.
 (pdftex.def)             Requested size: 1165.3509pt x 312.16548pt.
- [2]
+
 <images/tree_mpi.jpg, id=121, 1169.36874pt x 314.17375pt>
 File: images/tree_mpi.jpg Graphic file (type jpg)
 
 <use images/tree_mpi.jpg>
 Package pdftex.def Info: images/tree_mpi.jpg used on input line 161.
 (pdftex.def)             Requested size: 1169.36589pt x 314.17297pt.
-
-<images/tree_cuda.jpg, id=122, 458.71375pt x 264.99pt>
-File: images/tree_cuda.jpg Graphic file (type jpg)
-
-<use images/tree_cuda.jpg>
-Package pdftex.def Info: images/tree_cuda.jpg used on input line 179.
-(pdftex.def)             Requested size: 458.71263pt x 264.98935pt.
  [3pdfTeX warning (ext4): destination with the same identifier (name{figure.1})
  has been already used, duplicate ignored
 
 \@EveryShipout@Output ...@Org@Shipout \box \@cclv 
                                                   
-l.182 
-      pdfTeX warning (ext4): destination with the same identifier (name{figure.
-2}) has been already used, duplicate ignored
+l.173 		\item F
+               or this approach to work, we must assume the tree is complete...
+pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) ha
+s been already used, duplicate ignored
 
 \@EveryShipout@Output ...@Org@Shipout \box \@cclv 
                                                   
-l.182 
-       <./images/tree.jpg> <./images/tree_mpi.jpg>]
+l.173 		\item F
+               or this approach to work, we must assume the tree is complete...
+ <./images/tree.jpg> <./images/tree_mpi.jpg>]
+<images/tree_cuda.jpg, id=128, 458.71375pt x 264.99pt>
+File: images/tree_cuda.jpg Graphic file (type jpg)
+
+<use images/tree_cuda.jpg>
+Package pdftex.def Info: images/tree_cuda.jpg used on input line 179.
+(pdftex.def)             Requested size: 458.71263pt x 264.98935pt.
+
 Underfull \hbox (badness 10000) in paragraph at lines 186--187
 
  []
@@ -878,7 +880,7 @@ Here is how much of TeX's memory you used:
  20896 multiletter control sequences out of 15000+600000
  13975 words of font info for 30 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,6n,56p,1278b,410s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 62i,6n,56p,1278b,458s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/texlive/2016/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}<c:/texl
 ive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/texlive/2016/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/texlive/2016/texmf-dist
@@ -895,7 +897,7 @@ m-super/sfrm1200.pfb><c:/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sf
 rm1440.pfb><c:/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb
 ><c:/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfti1440.pfb><c:/texli
 ve/2016/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb>
-Output written on report.pdf (9 pages, 620288 bytes).
+Output written on report.pdf (9 pages, 621304 bytes).
 PDF statistics:
  244 PDF objects out of 1000 (max. 8388607)
  202 compressed objects within 3 object streams
