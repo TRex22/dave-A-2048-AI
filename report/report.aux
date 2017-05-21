@@ -16,18 +16,22 @@
 \gdef\HyperFirstAtBeginDocument#1{#1}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
-\@writefile{toc}{\contentsline {section}{\numberline {1}Abstract}{i}{section.1}}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Introduction}{i}{section.2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Problem statement}{i}{subsection.2.1}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Background}{i}{section.3}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}The game 2048}{i}{subsection.3.1}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}The Rules of the game:}{i}{subsection.3.2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Game Trees}{ii}{subsection.3.3}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Methodology}{ii}{section.4}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}General Assumptions}{ii}{subsection.4.1}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Testing Method}{ii}{subsection.4.2}}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Abstract}{1}{section.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Introduction}{1}{section.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Problem statement}{1}{subsection.2.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Background}{1}{section.3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}The game 2048}{1}{subsection.3.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}The Rules of the game:}{1}{subsection.3.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Game Trees}{2}{subsection.3.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Methodology}{2}{section.4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}General Assumptions}{2}{subsection.4.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Testing Method}{2}{subsection.4.2}}
 \citation{parallel_book}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Implementation}{iii}{subsection.4.3}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Serial Approach}{iii}{subsubsection.4.3.1}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}MPI Approach}{iv}{subsubsection.4.3.2}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Cuda Approach}{iv}{subsubsection.4.3.3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Implementation}{3}{subsection.4.3}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Serial Approach}{3}{subsubsection.4.3.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Tree structure of 2048 in serial approach}}{4}{figure.1}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}MPI Approach}{4}{subsubsection.4.3.2}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Tree structure of 2048 in MPI approach. The leaf nodes are distributed to each process where a serial tree search is run using the leaf nodes as the new root nodes.}}{5}{figure.2}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Cuda Approach}{5}{subsubsection.4.3.3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Tree structure of 2048 in Cuda approach. The leaf nodes are stored in an array where the first column has the initial states for each thread and each row represents a subtree to be explored.}}{6}{figure.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experimental setup}{6}{section.5}}
