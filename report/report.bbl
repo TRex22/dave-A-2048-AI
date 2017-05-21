@@ -1,9 +1,20 @@
 \begin{thebibliography}{1}
 
+\bibitem{rules}
+2048 (video game), May 2017.
+\newblock Available at \url{https://en.wikipedia.org/wiki/2048_(video_game)},
+  publisher: Wikimedia Foundation.
+
 \bibitem{AIModern}
 Stuart Russell and Peter Norvig.
 \newblock {Artificial Intelligence: A Modern Approach (3rd Edition)}.
 \newblock chapter~5, pages "161--189". Pearson,
   https://www.amazon.com/gp/product/0136042597, 2009.
+
+\bibitem{parallel}
+{Victor Eijkhout with Robert van de Geijn and Edmond Chow}.
+\newblock {\em Introduction to High Performance Scientific Computing}.
+\newblock lulu.com, 2011.
+\newblock \url{http://www.tacc.utexas.edu/~eijkhout/istc/istc.html}.
 
 \end{thebibliography}

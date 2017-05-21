@@ -83,6 +83,7 @@
 \pagenumbering{arabic}
 
 \section*{Abstract}
+Tree searching for artificial intelligence problems is very computationally intensive in terms of the amount of memory required to construct realistically sized game trees. The nature of how trees work means that sub-trees in seperate sections of the game tree are independant which makes these kinds of trees highly parallelisable. Our MPI implementation is able to scale massively and produced very fast results on large amounts of nodes for the game of 2048. The Cuda implementation is able to build thousands of sub-trees which all execute in lock-step. A single sub-tree is much slower than either serial or MPI in execution but a single Cuda run can beat the other implementation in scale versus total final time. Cuda however has serious memory constraints with the number of sub-nodes of each sub-tree generated whereas MPI's restictions are based on each specific node's specifications.
 
 \section{Introduction}
 Games provide an interesting set of problems for artificial intelligence since they provide a level of complexity whilst having clearly defined rules which lends these problems to implementation and simulation. Many games have solution spaces which are intractably large and therefore algorithms and methods employed to solve or approximate any optimal solution to these spaces have to employ smart techniques to deal with the computational constraints of such problems. High performance computing then lends itself to expanding the capabilities of these methods to deal with much larger solution spaces in much shorter amounts of time than a serial approach’s performance could achieve. \cite{AIModern}
@@ -92,7 +93,7 @@ We wish to enhance a tree search algorithm by using high performance technologie
 
 \section{Background}
 \subsection{The game 2048}
-This is a single-player non-deterministic sliding block puzzle game. It’s a fairly simple game with the aim of producing one tile on the board which is equal to 2048. /cite{rules}
+This is a single-player non-deterministic sliding block puzzle game. It’s a fairly simple game with the aim of producing one tile on the board which is equal to 2048. \cite{rules}
 
 \subsection{The Rules of the game:}
 	\begin{itemize}
@@ -123,7 +124,7 @@ We also tested the algorithms on three board sizes, namely 4x4, 6x6, and 8x8.
 
 \subsection{Implementation}
 All the technologies use some form of the C/C++ programming language and specification. All implementations were designed to use a helper class which contains code which is the same across the three implementations. The three implementations also share a class structure for the tree and the nodes of the tree respectively. We made use of a node and pointer tree implementation. The Cuda implementation makes use of many pre-compiler directives to change the shared function calls into Cuda specific function calls – this was done to try and reuse code as much as possible. Certain functions had to be duplicated and parts modified to fit in the correct specification and paradigm depending on the implementation used.
-For both MPI and Cuda our strategy was to initially generate a tree using a serial method which would go to a depth where the number of cut-off states (the states which are not win states or dead-ends) are equal to the scale of parallelism we want – the number of nodes in MPI and the number of threads in Cuda. This meant that we could then treat these cut-off states as their own local roots of their respective sub-trees which we would then generate in parallel on each respective computing device. This strategy worked very well because the number of parallel tree constructions was far smaller than the final number of nodes we were able to generate. We believed that the overhead of parallelising the tree building in a dynamic load balancing manner \cite{parallel_book}  would be far greater than the cost of a very small initial serial step. This meant that no parallel data communication was needed after each process got their initial node from which to build their respective sub-tree.
+For both MPI and Cuda our strategy was to initially generate a tree using a serial method which would go to a depth where the number of cut-off states (the states which are not win states or dead-ends) are equal to the scale of parallelism we want – the number of nodes in MPI and the number of threads in Cuda. This meant that we could then treat these cut-off states as their own local roots of their respective sub-trees which we would then generate in parallel on each respective computing device. This strategy worked very well because the number of parallel tree constructions was far smaller than the final number of nodes we were able to generate. We believed that the overhead of parallelising the tree building in a dynamic load balancing manner \cite{parallel}  would be far greater than the cost of a very small initial serial step. This meant that no parallel data communication was needed after each process got their initial node from which to build their respective sub-tree.
 
 \subsubsection{Serial Approach}
 	\begin{itemize}
@@ -222,7 +223,7 @@ Since the game 2048 is a single player game we were able to independently run ea
 Using the serial algorithm on the cluster and using anything over 3 million nodes resulted in the program being killed as there was too much computation for one process to do. From our results we found that increasing the board size produces a linear increase in time. In the serial implementation, 5 million nodes on a 4x4 board took 17.882812 seconds, while using MPI with 4 processes resulted 4.659657 seconds. This means there is a speedup of 3.838. Using MPI with 16 processes and the same setup resulted in 3.904706 seconds. This means there is a speedup of 4.580.
 The results for using 32 processes resulted in haphazard timing for a low number of nodes. This could be due to each process doing a very little amount of work and as such the problem size should be increased to keep the same efficiency as using 4 processes and 16 processes. 
 
-By running the serial algorithm using increasing board sizes, we found that as the board size is increased the percentage of leaf nodes that are solutions also increases. When usig a 4x4 board, only 12\% of the leaves are solutions.However, using a 16x16 board, 99\% of the leaves are solutions. This could be due to the increased space which allows for more correcting of mistakes and hence less states to be trapped in.
+\noindent By running the serial algorithm using increasing board sizes, we found that as the board size is increased the percentage of leaf nodes that are solutions also increases. When usig a 4x4 board, only 12\% of the leaves are solutions.However, using a 16x16 board, 99\% of the leaves are solutions. This could be due to the increased space which allows for more correcting of mistakes and hence less states to be trapped in.
 
 \subsubsection{Complexity Analysis}
 Because the tree is asymmetric, the exact size of the tree cannot be determined. If we assume that the tree is complete then there would be $4^n$ nodes, where $n$ is depth of the search. We found that the minimum depth is always around 1000. This means that is the tree were complete then there would be $4^1000$ nodes. 
@@ -245,7 +246,7 @@ Attempting to code in a way which reduced redundant code for three different par
 \section{Conclusion}
 
 \section*{Acknowledgements}
-We made use of the CUDA 8.0 SDK and its associated images and sample programs. We also used the lab examples from class as a way to figure out how to implement CUDA. We would like to thank Dr Richard Klein for his help in the use of Cuda.
+We made use of the CUDA 8.0 SDK and its associated images and sample programs. We also used the lab examples from class as a way to figure out how to implement CUDA. We would like to thank Dr Richard Klein for his help with the Cuda implementation.
 
 \bibliographystyle{plain}
 \bibliography{biblio}{}
