@@ -161,7 +161,7 @@ For both MPI and Cuda our strategy was to initially generate a tree using a seri
 	\caption{Tree structure of 2048 in MPI approach. The leaf nodes are distributed to each process where a serial tree search is run using the leaf nodes as the new root nodes.}
 \end{figure}
 
-The leaf nodes are distributed to each process where a serial tree search is run using the leaf nodes as the new root nodes.
+\noindent The leaf nodes are distributed to each process where a serial tree search is run using the leaf nodes as the new root nodes.
 
 \subsubsection{Cuda Approach}
 	\begin{itemize}
@@ -179,14 +179,14 @@ The leaf nodes are distributed to each process where a serial tree search is run
 	\caption{Tree structure of 2048 in Cuda approach. The leaf nodes are stored in an array where the first column has the initial states for each thread and each row represents a subtree to be explored.}
 \end{figure}
 
-A down side with the Cuda implementation is that we were unable to perform a warm-up step – beyond initialising the cuRand library - as that would mean building the entire tree twice.
+\noindent A down side with the Cuda implementation is that we were unable to perform a warm-up step – beyond initialising the cuRand library - as that would mean building the entire tree twice.
 
 \section{Experimental setup}
 Since the game 2048 is a single player game we were able to independently run each AI and then analyse the returned results. Each AI kept track of certain statistics such as number of nodes and the time taken to reach a tree of each node size. We also built many command line parameters into the AI programs so that we could change the parameters and dynamics of the domain and AI at will. We used these parameters to test a variety of node sizes from 10000 nodes up to 5000000 nodes and to change the board size as needed. For the MPI implementation we also changed the number of processor nodes from the cluster that we used so that we could analyse the results to determine how the different node configurations effected performance. \\
 
-We would start each AI with an initial state which would be generated using a pseudo-random number generator and scheme. We could choose to seed the PRNG with a static value to force the same initial state across our implementations.\\
+\noindent We would start each AI with an initial state which would be generated using a pseudo-random number generator and scheme. We could choose to seed the PRNG with a static value to force the same initial state across our implementations.\\
 
-We used the PBS scripts to allow us to repeat each experiment (with a precise configuration) many times to get a more accurate result. Each AI was capable (via the helper functions we made) to save their results as csv files which we were then able to open in Excel to process and generate graphs for each implementation’s performance. 
+\noindent We used the PBS scripts to allow us to repeat each experiment (with a precise configuration) many times to get a more accurate result. Each AI was capable (via the helper functions we made) to save their results as csv files which we were then able to open in Excel to process and generate graphs for each implementation’s performance. 
 
 
 \section{Results and discussions}
@@ -230,16 +230,16 @@ Because the tree is asymmetric, the exact size of the tree cannot be determined.
 \subsection{Problems we encountered with this project}
 We had many problems in this project and found solutions or workarounds to a lot of these problems.\\
 
-We initially attempted to implement an in-place depth-first-search because we believed that it would be more memory efficient than either a recursive or user-managed stack approach. We found that the implementation was difficult and ended up changing our implementation to a user-managed stack.\\
+\noindent We initially attempted to implement an in-place depth-first-search because we believed that it would be more memory efficient than either a recursive or user-managed stack approach. We found that the implementation was difficult and ended up changing our implementation to a user-managed stack.\\
 
-We thought that we would be able to search the entire game tree for 2048 but it turns out that it is a very large game tree. This game tree is also asymmetric which makes it unlikely for the size of any given game tree to be accurately determined. We had to change our project slightly so that our AIs would only search a sub-tree from any initial state and then return a local minimum path from that search.\\
+\noindent We thought that we would be able to search the entire game tree for 2048 but it turns out that it is a very large game tree. This game tree is also asymmetric which makes it unlikely for the size of any given game tree to be accurately determined. We had to change our project slightly so that our AIs would only search a sub-tree from any initial state and then return a local minimum path from that search.\\
 
-We initially used strings to represent our game state. Cuda does not support strings and we had issues managing states. We fixed this by moving to an array of ints.
+\noindent We initially used strings to represent our game state. Cuda does not support strings and we had issues managing states. We fixed this by moving to an array of ints.
 Attempting to code in a way which reduced redundant code for three different paradigms was difficult and sometimes impossible. We ended up having some forced redundancy when certain functions or methods were incompatible with one of our implementations, namely Cuda.\\
 
-The Cuda implementation was the most challenging part of the project. Cuda is not very well documented and every new generation of GPU introduces new features and quirks. We worked on the 700 series which has now become deprecated. This means that ways of doing things which are now supported were not for us. A big issue is that Cuda does not like nested data in classes and will not copy such data from the host to the device or vice versa. Random number generation was also difficult because the cuRand library does not follow the same conventions as the main parts of the Cuda run-time, such as returning errors. The final issue we had was that indexing was very difficult because we had to flatten our class structure and use primitive 1D arrays where possible. We spent lots of time figuring out how our indexes worked. What we had to do in the end is flatten our data structures and only give the device each initial game board we had computed in serial. The GPU would then generate in device global memory each sub-tree (per thread) and return only the most optimal path and its respective thread. We know how many nodes were generated because we had to assume that the tree was complete and any node which was a dead-end became an empty node.\\
+\noindent The Cuda implementation was the most challenging part of the project. Cuda is not very well documented and every new generation of GPU introduces new features and quirks. We worked on the 700 series which has now become deprecated. This means that ways of doing things which are now supported were not for us. A big issue is that Cuda does not like nested data in classes and will not copy such data from the host to the device or vice versa. Random number generation was also difficult because the cuRand library does not follow the same conventions as the main parts of the Cuda run-time, such as returning errors. The final issue we had was that indexing was very difficult because we had to flatten our class structure and use primitive 1D arrays where possible. We spent lots of time figuring out how our indexes worked. What we had to do in the end is flatten our data structures and only give the device each initial game board we had computed in serial. The GPU would then generate in device global memory each sub-tree (per thread) and return only the most optimal path and its respective thread. We know how many nodes were generated because we had to assume that the tree was complete and any node which was a dead-end became an empty node.\\
 
-The cluster’s restrictions killed the serial AI when it was busy executing 4000000 and 5000000 nodes.
+\noindent The cluster’s restrictions killed the serial AI when it was busy executing 4000000 and 5000000 nodes.
 
 
 \section{Conclusion}
