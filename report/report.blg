@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2016/W32TeX)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: report.aux
+The style file: plain.bst
+Database file #1: biblio.bib
+Warning--I didn't find a database entry for "parallel_book"
+Warning--empty booktitle in AIModern
+You've used 1 entry,
+            2118 wiz_defined-function locations,
+            508 strings with 4185 characters,
+and the built_in function-call counts, 523 in all, are:
+= -- 54
+> -- 13
+< -- 2
++ -- 5
+- -- 4
+* -- 32
+:= -- 76
+add.period$ -- 4
+call.type$ -- 1
+change.case$ -- 5
+chr.to.int$ -- 0
+cite$ -- 2
+duplicate$ -- 26
+empty$ -- 45
+format.name$ -- 4
+if$ -- 123
+int.to.chr$ -- 0
+int.to.str$ -- 1
+missing$ -- 1
+newline$ -- 8
+num.names$ -- 2
+pop$ -- 8
+preamble$ -- 1
+purify$ -- 4
+quote$ -- 0
+skip$ -- 22
+stack$ -- 0
+substring$ -- 41
+swap$ -- 12
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 4
+warning$ -- 1
+while$ -- 4
+width$ -- 2
+write$ -- 14
+(There were 2 warnings)

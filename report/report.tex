@@ -1,4 +1,4 @@
-\documentclass[a4paper]{report}
+\documentclass[a4paper]{article}
 
 %% Language and font encodings
 \usepackage[english]{babel}
@@ -79,9 +79,10 @@
 % \lfoot{School of Computer Science and Applied Mathematics}
 \clearpage
 \setcounter{page}{1}
+% \setcounter{section}{1}
 \pagenumbering{arabic}
 
-\section{Abstract}
+\section*{Abstract}
 
 \section{Introduction}
 Games provide an interesting set of problems for artificial intelligence since they provide a level of complexity whilst having clearly defined rules which lends these problems to implementation and simulation. Many games have solution spaces which are intractably large and therefore algorithms and methods employed to solve or approximate any optimal solution to these spaces have to employ smart techniques to deal with the computational constraints of such problems. High performance computing then lends itself to expanding the capabilities of these methods to deal with much larger solution spaces in much shorter amounts of time than a serial approach’s performance could achieve. \cite{AIModern}
@@ -140,7 +141,7 @@ For both MPI and Cuda our strategy was to initially generate a tree using a seri
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1.3\textwidth]{images/tree}
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/tree}
 	\caption{Tree structure of 2048 in serial approach}
 \end{figure}
 
@@ -156,7 +157,7 @@ For both MPI and Cuda our strategy was to initially generate a tree using a seri
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1.3\textwidth]{images/tree_mpi}
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/tree_mpi}
 	\caption{Tree structure of 2048 in MPI approach. The leaf nodes are distributed to each process where a serial tree search is run using the leaf nodes as the new root nodes.}
 \end{figure}
 
@@ -174,7 +175,7 @@ The leaf nodes are distributed to each process where a serial tree search is run
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1.3\textwidth]{images/tree_cuda}
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/tree_cuda}
 	\caption{Tree structure of 2048 in Cuda approach. The leaf nodes are stored in an array where the first column has the initial states for each thread and each row represents a subtree to be explored.}
 \end{figure}
 
@@ -195,53 +196,26 @@ We used the PBS scripts to allow us to repeat each experiment (with a precise co
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1.3\textwidth]{images/serial_graph}
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/serial_graph}
 	\caption{Serial execution time}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1.3\textwidth]{images/mpi_4procs}
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/mpi_4procs}
 	\caption{MPI execution time where number of nodes is divided by 4 processes evenly}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1.3\textwidth]{images/mpi_16procs}
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/mpi_16procs}
 	\caption{MPI execution time where number of nodes is divided by 16 processes evenly}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1.3\textwidth]{images/mpi_32procs}
+	\includegraphics[width=1.0\textwidth,scale=1.0]{images/mpi_32procs}
 	\caption{MPI execution time where number of nodes is divided by 32 processes evenly}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.3\textwidth]{images/cuda_1thread}
-	\caption{Cuda execution time for 1 thread}
-\end{figure}
-
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.3\textwidth]{images/cuda_2threads}
-	\caption{Cuda execution time for 2 threads}
-\end{figure}
-
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.3\textwidth]{images/cuda_100threads}
-	\caption{Cuda execution time for 100 threads}
-\end{figure}
-
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.3\textwidth]{images/cuda_1000threads}
-	\caption{Cuda execution time for 1000 threads}
 \end{figure}
 
 \subsection{Discussion on performance of results}

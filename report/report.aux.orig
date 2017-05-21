@@ -1,0 +1,64 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+<<<<<<< HEAD
+\@writefile{toc}{\contentsline {subsection}{\numberline {0.1}Problem statement}{1}{subsection.0.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {0.2}The game 2048}{1}{subsection.0.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {0.3}The Rules of the game:}{1}{subsection.0.3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {0.4}Game Trees}{1}{subsection.0.4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {0.5}General Assumptions}{2}{subsection.0.5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {0.6}Testing Method}{2}{subsection.0.6}}
+\citation{parallel_book}
+\@writefile{toc}{\contentsline {subsection}{\numberline {0.7}Implementation}{3}{subsection.0.7}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {0.7.1}Serial Approach}{3}{subsubsection.0.7.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Tree structure of 2048 in serial approach}}{4}{figure.1}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {0.7.2}MPI Approach}{4}{subsubsection.0.7.2}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Tree structure of 2048 in MPI approach. The leaf nodes are distributed to each process where a serial tree search is run using the leaf nodes as the new root nodes.}}{5}{figure.2}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {0.7.3}Cuda Approach}{5}{subsubsection.0.7.3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Tree structure of 2048 in Cuda approach. The leaf nodes are stored in an array where the first column has the initial states for each thread and each row represents a subtree to be explored.}}{6}{figure.3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {0.8}Charts}{7}{subsection.0.8}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Serial execution time}}{7}{figure.4}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces MPI execution time where number of nodes is divided amongst 4 processes evenly}}{8}{figure.5}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces MPI execution time where number of nodes is divided amongst 16 processes evenly}}{9}{figure.6}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces MPI execution time where number of nodes is divided amongst 32 processes evenly}}{10}{figure.7}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {0.9}Discussion on performance of results}{10}{subsection.0.9}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {0.9.1}Complexity Analysis}{11}{subsubsection.0.9.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {0.10}Problems we encountered with this project}{11}{subsection.0.10}}
+\bibstyle{plain}
+\bibdata{biblio}
+=======
+\@writefile{toc}{\contentsline {section}{\numberline {1}Abstract}{1}{section.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Introduction}{1}{section.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Problem statement}{1}{subsection.2.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Background}{1}{section.3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}The game 2048}{1}{subsection.3.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}The Rules of the game:}{1}{subsection.3.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Game Trees}{2}{subsection.3.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Methodology}{2}{section.4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}General Assumptions}{2}{subsection.4.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Testing Method}{2}{subsection.4.2}}
+\citation{parallel_book}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Implementation}{3}{subsection.4.3}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Serial Approach}{3}{subsubsection.4.3.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Tree structure of 2048 in serial approach}}{4}{figure.1}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}MPI Approach}{4}{subsubsection.4.3.2}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Tree structure of 2048 in MPI approach. The leaf nodes are distributed to each process where a serial tree search is run using the leaf nodes as the new root nodes.}}{5}{figure.2}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.3}Cuda Approach}{5}{subsubsection.4.3.3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Tree structure of 2048 in Cuda approach. The leaf nodes are stored in an array where the first column has the initial states for each thread and each row represents a subtree to be explored.}}{6}{figure.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experimental setup}{6}{section.5}}
+>>>>>>> 6a73ccd37cd79cc722ca6ea582fa9026ba89d8c5
