@@ -59,20 +59,19 @@
 </head>
 
 <body>
-	<div class="container">
-		<div class="row">
-		  <div class="col">col</div>
-		  <div class="col">col</div>
-		  <div class="col">col</div>
-		  <div class="col">col</div>
-		</div>
-		<div class="row">
-		  <div class="col">col</div>
-		  <div class="col">col</div>
-		  <div class="col">col</div>
-		  <div class="col">col</div>
-		</div>
-	</div>
+	<!-- Single button -->
+<div class="btn-group">
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Action <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li><a href="#">Action</a></li>
+    <li><a href="#">Another action</a></li>
+    <li><a href="#">Something else here</a></li>
+    <li role="separator" class="divider"></li>
+    <li><a href="#">Separated link</a></li>
+  </ul>
+</div>
 
 	<br/><br/><br/>
 	<input type="file" id="files" name="files[]" multiple />
@@ -114,10 +113,17 @@
 
 		    reader.onloadend = function(evt)
 		    {
-		    	fileDisplayArea.innerText = reader.result;
+		    	// fileDisplayArea.innerText = reader.result;
 			    var delimeter = ',';
 			    var array = csv2array(reader.result, delimeter);
+
+			    for (var i = 1; i < array[0].length; i+=4) {
+			    	fileDisplayArea.innerText = array[i];
+			    }
+
 			    console.log(array[0]);
+			    console.log(array.length);
+			    console.log(array[0].length);
 		    }
 		}
 	}
