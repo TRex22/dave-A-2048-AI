@@ -272,6 +272,9 @@ Attempting to code in a way which reduced redundant code for three different par
 
 
 \section{Conclusion}
+From our experimentation we found that using MPI, we can get a massive speed performance by distributing the work across multiple processes. The extension from the serial algorithm to the MPI algorithm was very simple and did not require too much extra work. However, Cuda requires special attention when adapting the serial algorithm. It requires a lot more work and refactoring of code to suit the Cuda environment, We found that even though Cuda may be slower per subtree, its scalability could potentially be much higher than that of MPI. With efficient use of memory each block would be able to do a lot more work. Overall we found that if there is a task which needs to be repeated but makes use of a lot of memory then MPI woould be a better choice to use. However, if the task is just computationally expensive while not being too memory intensive then Cuda would most likely be a much better choice in parallelisation of the task.
+
+
 
 \section*{Acknowledgements}
 We made use of the CUDA 8.0 SDK and its associated images and sample programs. We also used the lab examples from class as a way to figure out how to implement CUDA. We would like to thank Dr Richard Klein for his help with the Cuda implementation.
