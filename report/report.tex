@@ -167,10 +167,10 @@ For both MPI and Cuda our strategy was to initially generate a tree using a seri
 \subsubsection{Cuda Approach}
 	\begin{itemize}
 		\item The CUDA approach starts in a similar manner to the MPI approach.
-		\item The host generates a small sub-tree and stores each initial state to be used in the first column of a matrix.
-		\item Each row in this matrix is a sub-tree to be explored by a thread.
-		\item For each entry in its row, each thread creates the nodes children and places them in the row of the matrix.
-		\item For this approach to work, we must assume the tree is complete and symmetric.
+		\item The host generates a small sub-tree and stores each initial state to be used by each Cuda thread to generate a sub-tree.
+		\item Each thread then creates an array to store its own sub-tree. This array contains the max-number of nodes per sub-tree that has been specified.
+		\item For each entry in a thread's sub-tree array, the nodes children are created and placed in the array.
+		\item For this approach to work, we must assume the tree is complete and symmetric. An empty node is handled as its own constructir and then ignored when searching back from found solutions.
 	\end{itemize}
 
 
